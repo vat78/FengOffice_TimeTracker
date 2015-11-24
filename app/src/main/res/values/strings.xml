@@ -1,0 +1,34 @@
+<resources>
+    <string name="app_name">FengOffice Time Tracker</string>
+    
+    <!-- Strings related to login -->
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Sign in</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="error_invalid_email">This email address is invalid</string>
+    <string name="error_invalid_password">This password is too short</string>
+    <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="error_field_required">This field is required</string>
+    <string name="permission_rationale">"Contacts permissions are needed for providing email
+        completions."
+    </string>
+    <string name="prompt_login">Login</string>
+    <string name="prompt_url">FengOffice URL</string>
+    <string name="error_incorrect_value">This field is incorrect</string>
+    <string name="error_no_internet">Please check your internet connection</string>
+    <string name="UseUntrustCA">Allow using untrusted certificates</string>
+    <string name="GlobalFOObj">fo_obj</string>
+    <string name="Save_credentials">Save password</string>
+
+
+    <string name="JSON_api">index.php?c=api</string>
+    <string name="JSON_get_object">m=get_object</string>
+    <string name="JSON_list_members">m=list_members</string>
+    <string name="JSON_trash">m=trash</string>
+    <string name="JSON_complete_task">m=complete_task</string>
+    <string name="JSON_listing">m=listing</string>
+    <string name="JSON_save_object">m=save_object</string>
+
+
+</resources>

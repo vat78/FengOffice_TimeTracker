@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<resources>
+    <string name="app_name">Тайм-менеджер для FengOffice</string>
+
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Пароль</string>
+    <string name="action_sign_in">Вход</string>
+    <string name="action_sign_in_short">Вход</string>
+    <string name="error_invalid_email">This email address is invalid</string>
+    <string name="error_invalid_password">This password is too short</string>
+    <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="error_field_required">Обязательное поле</string>
+    <string name="permission_rationale">"Contacts permissions are needed for providing email
+    completions."
+    </string>
+    <string name="prompt_login">Имя входя</string>
+    <string name="prompt_url">Адрес FengOffice</string>
+    <string name="error_incorrect_value">Поле заполнено не верно</string>
+    <string name="error_no_internet">Проверьте подключение к интернет</string>
+    <string name="UseUntrustCA">Отключить проверку сертификатов</string>
+    <string name="GlobalFOObj">fo_obj</string>
+    <string name="Save_credentials">Сохранить параметры входа</string>
+
+</resources>
