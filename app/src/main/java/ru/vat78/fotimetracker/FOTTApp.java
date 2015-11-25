@@ -13,5 +13,11 @@ public class FOTTApp extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
+    }
+
+    public boolean LoginToFO(){
+
+        return true;
     }
 }
