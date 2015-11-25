@@ -1,6 +1,7 @@
 package ru.vat78.fotimetracker;
 
 
+import android.app.Service;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -34,9 +35,9 @@ import javax.net.ssl.X509TrustManager;
 
 /**
  * Created by vat on 17.11.2015.
+ *
+ * Use for interact with FengOffice web-application
  */
-
-// user token: 743a596acca42d631a4956232b2c755c6bd1ffe7
 
 public class FOConnector {
 
@@ -46,6 +47,7 @@ public class FOConnector {
     private static String FO_User;
     private static String FO_Pwd;
     private static String FO_URL;
+    private static String FO_Token;
     private JSONObject jsonobject;
 
     protected boolean UseUntrustCA = false;
@@ -95,15 +97,23 @@ public class FOConnector {
             return false;
         }
 
-        String request = FO_URL + "index.php?c=api&m=listing&srv=ProjectMessages&auth=" + FO_Pwd;
+        String request = FO_URL + "index.php?c=api&m=login&username=" + FO_User + "&password=" + FO_Pwd;
 
         // Download JSON data from URL
-        JSONArray js = null;
-        js = JSONfunctions.getJSONArrfromURL(request, UseUntrustCA);
+        JSONObject js = null;
+        js = JSONfunctions.getJSONObjfromURL(request, UseUntrustCA);
 
         if (js == null) {
             ErrorMsg = JSONfunctions.getError();
+        } else {
+            try {
+                FO_Token = js.getString("token");
+            } catch (Exception e) {
+                ErrorMsg = e.getMessage();
+            }
+
         }
+
 
         return (js != null);
     }
@@ -249,7 +259,7 @@ public class FOConnector {
         }
 
         private static Void FindErrorInData(String data) {
-            if (data == ""){
+            if (data.isEmpty()){
                 ErrorCode = 10;
                 ErrorMsg = "EmptyData";
                 return null;

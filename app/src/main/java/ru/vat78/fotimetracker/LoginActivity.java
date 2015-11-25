@@ -126,9 +126,6 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         String login = mLoginView.getText().toString();
         String password = mPasswordView.getText().toString();
 
-        password="743a596acca42d631a4956232b2c755c6bd1ffe7";
-        //TODO how to get user token?
-
         boolean cancel = false;
         View focusView = null;
         FOApp = new FOConnector();
