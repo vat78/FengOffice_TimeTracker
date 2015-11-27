@@ -22,13 +22,6 @@
     <string name="Save_credentials">Save password</string>
 
 
-    <string name="JSON_api">index.php?c=api</string>
-    <string name="JSON_get_object">m=get_object</string>
-    <string name="JSON_list_members">m=list_members</string>
-    <string name="JSON_trash">m=trash</string>
-    <string name="JSON_complete_task">m=complete_task</string>
-    <string name="JSON_listing">m=listing</string>
-    <string name="JSON_save_object">m=save_object</string>
     <string name="title_activity_fott__main">FOTT_MainActivity</string>
     <string name="action_settings">Settings</string>
     <string name="section_format">Hello World from section: %1$d</string>

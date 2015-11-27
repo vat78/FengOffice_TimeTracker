@@ -3,9 +3,6 @@ package ru.vat78.fotimetracker;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
@@ -41,7 +38,7 @@ public class FOTT_MainActivity extends AppCompatActivity {
      */
     private ViewPager mViewPager;
 
-    private FOTTApp MainApp;
+    private FOTT_App MainApp;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,7 +105,7 @@ public class FOTT_MainActivity extends AppCompatActivity {
     private void CheckLogin(){
         SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
         if (preferences.getString(getString(R.string.prompt_password),"").isEmpty()){
-            Intent pickLogin = new Intent(this,LoginActivity.class);
+            Intent pickLogin = new Intent(this,FOTT_LoginActivity.class);
             startActivityForResult(pickLogin,PICK_LOGIN_REQUEST);
         }
     }

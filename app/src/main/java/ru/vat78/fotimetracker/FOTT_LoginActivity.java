@@ -6,18 +6,10 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.app.LoaderManager.LoaderCallbacks;
 
-import android.content.CursorLoader;
-import android.content.Loader;
-import android.database.Cursor;
-import android.net.Uri;
 import android.os.AsyncTask;
 
 import android.os.Build;
@@ -28,30 +20,26 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
-import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import ru.vat78.fotimetracker.FOConnector;
+import ru.vat78.fotimetracker.fo_api.FOAPI_Connector;
 
 //import static android.Manifest.permission.READ_CONTACTS;
 
 /**
  * A login screen that offers login via login/password.
  */
-public class LoginActivity extends AppCompatActivity {
+public class FOTT_LoginActivity extends AppCompatActivity {
 
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
-
-    private FOConnector FOApp;
+    private FOTT_App app;
+    private FOAPI_Connector FOApp;
     private UserLoginCheck ULC;
 
     // UI references.
@@ -66,6 +54,10 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        app = (FOTT_App) getApplication();
+        FOApp = app.web_service;
+
         setContentView(R.layout.activity_login);
         // Set up the login form.
         //TODO russian translate?
@@ -129,7 +121,7 @@ public class LoginActivity extends AppCompatActivity {
 
         boolean cancel = false;
         View focusView = null;
-        FOApp = new FOConnector();
+
         ULC = new UserLoginCheck();
 
         // Check for a empty url.
@@ -138,13 +130,13 @@ public class LoginActivity extends AppCompatActivity {
             focusView = mURLView;
             cancel = true;
         } else {
-            cancel = !FOApp.setFo_Url(url);
+            cancel = !FOApp.setFO_Url(url);
             if (cancel) {
                 mURLView.setError(getString(R.string.error_incorrect_value));
                 focusView = mURLView;
             }
         }
-        FOApp.UseUntrustCA = mUntrustCA.isChecked();
+        FOApp.canUseUntrustCert(mUntrustCA.isChecked());
 
         //TODO empty password?
         // Check for a valid password, if the user entered one.
@@ -258,7 +250,7 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         protected Boolean doInBackground(Void... params) {
 
-            return FOApp.TestConnection();
+            return FOApp.testConnection();
         }
 
         @Override

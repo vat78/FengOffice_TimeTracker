@@ -8,6 +8,9 @@ import android.provider.BaseColumns;
 public final class FOTT_Contract {
     public FOTT_Contract() {}
 
+    public static final int DATABASE_VERSION = 1;
+    public static final String DATABASE_NAME = "FOTT.db";
+
     private static final String TEXT_TYPE = " TEXT";
     private static final String NUMERIC_TYPE = " NUMERIC";
     private static final String INTEGER_TYPE = " INTEGER";
@@ -16,53 +19,6 @@ public final class FOTT_Contract {
 
     private static final String DROP_TABLE = "DROP TABLE IF EXISTS ";
     private static final String CREATE_TABLE = "CREATE TABLE ";
-
-    public static final String SQL_CREATE_ENTRIES =
-            CREATE_TABLE + FOTT_Members.TABLE_NAME + " (" +
-                    FOTT_Members._ID + " INTEGER PRIMARY KEY," +
-                    FOTT_Members.COLUMN_NAME_MEMBER_ID + INTEGER_TYPE + COMMA_SEP +
-                    FOTT_Members.COLUMN_NAME_NAME + TEXT_TYPE + COMMA_SEP +
-                    FOTT_Members.COLUMN_NAME_COLOR + INTEGER_TYPE + COMMA_SEP +
-                    FOTT_Members.COLUMN_NAME_TYPE + TEXT_TYPE + COMMA_SEP +
-                    FOTT_Members.COLUMN_NAME_PATH + TEXT_TYPE + COMMA_SEP +
-                    FOTT_Members.COLUMN_NAME_PARENT + TEXT_TYPE + COMMA_SEP +
-                    FOTT_Members.COLUMN_NAME_CHANGED + NUMERIC_TYPE + COMMA_SEP +
-                    FOTT_Members.COLUMN_NAME_FO_CHANGED + NUMERIC_TYPE + " )" + EOL +
-                    CREATE_TABLE + FOTT_Tasks.TABLE_NAME + " (" +
-                    FOTT_Tasks._ID + " INTEGER PRIMARY KEY," +
-                    FOTT_Tasks.COLUMN_NAME_TASK_ID + INTEGER_TYPE + COMMA_SEP +
-                    FOTT_Tasks.COLUMN_NAME_TITLE + TEXT_TYPE + COMMA_SEP +
-                    FOTT_Tasks.COLUMN_NAME_DESC + TEXT_TYPE + COMMA_SEP +
-                    FOTT_Tasks.COLUMN_NAME_MEMBERS + TEXT_TYPE + COMMA_SEP +
-                    FOTT_Tasks.COLUMN_NAME_MEMPATH + TEXT_TYPE + COMMA_SEP +
-                    FOTT_Tasks.COLUMN_NAME_STATUS + INTEGER_TYPE + COMMA_SEP +
-                    FOTT_Tasks.COLUMN_NAME_STARTDATE + NUMERIC_TYPE + COMMA_SEP +
-                    FOTT_Tasks.COLUMN_NAME_DUEDATE + NUMERIC_TYPE + COMMA_SEP +
-                    FOTT_Tasks.COLUMN_NAME_PRIORITY + INTEGER_TYPE + COMMA_SEP +
-                    FOTT_Tasks.COLUMN_NAME_ASSIGNEDBY + TEXT_TYPE + COMMA_SEP +
-                    FOTT_Tasks.COLUMN_NAME_ASSIGNEDTO + TEXT_TYPE + COMMA_SEP +
-                    FOTT_Tasks.COLUMN_NAME_PERCENT + TEXT_TYPE + COMMA_SEP +
-                    FOTT_Tasks.COLUMN_NAME_WORKEDTIME + TEXT_TYPE + COMMA_SEP +
-                    FOTT_Tasks.COLUMN_NAME_PENDINGTIME + TEXT_TYPE + COMMA_SEP +
-                    FOTT_Tasks.COLUMN_NAME_USETIMESLOTS + NUMERIC_TYPE +
-                    FOTT_Tasks.COLUMN_NAME_CHANGED + NUMERIC_TYPE + COMMA_SEP +
-                    FOTT_Tasks.COLUMN_NAME_FO_CHANGED + NUMERIC_TYPE + " )" + EOL +
-                    CREATE_TABLE + FOTT_Timeslots.TABLE_NAME + " (" +
-                    FOTT_Timeslots._ID + " INTEGER PRIMARY KEY," +
-                    FOTT_Timeslots.COLUMN_TIMESLOT_ID + INTEGER_TYPE + COMMA_SEP +
-                    FOTT_Timeslots.COLUMN_NAME_TITLE + TEXT_TYPE + COMMA_SEP +
-                    FOTT_Timeslots.COLUMN_NAME_DESC + TEXT_TYPE + COMMA_SEP +
-                    FOTT_Timeslots.COLUMN_NAME_START + NUMERIC_TYPE +
-                    FOTT_Timeslots.COLUMN_NAME_DURATION + INTEGER_TYPE +
-                    FOTT_Timeslots.COLUMN_NAME_TASK_ID + INTEGER_TYPE + COMMA_SEP +
-                    FOTT_Timeslots.COLUMN_NAME_MEMBERS_ID + TEXT_TYPE + COMMA_SEP +
-                    FOTT_Timeslots.COLUMN_NAME_CHANGED + NUMERIC_TYPE + COMMA_SEP +
-                    FOTT_Timeslots.COLUMN_NAME_FO_CHANGED + NUMERIC_TYPE + " )" + EOL;
-
-    public static final String SQL_DELETE_ENTRIES =
-            DROP_TABLE + FOTT_Members.TABLE_NAME + EOL +
-                    DROP_TABLE + FOTT_Tasks.TABLE_NAME + EOL +
-                    DROP_TABLE + FOTT_Timeslots.TABLE_NAME + EOL;
 
     public static abstract class FOTT_Members implements BaseColumns {
         public static final String TABLE_NAME = "members";
@@ -74,6 +30,20 @@ public final class FOTT_Contract {
         public static final String COLUMN_NAME_PARENT = "parentid";
         public static final String COLUMN_NAME_CHANGED = "changed";
         public static final String COLUMN_NAME_FO_CHANGED = "fochanged";
+
+        public static final String SQL_CREATE_ENTRIES =
+                CREATE_TABLE + FOTT_Members.TABLE_NAME + " (" +
+                        FOTT_Members._ID + " INTEGER PRIMARY KEY," +
+                        FOTT_Members.COLUMN_NAME_MEMBER_ID + INTEGER_TYPE + COMMA_SEP +
+                        FOTT_Members.COLUMN_NAME_NAME + TEXT_TYPE + COMMA_SEP +
+                        FOTT_Members.COLUMN_NAME_COLOR + INTEGER_TYPE + COMMA_SEP +
+                        FOTT_Members.COLUMN_NAME_TYPE + TEXT_TYPE + COMMA_SEP +
+                        FOTT_Members.COLUMN_NAME_PATH + TEXT_TYPE + COMMA_SEP +
+                        FOTT_Members.COLUMN_NAME_PARENT + TEXT_TYPE + COMMA_SEP +
+                        FOTT_Members.COLUMN_NAME_CHANGED + NUMERIC_TYPE + COMMA_SEP +
+                        FOTT_Members.COLUMN_NAME_FO_CHANGED + NUMERIC_TYPE + " )";
+        public static final String SQL_DELETE_ENTRIES =
+                DROP_TABLE + FOTT_Members.TABLE_NAME;
     }
 
     public static abstract class FOTT_Tasks implements BaseColumns {
@@ -96,6 +66,29 @@ public final class FOTT_Contract {
 
         public static final String COLUMN_NAME_CHANGED = "changed";
         public static final String COLUMN_NAME_FO_CHANGED = "fochanged";
+
+        public static final String SQL_CREATE_ENTRIES =
+                CREATE_TABLE + FOTT_Tasks.TABLE_NAME + " (" +
+                        FOTT_Tasks._ID + " INTEGER PRIMARY KEY," +
+                        FOTT_Tasks.COLUMN_NAME_TASK_ID + INTEGER_TYPE + COMMA_SEP +
+                        FOTT_Tasks.COLUMN_NAME_TITLE + TEXT_TYPE + COMMA_SEP +
+                        FOTT_Tasks.COLUMN_NAME_DESC + TEXT_TYPE + COMMA_SEP +
+                        FOTT_Tasks.COLUMN_NAME_MEMBERS + TEXT_TYPE + COMMA_SEP +
+                        FOTT_Tasks.COLUMN_NAME_MEMPATH + TEXT_TYPE + COMMA_SEP +
+                        FOTT_Tasks.COLUMN_NAME_STATUS + INTEGER_TYPE + COMMA_SEP +
+                        FOTT_Tasks.COLUMN_NAME_STARTDATE + NUMERIC_TYPE + COMMA_SEP +
+                        FOTT_Tasks.COLUMN_NAME_DUEDATE + NUMERIC_TYPE + COMMA_SEP +
+                        FOTT_Tasks.COLUMN_NAME_PRIORITY + INTEGER_TYPE + COMMA_SEP +
+                        FOTT_Tasks.COLUMN_NAME_ASSIGNEDBY + TEXT_TYPE + COMMA_SEP +
+                        FOTT_Tasks.COLUMN_NAME_ASSIGNEDTO + TEXT_TYPE + COMMA_SEP +
+                        FOTT_Tasks.COLUMN_NAME_PERCENT + TEXT_TYPE + COMMA_SEP +
+                        FOTT_Tasks.COLUMN_NAME_WORKEDTIME + TEXT_TYPE + COMMA_SEP +
+                        FOTT_Tasks.COLUMN_NAME_PENDINGTIME + TEXT_TYPE + COMMA_SEP +
+                        FOTT_Tasks.COLUMN_NAME_USETIMESLOTS + NUMERIC_TYPE +
+                        FOTT_Tasks.COLUMN_NAME_CHANGED + NUMERIC_TYPE + COMMA_SEP +
+                        FOTT_Tasks.COLUMN_NAME_FO_CHANGED + NUMERIC_TYPE + " )";
+        public static final String SQL_DELETE_ENTRIES =
+               DROP_TABLE + FOTT_Tasks.TABLE_NAME;
     }
 
     public static abstract class FOTT_Timeslots implements BaseColumns {
@@ -109,6 +102,21 @@ public final class FOTT_Contract {
         public static final String COLUMN_NAME_MEMBERS_ID = "membersid";
         public static final String COLUMN_NAME_CHANGED = "changed";
         public static final String COLUMN_NAME_FO_CHANGED = "fochanged";
+
+        public static final String SQL_CREATE_ENTRIES =
+                CREATE_TABLE + FOTT_Timeslots.TABLE_NAME + " (" +
+                        FOTT_Timeslots._ID + " INTEGER PRIMARY KEY," +
+                        FOTT_Timeslots.COLUMN_TIMESLOT_ID + INTEGER_TYPE + COMMA_SEP +
+                        FOTT_Timeslots.COLUMN_NAME_TITLE + TEXT_TYPE + COMMA_SEP +
+                        FOTT_Timeslots.COLUMN_NAME_DESC + TEXT_TYPE + COMMA_SEP +
+                        FOTT_Timeslots.COLUMN_NAME_START + NUMERIC_TYPE +
+                        FOTT_Timeslots.COLUMN_NAME_DURATION + INTEGER_TYPE +
+                        FOTT_Timeslots.COLUMN_NAME_TASK_ID + INTEGER_TYPE + COMMA_SEP +
+                        FOTT_Timeslots.COLUMN_NAME_MEMBERS_ID + TEXT_TYPE + COMMA_SEP +
+                        FOTT_Timeslots.COLUMN_NAME_CHANGED + NUMERIC_TYPE + COMMA_SEP +
+                        FOTT_Timeslots.COLUMN_NAME_FO_CHANGED + NUMERIC_TYPE + " )";
+        public static final String SQL_DELETE_ENTRIES =
+                DROP_TABLE + FOTT_Timeslots.TABLE_NAME;
     }
 
 

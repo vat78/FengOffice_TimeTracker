@@ -1,7 +1,6 @@
-package ru.vat78.fotimetracker;
+package ru.vat78.fotimetracker.fo_api;
 
 
-import android.app.Service;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -10,6 +9,7 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.KeyStore;
@@ -21,8 +21,6 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Map;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,22 +35,23 @@ import javax.net.ssl.X509TrustManager;
  * Created by vat on 17.11.2015.
  *
  * Use for interact with FengOffice web-application
+ * TODO error handler
  */
 
-public class FOConnector {
+public class FOAPI_Connector {
 
-    private static int ErrorCode=0;
-    private static String ErrorMsg="";
+    private int ErrorCode=0;
+    private String ErrorMsg="";
 
-    private static String FO_User;
+    private String FO_User;
     private static String FO_Pwd;
     private static String FO_URL;
-    private static String FO_Token;
+    private String FO_Token;
     private JSONObject jsonobject;
 
-    protected boolean UseUntrustCA = false;
+    private boolean UseUntrustCA = false;
 
-    protected boolean setFo_Url(String foUrl) {
+    public boolean setFO_Url(String foUrl) {
         foUrl = foUrl.trim();
         if (foUrl.length() <1){ return false;}
 
@@ -61,106 +60,127 @@ public class FOConnector {
         }
 
         if (!foUrl.endsWith("/")) {foUrl += "/";}
-        FO_URL = foUrl;
+        this.FO_URL = foUrl;
         return true;
     }
 
-    protected String getFoUrl() {
+    public String getFO_Url() {
         return FO_URL;
     }
 
-    protected boolean setFO_User(String FO_User) {
-        FOConnector.FO_User = FO_User;
+    public boolean setFO_User(String FO_User) {
+        this.FO_User = FO_User;
         return true;
     }
 
-    protected String getFO_User() {
-        return FO_User;
+    public String getFO_User() {
+        return this.FO_User;
     }
 
-    protected boolean setFO_Pwd(String FO_Pwd) {
-        FOConnector.FO_Pwd = FO_Pwd;
+    public boolean setFO_Pwd(String FO_Pwd) {
+        this.FO_Pwd = FO_Pwd;
         return true;
     }
 
-    protected String getFO_Pwd() {
-        return FO_Pwd;
+    public String getFO_Pwd() {
+        return this.FO_Pwd;
     }
 
-    protected String getError() {
-        return ErrorMsg;
+    public void canUseUntrustCert(boolean flag) {
+        this.UseUntrustCA = flag;
     }
 
-    protected boolean TestConnection() {
-        //TODO this is wrong function. Just for tests. Do I need it?
-        if (TextUtils.isEmpty(FO_URL) || TextUtils.isEmpty(FO_User)) {
+    public String getError() {
+        return this.ErrorMsg;
+    }
+
+    //This function try to login FengOffice web-application
+    public boolean testConnection() {
+        if (TextUtils.isEmpty(this.FO_URL) || TextUtils.isEmpty(this.FO_User)) {
             return false;
         }
 
-        String request = FO_URL + "index.php?c=api&m=login&username=" + FO_User + "&password=" + FO_Pwd;
+        this.FO_Token = "";
+        resetError();
+
+        //Try to login
+        String request = this.FO_URL + FOAPI_Dictionary.FO_API_LOGIN;
+        request.replace(FOAPI_Dictionary.FO_API_LOGIN,this.FO_User);
+        request.replace(FOAPI_Dictionary.FO_API_PASSWORD,this.FO_Pwd);
 
         // Download JSON data from URL
-        JSONObject js = null;
-        js = JSONfunctions.getJSONObjfromURL(request, UseUntrustCA);
+        JSONObject jo = null;
+        jo = JSONfunctions.getJSONObjfromURL(request, this.UseUntrustCA, this.ErrorMsg);
 
-        if (js == null) {
-            ErrorMsg = JSONfunctions.getError();
-        } else {
-            try {
-                FO_Token = js.getString("token");
-            } catch (Exception e) {
-                ErrorMsg = e.getMessage();
-            }
+        if (jo == null) {return false;}
 
+        try {
+            this.FO_Token = jo.getString(FOAPI_Dictionary.FO_API_FIELD_TOKEN);
+        } catch (Exception e) {
+            this.ErrorMsg = e.getMessage();
         }
-
-
-        return (js != null);
+        return (this.FO_Token.isEmpty());
     }
 
-    protected boolean get_object(int oid) {
-        if (TextUtils.isEmpty(FO_URL) || TextUtils.isEmpty(FO_User)) {
-            return false;
+    //Checks plugin status
+    public boolean checkPlugin(String plugin_name){
+
+        if (this.FO_Token.isEmpty() || plugin_name.isEmpty()) {return false;}
+        Integer res = 0;
+        resetError();
+
+        String request = this.FO_URL + FOAPI_Dictionary.FO_API_CHECK_PLUGIN;
+        request.replace(FOAPI_Dictionary.FO_API_PLUGIN,plugin_name);
+
+        JSONObject jo = null;
+        jo = JSONfunctions.getJSONObjfromURL(request, this.UseUntrustCA, this.ErrorMsg);
+        if (jo == null) {return false;}
+
+        try {
+            res = jo.getInt(FOAPI_Dictionary.FO_API_FIELD_PLUGIN_STATE);
+        } catch (Exception e) {
+            this.ErrorMsg = e.getMessage();
         }
-        StringBuilder sb = new StringBuilder();
-
-        String request = FO_URL + "index.php?c=api&m=get_object&oid=" + oid +"&auth=" + FO_Pwd;
-
-        jsonobject = JSONfunctions.getJSONObjfromURL(request, UseUntrustCA);
-
-        if (jsonobject == null) {
-            ErrorMsg = JSONfunctions.getError();
-        }
-        return (jsonobject != null);
+        return (res > 0);
     }
 
-    protected Map get_task(int oid) {
+
+    //Execute API operation without arguments
+    public Array executeAPI(String method, String service){
+        if (this.FO_Token.isEmpty() || method.isEmpty()) {return null;}
+
+        resetError();
+        if (!checkPlugin(FOAPI_Dictionary.FO_PLUGIN_NAME)) {return null;}
+        resetError();
+        String request = this.FO_URL + FOAPI_Dictionary.FO_VAPI_REQUEST;
+        request.replace(FOAPI_Dictionary.FO_API_METHOD,method);
+        request.replace(FOAPI_Dictionary.FO_API_SERVICE,service);
+
+        JSONObject jo = null;
+        jo = JSONfunctions.getJSONObjfromURL(request, this.UseUntrustCA, this.ErrorMsg);
+        if (jo == null) {return null;}
 
         return null;
     }
 
-    protected ArrayList get_workspaces(){
+    //Execute API operation with arguments
+    public Array executeAPI(String method, String service, String args[]){
+        if (this.FO_Token.isEmpty() || method.isEmpty()) {return null;}
+
+        resetError();
+        if (!checkPlugin(FOAPI_Dictionary.FO_PLUGIN_NAME)) {return null;}
+        resetError();
+        String request = this.FO_URL + FOAPI_Dictionary.FO_VAPI_REQUEST;
+        request.replace(FOAPI_Dictionary.FO_API_METHOD,method);
+        request.replace(FOAPI_Dictionary.FO_API_METHOD,method);
+
+
         return null;
     }
 
-    protected ArrayList get_tasks(int workspace){
-        return null;
-    }
-
-    protected ArrayList get_timeslots(int task_id){
-        return null;
-    }
-
-    protected Boolean put_timeslot(ArrayList timeslot) {
-        return null;
-    }
-
-
-
-    private Void resetError(){
-        ErrorCode = 0;
-        ErrorMsg = "";
-        return null;
+    private void resetError(){
+        this.ErrorCode = 0;
+        this.ErrorMsg = "";
     }
 
     private static class MyTrustManager implements X509TrustManager
@@ -197,21 +217,10 @@ public class FOConnector {
 
     private static class JSONfunctions {
 
-        private static int ErrorCode=0;
-        private static String ErrorMsg="";
+        private static String error="";
 
-        public static Void resetError(){
-            ErrorCode=0;
-            ErrorMsg = "";
-            return null;
-        }
-
-        public static int getErrorID() {
-            return ErrorCode;
-        }
-
-        public static String getError() {
-            return ErrorMsg;
+        private static void resetError(){
+            error = "";
         }
 
         private static String getStringFromURL(String url, boolean untrustCA) {
@@ -225,12 +234,11 @@ public class FOConnector {
             } else {
                 is = getFromHTTP(url);
             }
-            if (ErrorCode != 0) {
+            if (!error.isEmpty()) {
                 return null;
             }
             if (is == null) {
-                ErrorCode = 6;
-                ErrorMsg = "";
+                error = "Server didn't responde";
                 return null;
             }
 
@@ -247,8 +255,7 @@ public class FOConnector {
                 result = sb.toString();
 
             } catch (Exception e) {
-                ErrorCode = 4;
-                ErrorMsg = "Error converting result";
+                error = "Error converting result";
                 Log.e("log_tag", "Error converting result " + e.toString());
             }
             if (result.startsWith("[")) {
@@ -258,48 +265,41 @@ public class FOConnector {
             return result;
         }
 
-        private static Void FindErrorInData(String data) {
+        private static void FindErrorInData(String data) {
             if (data.isEmpty()){
-                ErrorCode = 10;
-                ErrorMsg = "EmptyData";
-                return null;
+                error = "EmptyData";
+                return;
             }
 
             if (data.startsWith("Fatal error")) {
-                ErrorCode = 11;
-                ErrorMsg = data;
-                return null;
+                error = data;
+                return;
             }
 
             if (data.startsWith("API Response")) {
-                ErrorCode = 12;
-                ErrorMsg = data;
-                return null;
+                error = data;
+                return;
             }
 
             if (!data.startsWith("{")) {
-                ErrorCode = 13;
-                ErrorMsg = "Wrong data format";
+                error = "Wrong data format";
             }
-
-            return null;
         }
 
 
-        public static JSONObject getJSONObjfromURL(String url, boolean untrustCA) {
+        public static JSONObject getJSONObjfromURL(String url, boolean untrustCA, String ErrorMsg) {
 
             resetError();
             JSONObject jObj = null;
             String data = getStringFromURL(url, untrustCA);
             FindErrorInData(data);
-            if (ErrorCode != 0) {return null;}
+            if (!error.isEmpty()) {ErrorMsg = error; return null;}
 
             try {
 
                 jObj = new JSONObject(data);
 
             } catch (JSONException e) {
-                ErrorCode = 5;
                 ErrorMsg = "Error parsing data";
                 Log.e("log_tag", "Error parsing data " + e.toString());
             }
@@ -307,16 +307,15 @@ public class FOConnector {
             return jObj;
         }
 
-        public static JSONArray getJSONArrfromURL(String url, boolean untrustCA) {
+        public static JSONArray getJSONArrfromURL(String url, boolean untrustCA, String ErrorMsg) {
 
             JSONArray jArr = null;
-            JSONObject jObj = getJSONObjfromURL(url, untrustCA);
-            if (ErrorCode != 0) {return null;}
+            JSONObject jObj = getJSONObjfromURL(url, untrustCA, ErrorMsg);
+            if (!ErrorMsg.isEmpty()) {return null;}
 
             try {
                 jArr = jObj.getJSONArray("fo_obj");
             } catch (JSONException e) {
-                ErrorCode = 5;
                 ErrorMsg = "Error parsing data";
                 Log.e("log_tag", "Error parsing data " + e.toString());
             }
@@ -334,8 +333,7 @@ public class FOConnector {
             }
             catch (Exception e)
             {
-                ErrorCode = 2;
-                ErrorMsg = "Couldn't connect this URL";
+                error = "Couldn't connect this URL";
                 Log.e("log_tag", "Error in http connection " + e.toString());
             }
             return content;
@@ -365,13 +363,11 @@ public class FOConnector {
             catch (Exception e)
             {
                 if (untrustCA) {
-                    ErrorCode = 2;
-                    ErrorMsg = "Couldn't connect this URL";
+                    error = "Couldn't connect this URL";
                 }
                 else
                 {
-                    ErrorCode = 3;
-                    ErrorMsg = "Error in https connection. Check URL or enable using untrusted certificates";
+                    error = "Error in https connection. Check URL or enable using untrusted certificates";
                 }
                 Log.e("log_tag", "Error in https connection " + e.toString());
             }
