@@ -105,9 +105,9 @@ public class FOAPI_Connector {
         resetError();
 
         //Try to login
-        String request = this.FO_URL + FOAPI_Dictionary.FO_API_LOGIN;
-        request.replace(FOAPI_Dictionary.FO_API_LOGIN,this.FO_User);
-        request.replace(FOAPI_Dictionary.FO_API_PASSWORD,this.FO_Pwd);
+        String request = this.FO_URL + FOAPI_Dictionary.FO_API_CONNECT;
+        request = request.replace(FOAPI_Dictionary.FO_API_LOGIN,this.FO_User);
+        request = request.replace(FOAPI_Dictionary.FO_API_PASSWORD,this.FO_Pwd);
 
         // Download JSON data from URL
         JSONObject jo = null;
@@ -120,7 +120,7 @@ public class FOAPI_Connector {
         } catch (Exception e) {
             this.ErrorMsg = e.getMessage();
         }
-        return (this.FO_Token.isEmpty());
+        return (!this.FO_Token.isEmpty());
     }
 
     //Checks plugin status
