@@ -30,6 +30,7 @@ public final class FOTT_Contract {
         public static final String COLUMN_NAME_PARENT = "parentid";
         public static final String COLUMN_NAME_CHANGED = "changed";
         public static final String COLUMN_NAME_FO_CHANGED = "fochanged";
+        public static final String COLUMN_NAME_FO_ENABLE = "enable";
 
         public static final String SQL_CREATE_ENTRIES =
                 CREATE_TABLE + FOTT_Members.TABLE_NAME + " (" +
@@ -41,7 +42,8 @@ public final class FOTT_Contract {
                         FOTT_Members.COLUMN_NAME_PATH + TEXT_TYPE + COMMA_SEP +
                         FOTT_Members.COLUMN_NAME_PARENT + TEXT_TYPE + COMMA_SEP +
                         FOTT_Members.COLUMN_NAME_CHANGED + NUMERIC_TYPE + COMMA_SEP +
-                        FOTT_Members.COLUMN_NAME_FO_CHANGED + NUMERIC_TYPE + " )";
+                        FOTT_Members.COLUMN_NAME_FO_CHANGED + NUMERIC_TYPE +
+                        FOTT_Members.COLUMN_NAME_FO_ENABLE + NUMERIC_TYPE +" )";
         public static final String SQL_DELETE_ENTRIES =
                 DROP_TABLE + FOTT_Members.TABLE_NAME;
     }
@@ -66,6 +68,7 @@ public final class FOTT_Contract {
 
         public static final String COLUMN_NAME_CHANGED = "changed";
         public static final String COLUMN_NAME_FO_CHANGED = "fochanged";
+        public static final String COLUMN_NAME_FO_ENABLE = "enable";
 
         public static final String SQL_CREATE_ENTRIES =
                 CREATE_TABLE + FOTT_Tasks.TABLE_NAME + " (" +
@@ -86,7 +89,8 @@ public final class FOTT_Contract {
                         FOTT_Tasks.COLUMN_NAME_PENDINGTIME + TEXT_TYPE + COMMA_SEP +
                         FOTT_Tasks.COLUMN_NAME_USETIMESLOTS + NUMERIC_TYPE +
                         FOTT_Tasks.COLUMN_NAME_CHANGED + NUMERIC_TYPE + COMMA_SEP +
-                        FOTT_Tasks.COLUMN_NAME_FO_CHANGED + NUMERIC_TYPE + " )";
+                        FOTT_Tasks.COLUMN_NAME_FO_CHANGED + NUMERIC_TYPE +
+                        FOTT_Tasks.COLUMN_NAME_FO_ENABLE + NUMERIC_TYPE + " )";
         public static final String SQL_DELETE_ENTRIES =
                DROP_TABLE + FOTT_Tasks.TABLE_NAME;
     }
@@ -102,6 +106,7 @@ public final class FOTT_Contract {
         public static final String COLUMN_NAME_MEMBERS_ID = "membersid";
         public static final String COLUMN_NAME_CHANGED = "changed";
         public static final String COLUMN_NAME_FO_CHANGED = "fochanged";
+        public static final String COLUMN_NAME_FO_ENABLE = "enable";
 
         public static final String SQL_CREATE_ENTRIES =
                 CREATE_TABLE + FOTT_Timeslots.TABLE_NAME + " (" +
@@ -114,7 +119,8 @@ public final class FOTT_Contract {
                         FOTT_Timeslots.COLUMN_NAME_TASK_ID + INTEGER_TYPE + COMMA_SEP +
                         FOTT_Timeslots.COLUMN_NAME_MEMBERS_ID + TEXT_TYPE + COMMA_SEP +
                         FOTT_Timeslots.COLUMN_NAME_CHANGED + NUMERIC_TYPE + COMMA_SEP +
-                        FOTT_Timeslots.COLUMN_NAME_FO_CHANGED + NUMERIC_TYPE + " )";
+                        FOTT_Timeslots.COLUMN_NAME_FO_CHANGED + NUMERIC_TYPE +
+                        FOTT_Timeslots.COLUMN_NAME_FO_ENABLE + NUMERIC_TYPE + " )";
         public static final String SQL_DELETE_ENTRIES =
                 DROP_TABLE + FOTT_Timeslots.TABLE_NAME;
     }

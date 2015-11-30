@@ -1,6 +1,7 @@
 package ru.vat78.fotimetracker.fo_api;
 
 
+import android.content.ContentValues;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -146,8 +147,10 @@ public class FOAPI_Connector {
 
 
     //Execute API operation without arguments
-    public Array executeAPI(String method, String service){
-        if (this.FO_Token.isEmpty() || method.isEmpty()) {return null;}
+    public JSONObject executeAPI(String method, String service){
+        if (method.isEmpty()) {return null;}
+        if (this.FO_Token.isEmpty())
+            if (!testConnection()) {return null;}
 
         resetError();
         if (!checkPlugin(FOAPI_Dictionary.FO_PLUGIN_NAME)) {return null;}
@@ -155,28 +158,37 @@ public class FOAPI_Connector {
         String request = this.FO_URL + FOAPI_Dictionary.FO_VAPI_REQUEST;
         request.replace(FOAPI_Dictionary.FO_API_METHOD,method);
         request.replace(FOAPI_Dictionary.FO_API_SERVICE,service);
+        request.replace(FOAPI_Dictionary.FO_API_TOKEN,this.FO_Token);
 
         JSONObject jo = null;
         jo = JSONfunctions.getJSONObjfromURL(request, this.UseUntrustCA, this.ErrorMsg);
-        if (jo == null) {return null;}
 
-        return null;
+        return jo;
     }
 
     //Execute API operation with arguments
-    public Array executeAPI(String method, String service, String args[]){
-        if (this.FO_Token.isEmpty() || method.isEmpty()) {return null;}
+    public JSONObject executeAPI(String method, String service, String args[]){
+        if (method.isEmpty()) {return null;}
+        if (this.FO_Token.isEmpty())
+            if (!testConnection()) {return null;}
 
         resetError();
+
+        JSONObject jo = null;
+
         if (!checkPlugin(FOAPI_Dictionary.FO_PLUGIN_NAME)) {return null;}
         resetError();
         String request = this.FO_URL + FOAPI_Dictionary.FO_VAPI_REQUEST;
         request.replace(FOAPI_Dictionary.FO_API_METHOD,method);
-        request.replace(FOAPI_Dictionary.FO_API_METHOD,method);
+        request.replace(FOAPI_Dictionary.FO_API_SERVICE,service);
 
+        request.replace(FOAPI_Dictionary.FO_API_TOKEN,this.FO_Token);
 
-        return null;
+        jo = JSONfunctions.getJSONObjfromURL(request, this.UseUntrustCA, this.ErrorMsg);
+
+        return jo;
     }
+
 
     private void resetError(){
         this.ErrorCode = 0;
@@ -260,7 +272,7 @@ public class FOAPI_Connector {
             }
             if (result.startsWith("[")) {
                 //Add global JSON object for array
-                result = "{\"fo_obj\":" + result + "}";
+                result = "{\""+ FOAPI_Dictionary.FO_API_MAIN_OBJ+"\":" + result + "}";
             }
             return result;
         }

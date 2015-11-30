@@ -29,6 +29,33 @@ public final class FOAPI_Dictionary {
     public static final String FO_SERVICE_TIMESLOTS = "Timeslots";
     public static final String FO_SERVICE_TIMESLOT = "Timeslot";
 
+    public static final String FO_MEMBERS_WORKSPACE = "workspace";
+    public static final String FO_MEMBERS_TAG = "tag";
+    public static final String FO_MEMBERS_PROJECT = "customer_project";
+
     public static final String FO_API_FIELD_TOKEN = "token";
     public static final String FO_API_FIELD_PLUGIN_STATE = "plugin_state";
+
+    public static final String FO_API_FIELD_ID = "id";
+    public static final String FO_API_FIELD_NAME = "name";
+    public static final String FO_API_FIELD_TYPE = "type";
+    public static final String FO_API_FIELD_PATH = "path";
+    public static final String FO_API_FIELD_COLOR = "color";
+    public static final String FO_API_FIELD_DESC = "description";
+    public static final String FO_API_FIELD_MEMBERS = "members";
+    public static final String FO_API_FIELD_STATUS = "status";
+    public static final String FO_API_FIELD_STARTDATE = "startDate";
+    public static final String FO_API_FIELD_DUEDATE = "dueDate";
+    public static final String FO_API_FIELD_PRIORITY = "priority";
+    public static final String FO_API_FIELD_ASSIGNEDBY = "assignedById";
+    public static final String FO_API_FIELD_ASSIGNEDTO = "assignedToContactId";
+    public static final String FO_API_FIELD_PERCENT = "percentCompleted";
+    public static final String FO_API_FIELD_WORKEDTIME = "worked_time";
+    public static final String FO_API_FIELD_PENDINGTIME = "pending_time";
+    public static final String FO_API_FIELD_USETIMESLOTS = "can_add_timeslots";
+
+    public static final String FO_API_TRUE = "true";
+    public static final String FO_API_FALSE = "false";
+
+    public static final String FO_API_MAIN_OBJ = "fo_obj";
 }
