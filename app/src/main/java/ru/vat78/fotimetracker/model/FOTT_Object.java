@@ -8,5 +8,19 @@ public class FOTT_Object {
     private long foid;
     private String name;
 
-    private boolean enable;
+    public long getId() {
+        return foid;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setId(long foid) {
+        this.foid = foid;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 }

@@ -28,6 +28,7 @@ public final class FOTT_Contract {
         public static final String COLUMN_NAME_TYPE = "type";
         public static final String COLUMN_NAME_PATH = "path";
         public static final String COLUMN_NAME_PARENT = "parentid";
+        public static final String COLUMN_NAME_LEVEL = "level";
         public static final String COLUMN_NAME_CHANGED = "changed";
         public static final String COLUMN_NAME_FO_CHANGED = "fochanged";
         public static final String COLUMN_NAME_FO_ENABLE = "enable";
@@ -41,6 +42,7 @@ public final class FOTT_Contract {
                         FOTT_Members.COLUMN_NAME_TYPE + TEXT_TYPE + COMMA_SEP +
                         FOTT_Members.COLUMN_NAME_PATH + TEXT_TYPE + COMMA_SEP +
                         FOTT_Members.COLUMN_NAME_PARENT + TEXT_TYPE + COMMA_SEP +
+                        FOTT_Members.COLUMN_NAME_LEVEL + INTEGER_TYPE + COMMA_SEP +
                         FOTT_Members.COLUMN_NAME_CHANGED + NUMERIC_TYPE + COMMA_SEP +
                         FOTT_Members.COLUMN_NAME_FO_CHANGED + NUMERIC_TYPE +
                         FOTT_Members.COLUMN_NAME_FO_ENABLE + NUMERIC_TYPE +" )";

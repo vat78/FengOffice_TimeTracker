@@ -7,8 +7,8 @@ public final class FOAPI_Dictionary {
     public FOAPI_Dictionary(){}
 
     public static final String FO_API_CONNECT = "index.php?c=api&m=login&username=<login>&password=<password>";
-    public static final String FO_API_CHECK_PLUGIN = "index.php?c=api&m=active_plugin&plugin=<plugin>";
-    public static final String FO_VAPI_REQUEST = "index.php?c=vapi&m=<method>&srv=<service>&args=<args>&auth=<token>";
+    public static final String FO_API_CHECK_PLUGIN = "index.php?c=api&m=active_plugin&plugin=<plugin>&auth=<token>";
+    public static final String FO_VAPI_REQUEST = "index.php?c=vatapi&m=<method>&srv=<service>&args=<args>&auth=<token>";
 
     public static final String FO_API_LOGIN = "<login>";
     public static final String FO_API_PASSWORD = "<password>";
@@ -18,7 +18,7 @@ public final class FOAPI_Dictionary {
     public static final String FO_API_ARGS = "<args>";
     public static final String FO_API_TOKEN = "<token>";
 
-    public static final String FO_PLUGIN_NAME = "vatAPI";
+    public static final String FO_PLUGIN_NAME = "vatapi";
 
     public static final String FO_METHOD_LISTING = "listing";
     public static final String FO_METHOD_MEMBERS = "list_members";

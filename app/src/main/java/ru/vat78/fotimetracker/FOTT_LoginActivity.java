@@ -56,7 +56,7 @@ public class FOTT_LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         app = (FOTT_App) getApplication();
-        FOApp = app.web_service;
+        FOApp = app.getWeb_service();
 
         setContentView(R.layout.activity_login);
         // Set up the login form.
@@ -229,16 +229,6 @@ public class FOTT_LoginActivity extends AppCompatActivity {
         }
     }
 
-    private interface ProfileQuery {
-        String[] PROJECTION = {
-                ContactsContract.CommonDataKinds.Email.ADDRESS,
-                ContactsContract.CommonDataKinds.Email.IS_PRIMARY,
-        };
-
-        int ADDRESS = 0;
-        int IS_PRIMARY = 1;
-    }
-
 
     /**
      * Represents an asynchronous login/registration task used to authenticate
@@ -250,7 +240,8 @@ public class FOTT_LoginActivity extends AppCompatActivity {
         @Override
         protected Boolean doInBackground(Void... params) {
 
-            return FOApp.testConnection();
+            if (!FOApp.testConnection()) { return false;}
+            return app.syncFOFull();
         }
 
         @Override

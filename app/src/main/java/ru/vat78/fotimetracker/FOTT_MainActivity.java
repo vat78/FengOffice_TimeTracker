@@ -19,6 +19,9 @@ import android.view.ViewGroup;
 
 import android.widget.TextView;
 
+import ru.vat78.fotimetracker.adapters.FOTT_MembersAdapter;
+import ru.vat78.fotimetracker.views.FOTT_MembersFragment;
+
 public class FOTT_MainActivity extends AppCompatActivity {
 
     static final int PICK_LOGIN_REQUEST = 1;
@@ -39,10 +42,14 @@ public class FOTT_MainActivity extends AppCompatActivity {
     private ViewPager mViewPager;
 
     private FOTT_App MainApp;
+    private FOTT_MembersAdapter members;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        MainApp = (FOTT_App) getApplication();
+
         setContentView(R.layout.activity_fott__main);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -68,6 +75,9 @@ public class FOTT_MainActivity extends AppCompatActivity {
         //Check login to a FengOffice system
         CheckLogin();
 
+        //Connect lists adapters
+        members = new FOTT_MembersAdapter(this,MainApp);
+
     }
 
     @Override
@@ -86,7 +96,7 @@ public class FOTT_MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            return true;
+            finish();
         }
 
         return super.onOptionsItemSelected(item);
@@ -100,6 +110,7 @@ public class FOTT_MainActivity extends AppCompatActivity {
                 finish();
             }
         }
+        members.loadMembers();
     }
 
     private void CheckLogin(){
@@ -110,6 +121,9 @@ public class FOTT_MainActivity extends AppCompatActivity {
         }
     }
 
+    public FOTT_MembersAdapter getMembers() {
+        return members;
+    }
 
     /**
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
@@ -125,7 +139,14 @@ public class FOTT_MainActivity extends AppCompatActivity {
         public Fragment getItem(int position) {
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
-            return PlaceholderFragment.newInstance(position + 1);
+            if (position == 0)
+            {
+                FOTT_MembersFragment fragment = new FOTT_MembersFragment();
+                return fragment;
+            }
+            else {
+                return PlaceholderFragment.newInstance(position + 1);
+            }
         }
 
         @Override
@@ -138,11 +159,11 @@ public class FOTT_MainActivity extends AppCompatActivity {
         public CharSequence getPageTitle(int position) {
             switch (position) {
                 case 0:
-                    return "SECTION 1";
+                    return "Categories";
                 case 1:
-                    return "SECTION 2";
+                    return "Tasks";
                 case 2:
-                    return "SECTION 3";
+                    return "Timeslots";
             }
             return null;
         }

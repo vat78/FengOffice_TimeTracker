@@ -131,7 +131,8 @@ public class FOAPI_Connector {
         resetError();
 
         String request = this.FO_URL + FOAPI_Dictionary.FO_API_CHECK_PLUGIN;
-        request.replace(FOAPI_Dictionary.FO_API_PLUGIN,plugin_name);
+        request = request.replace(FOAPI_Dictionary.FO_API_PLUGIN,plugin_name);
+        request = request.replace(FOAPI_Dictionary.FO_API_TOKEN,FO_Token);
 
         JSONObject jo = null;
         jo = JSONfunctions.getJSONObjfromURL(request, this.UseUntrustCA, this.ErrorMsg);
@@ -156,9 +157,9 @@ public class FOAPI_Connector {
         if (!checkPlugin(FOAPI_Dictionary.FO_PLUGIN_NAME)) {return null;}
         resetError();
         String request = this.FO_URL + FOAPI_Dictionary.FO_VAPI_REQUEST;
-        request.replace(FOAPI_Dictionary.FO_API_METHOD,method);
-        request.replace(FOAPI_Dictionary.FO_API_SERVICE,service);
-        request.replace(FOAPI_Dictionary.FO_API_TOKEN,this.FO_Token);
+        request = request.replace(FOAPI_Dictionary.FO_API_METHOD,method);
+        request = request.replace(FOAPI_Dictionary.FO_API_SERVICE,service);
+        request = request.replace(FOAPI_Dictionary.FO_API_TOKEN,this.FO_Token);
 
         JSONObject jo = null;
         jo = JSONfunctions.getJSONObjfromURL(request, this.UseUntrustCA, this.ErrorMsg);
@@ -179,10 +180,10 @@ public class FOAPI_Connector {
         if (!checkPlugin(FOAPI_Dictionary.FO_PLUGIN_NAME)) {return null;}
         resetError();
         String request = this.FO_URL + FOAPI_Dictionary.FO_VAPI_REQUEST;
-        request.replace(FOAPI_Dictionary.FO_API_METHOD,method);
-        request.replace(FOAPI_Dictionary.FO_API_SERVICE,service);
+        request = request.replace(FOAPI_Dictionary.FO_API_METHOD,method);
+        request = request.replace(FOAPI_Dictionary.FO_API_SERVICE,service);
 
-        request.replace(FOAPI_Dictionary.FO_API_TOKEN,this.FO_Token);
+        request = request.replace(FOAPI_Dictionary.FO_API_TOKEN,this.FO_Token);
 
         jo = JSONfunctions.getJSONObjfromURL(request, this.UseUntrustCA, this.ErrorMsg);
 
@@ -278,6 +279,11 @@ public class FOAPI_Connector {
         }
 
         private static void FindErrorInData(String data) {
+            if (data == null){
+                error = "EmptyData";
+                return;
+            }
+
             if (data.isEmpty()){
                 error = "EmptyData";
                 return;
