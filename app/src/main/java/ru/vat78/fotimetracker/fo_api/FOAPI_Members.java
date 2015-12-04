@@ -6,11 +6,9 @@ import android.util.Log;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.sql.Date;
 import java.util.ArrayList;
 
-import ru.vat78.fotimetracker.database.FOTT_Contract;
-import ru.vat78.fotimetracker.model.FOTT_Member;
+import ru.vat78.fotimetracker.database.FOTT_DBContract;
 
 /**
  * Created by vat on 27.11.2015.
@@ -41,9 +39,9 @@ public class FOAPI_Members {
                 ContentValues el = new ContentValues();
                 jo = list.getJSONObject(i);
 
-                el.put(FOTT_Contract.FOTT_Members.COLUMN_NAME_MEMBER_ID, jo.getInt(FOAPI_Dictionary.FO_API_FIELD_ID));
+                el.put(FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_MEMBER_ID, jo.getInt(FOAPI_Dictionary.FO_API_FIELD_ID));
                 String name = jo.getString(FOAPI_Dictionary.FO_API_FIELD_NAME);
-                el.put(FOTT_Contract.FOTT_Members.COLUMN_NAME_NAME, name);
+                el.put(FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_NAME, name);
 
                 String path = jo.getString(FOAPI_Dictionary.FO_API_FIELD_PATH);
 
@@ -54,10 +52,10 @@ public class FOAPI_Members {
                     path = path + "/" + name;
                 }
                 String mpath[] = path.split("/");
-                el.put(FOTT_Contract.FOTT_Members.COLUMN_NAME_PATH, path);
-                el.put(FOTT_Contract.FOTT_Members.COLUMN_NAME_LEVEL, mpath.length);
-                el.put(FOTT_Contract.FOTT_Members.COLUMN_NAME_TYPE, jo.getString(FOAPI_Dictionary.FO_API_FIELD_TYPE));
-                el.put(FOTT_Contract.FOTT_Members.COLUMN_NAME_COLOR, jo.getString(FOAPI_Dictionary.FO_API_FIELD_COLOR));
+                el.put(FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_PATH, path);
+                el.put(FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_LEVEL, mpath.length);
+                el.put(FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_TYPE, jo.getString(FOAPI_Dictionary.FO_API_FIELD_TYPE));
+                el.put(FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_COLOR, jo.getString(FOAPI_Dictionary.FO_API_FIELD_COLOR));
 
                 if (!res.add(el)) {
                     break;

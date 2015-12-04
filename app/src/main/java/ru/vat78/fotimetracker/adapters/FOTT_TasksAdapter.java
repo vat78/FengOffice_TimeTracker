@@ -16,7 +16,7 @@ import java.util.List;
 
 import ru.vat78.fotimetracker.FOTT_App;
 import ru.vat78.fotimetracker.R;
-import ru.vat78.fotimetracker.database.FOTT_Contract;
+import ru.vat78.fotimetracker.database.FOTT_DBContract;
 import ru.vat78.fotimetracker.model.FOTT_Task;
 
 /**
@@ -84,15 +84,21 @@ public class FOTT_TasksAdapter extends ArrayAdapter<String> {
         this.tasks = new ArrayList<>();
         String memFilter = null;
         if (app.getCurMember() > 0) {
-            memFilter = " " + FOTT_Contract.FOTT_Tasks.COLUMN_NAME_MEMBERS + " LIKE '%\"" + app.getCurMember() + "\"%' OR " +
-                FOTT_Contract.FOTT_Tasks.COLUMN_NAME_TASK_ID + " = 0";
+            //memFilter = " " + FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_MEMBERS + " LIKE '%\"" + app.getCurMember() + "\"%' OR " +
+            //    FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_TASK_ID + " = 0";
+            memFilter = " " + FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_TASK_ID + " IN ( SELECT " +
+                    FOTT_DBContract.FOTT_DBObject_Members.COLUMN_OBJECT_ID + " FROM " +
+                    FOTT_DBContract.FOTT_DBObject_Members.TABLE_NAME + " WHERE " +
+                    FOTT_DBContract.FOTT_DBObject_Members.COLUMN_MEMBER_ID + " = " +
+                    String.valueOf(app.getCurMember()) + " AND " +
+                    FOTT_DBContract.FOTT_DBObject_Members.COLUMN_OBJECT_TYPE + " = 1)";
         }
-        Cursor taskCursor = db.query(FOTT_Contract.FOTT_Tasks.TABLE_NAME,
-                new String[]{FOTT_Contract.FOTT_Tasks.COLUMN_NAME_TASK_ID,
-                        FOTT_Contract.FOTT_Tasks.COLUMN_NAME_TITLE,
-                        FOTT_Contract.FOTT_Tasks.COLUMN_NAME_DUEDATE},
+        Cursor taskCursor = db.query(FOTT_DBContract.FOTT_DBTasks.TABLE_NAME,
+                new String[]{FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_TASK_ID,
+                        FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_TITLE,
+                        FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_DUEDATE},
                         memFilter, null, null, null,
-                FOTT_Contract.FOTT_Tasks.COLUMN_NAME_DUEDATE, null);
+                FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_DUEDATE, null);
 
         taskCursor.moveToFirst();
         FOTT_Task m;

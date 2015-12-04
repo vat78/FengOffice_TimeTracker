@@ -1,18 +1,13 @@
 package ru.vat78.fotimetracker.adapters;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.DataSetObserver;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
-import android.widget.ListAdapter;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -20,7 +15,7 @@ import java.util.List;
 
 import ru.vat78.fotimetracker.FOTT_App;
 import ru.vat78.fotimetracker.R;
-import ru.vat78.fotimetracker.database.FOTT_Contract;
+import ru.vat78.fotimetracker.database.FOTT_DBContract;
 import ru.vat78.fotimetracker.model.FOTT_Member;
 
 /**
@@ -72,6 +67,7 @@ public class FOTT_MembersAdapter extends ArrayAdapter<String> {
         FOTT_Member objectItem = members.get(position);
 
         title.setText("   " + objectItem.getName());
+        tasks.setText(String.valueOf(objectItem.getTasksCnt()));
         color.setBackgroundColor(memColors[objectItem.getColor()]);
 
         margine.setWidth(36 * objectItem.getLevel());
@@ -91,14 +87,15 @@ public class FOTT_MembersAdapter extends ArrayAdapter<String> {
         SQLiteDatabase db = app.getDatabase();
 
         this.members = new ArrayList<>();
-        Cursor memberCursor = db.query(FOTT_Contract.FOTT_Members.TABLE_NAME,
-                new String[]{FOTT_Contract.FOTT_Members.COLUMN_NAME_MEMBER_ID,
-                        FOTT_Contract.FOTT_Members.COLUMN_NAME_NAME,
-                        FOTT_Contract.FOTT_Members.COLUMN_NAME_PATH,
-                        FOTT_Contract.FOTT_Members.COLUMN_NAME_LEVEL,
-                        FOTT_Contract.FOTT_Members.COLUMN_NAME_COLOR},
+        Cursor memberCursor = db.query(FOTT_DBContract.FOTT_DBMembers.TABLE_NAME,
+                new String[]{FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_MEMBER_ID,
+                        FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_NAME,
+                        FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_PATH,
+                        FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_LEVEL,
+                        FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_COLOR,
+                        FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_TASKS},
                 null, null, null, null,
-                FOTT_Contract.FOTT_Members.COLUMN_NAME_PATH,null);
+                FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_PATH,null);
 
         memberCursor.moveToFirst();
         FOTT_Member m;
@@ -114,6 +111,7 @@ public class FOTT_MembersAdapter extends ArrayAdapter<String> {
                 m.setPath(path);
                 m.setColor(color);
                 m.setLevel(level);
+                m.setTasksCnt(memberCursor.getInt(5));
 
                 members.add(m);
             } while (memberCursor.moveToNext());
