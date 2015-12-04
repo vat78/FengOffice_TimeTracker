@@ -68,13 +68,14 @@ public class FOTT_LoginActivity extends AppCompatActivity {
         mSaveCred = (CheckBox) findViewById(R.id.save_cred);
 
         SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
-        mURLView.setText(preferences.getString(getString(R.string.prompt_url),""));
-        mLoginView.setText(preferences.getString(getString(R.string.prompt_login),""));
+        mURLView.setText(preferences.getString(getString(R.string.prompt_url), ""));
+        mLoginView.setText(preferences.getString(getString(R.string.prompt_login), ""));
         mUntrustCA.setChecked(preferences.getBoolean(getString(R.string.UseUntrustCA), false));
 
         mPasswordView = (EditText) findViewById(R.id.password);
-        mPasswordView.setText(preferences.getString(getString(R.string.prompt_password),""));
-        mSaveCred.setChecked(TextUtils.isEmpty(mPasswordView.getText().toString()));
+        mPasswordView.setText(preferences.getString(getString(R.string.prompt_password), ""));
+        boolean passwordEntered = !preferences.getString(getString(R.string.prompt_password), "").isEmpty();
+        mSaveCred.setChecked(passwordEntered);
 
                 mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -97,6 +98,8 @@ public class FOTT_LoginActivity extends AppCompatActivity {
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+
+        if (passwordEntered) {attemptLogin();}
     }
 
     /**
@@ -241,7 +244,8 @@ public class FOTT_LoginActivity extends AppCompatActivity {
         protected Boolean doInBackground(Void... params) {
 
             if (!FOApp.testConnection()) { return false;}
-            return app.syncFOFull();
+            app.syncFOFull();
+            return true;
         }
 
         @Override

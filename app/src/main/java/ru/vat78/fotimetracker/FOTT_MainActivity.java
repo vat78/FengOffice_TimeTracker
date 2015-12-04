@@ -20,7 +20,9 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import ru.vat78.fotimetracker.adapters.FOTT_MembersAdapter;
+import ru.vat78.fotimetracker.adapters.FOTT_TasksAdapter;
 import ru.vat78.fotimetracker.views.FOTT_MembersFragment;
+import ru.vat78.fotimetracker.views.FOTT_TasksFragment;
 
 public class FOTT_MainActivity extends AppCompatActivity {
 
@@ -43,6 +45,7 @@ public class FOTT_MainActivity extends AppCompatActivity {
 
     private FOTT_App MainApp;
     private FOTT_MembersAdapter members;
+    private FOTT_TasksAdapter tasks;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,11 +75,14 @@ public class FOTT_MainActivity extends AppCompatActivity {
             }
         });
 */
+        //Connect lists adapters
+        members = new FOTT_MembersAdapter(this,MainApp);
+        tasks = new FOTT_TasksAdapter(this,MainApp);
+
         //Check login to a FengOffice system
         CheckLogin();
 
-        //Connect lists adapters
-        members = new FOTT_MembersAdapter(this,MainApp);
+
 
     }
 
@@ -111,6 +117,7 @@ public class FOTT_MainActivity extends AppCompatActivity {
             }
         }
         members.loadMembers();
+        tasks.loadTasks();
     }
 
     private void CheckLogin(){
@@ -125,6 +132,10 @@ public class FOTT_MainActivity extends AppCompatActivity {
         return members;
     }
 
+    public FOTT_TasksAdapter getTasks() {
+        return tasks;
+    }
+
     /**
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
      * one of the sections/tabs/pages.
@@ -137,15 +148,18 @@ public class FOTT_MainActivity extends AppCompatActivity {
 
         @Override
         public Fragment getItem(int position) {
-            // getItem is called to instantiate the fragment for the given page.
-            // Return a PlaceholderFragment (defined as a static inner class below).
-            if (position == 0)
-            {
-                FOTT_MembersFragment fragment = new FOTT_MembersFragment();
-                return fragment;
-            }
-            else {
-                return PlaceholderFragment.newInstance(position + 1);
+
+            Fragment res;
+
+            switch (position) {
+                case 0:
+                    res = new FOTT_MembersFragment();
+                    return res;
+                case 1:
+                    res = new FOTT_TasksFragment();
+                    return res;
+                default:
+                    return PlaceholderFragment.newInstance(position + 1);
             }
         }
 

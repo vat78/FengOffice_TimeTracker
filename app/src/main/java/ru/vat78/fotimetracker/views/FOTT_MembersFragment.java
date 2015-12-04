@@ -3,18 +3,17 @@ package ru.vat78.fotimetracker.views;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
-import java.util.ArrayList;
-import java.util.List;
 
 import ru.vat78.fotimetracker.FOTT_App;
 import ru.vat78.fotimetracker.FOTT_MainActivity;
 import ru.vat78.fotimetracker.R;
 import ru.vat78.fotimetracker.adapters.FOTT_MembersAdapter;
-import ru.vat78.fotimetracker.model.FOTT_Member;
 
 /**
  * Created by vat on 30.11.2015.
@@ -38,18 +37,17 @@ public class FOTT_MembersFragment extends Fragment {
         membersAdapter = mainActivity.getMembers();
         mList = (ListView) rootView.findViewById(R.id.membersView);
         mList.setAdapter(membersAdapter);
+        mList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View itemClicked, int position,
+                                    long id){
+                MainApp.setCurMember(membersAdapter.getMemberId(position));
+                mainActivity.getTasks().loadTasks();
+                membersAdapter.notifyDataSetChanged();
+
+            }
+        });
         return rootView;
-    }
-
-    @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
-
-        //mList = (ListView) view.findViewById(R.id.membersView);
-        //mList.setAdapter(myTestAdapter);
-    }
-
-    private void testData(){
-
     }
 
 }

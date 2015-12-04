@@ -11,6 +11,7 @@ import ru.vat78.fotimetracker.database.FOTT_Contract;
 import ru.vat78.fotimetracker.database.FOTT_DBHelper;
 import ru.vat78.fotimetracker.fo_api.FOAPI_Connector;
 import ru.vat78.fotimetracker.fo_api.FOAPI_Members;
+import ru.vat78.fotimetracker.fo_api.FOAPI_Tasks;
 
 /**
  * Created by vat on 24.11.2015.
@@ -42,23 +43,50 @@ public class FOTT_App extends Application {
         return web_service;
     }
 
+    public long getCurMember() {
+        return curMember;
+    }
+
+    public long getCurTask() {
+        return curTask;
+    }
+
+    public long getCurTimeslot() {
+        return curTimeslot;
+    }
+
+    public void setCurMember(long curMember) {
+        this.curMember = curMember;
+    }
+
+    public void setCurTask(long curTask) {
+        this.curTask = curTask;
+    }
+
+    public void setCurTimeslot(long curTimeslot) {
+        this.curTimeslot = curTimeslot;
+    }
+
     public boolean syncFOFull() {
         boolean res=true;
         res = res & syncMembers();
+        res = res & syncTasks();
         return res;
     }
 
     private boolean syncMembers() {
 
         if (curMember > 0){
-
+            //TODO: if has selected member
         }
-        database.execSQL(FOTT_Contract.FOTT_Members.SQL_DELETE_ENTRIES);
-        database.execSQL(FOTT_Contract.FOTT_Members.SQL_CREATE_ENTRIES);
+
         ArrayList<ContentValues> members;
         try {
             members = FOAPI_Members.load(web_service);
-            if (members == null) {members = new ArrayList<>();}
+            if (members == null) {return false;}
+            database.execSQL(FOTT_Contract.FOTT_Members.SQL_DELETE_ENTRIES);
+            database.execSQL(FOTT_Contract.FOTT_Members.SQL_CREATE_ENTRIES);
+
             ContentValues any = new ContentValues();
             any.put(FOTT_Contract.FOTT_Members.COLUMN_NAME_MEMBER_ID,0);
             any.put(FOTT_Contract.FOTT_Members.COLUMN_NAME_NAME,getString(R.string.any_category));
@@ -75,4 +103,32 @@ public class FOTT_App extends Application {
         }
         return true;
     }
+
+    private boolean syncTasks() {
+
+        if (curTask > 0){
+            //TODO: if has selected task
+        }
+
+        ArrayList<ContentValues> tasks;
+        try {
+            tasks = FOAPI_Tasks.load(web_service);
+            if (tasks == null) {return false;}
+            database.execSQL(FOTT_Contract.FOTT_Tasks.SQL_DELETE_ENTRIES);
+            database.execSQL(FOTT_Contract.FOTT_Tasks.SQL_CREATE_ENTRIES);
+
+            ContentValues any = new ContentValues();
+            any.put(FOTT_Contract.FOTT_Tasks.COLUMN_NAME_TASK_ID,0);
+            any.put(FOTT_Contract.FOTT_Tasks.COLUMN_NAME_TITLE,"..");
+            tasks.add(any);
+            for (int i = 0; i < tasks.size(); i++) {
+                database.insert(FOTT_Contract.FOTT_Tasks.TABLE_NAME, null, tasks.get(i));
+            }
+        }
+        catch (Error e){
+            return  false;
+        }
+        return true;
+    }
+
 }

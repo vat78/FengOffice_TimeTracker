@@ -40,8 +40,6 @@ public class FOTT_MembersAdapter extends ArrayAdapter<String> {
         super(context,R.layout.member_list_item);
         this.context = context;
         this.app = application;
-        //loadMembers();
-        //testData();
     }
 
     @Override
@@ -73,7 +71,7 @@ public class FOTT_MembersAdapter extends ArrayAdapter<String> {
 
         FOTT_Member objectItem = members.get(position);
 
-        title.setText(objectItem.getName());
+        title.setText("   " + objectItem.getName());
         color.setBackgroundColor(memColors[objectItem.getColor()]);
 
         margine.setWidth(36 * objectItem.getLevel());
@@ -81,13 +79,18 @@ public class FOTT_MembersAdapter extends ArrayAdapter<String> {
         String tasksCnt = "" + objectItem.getTasksCnt();
         tasks.setText(tasksCnt);
 
+        if (app.getCurMember() == objectItem.getId()) {
+            title.setBackgroundColor(memColors[objectItem.getColor()]);
+            tasks.setBackgroundColor(memColors[objectItem.getColor()]);
+        }
+
         return view;
     }
 
     public void loadMembers(){
         SQLiteDatabase db = app.getDatabase();
 
-        this.members = new ArrayList<FOTT_Member>();
+        this.members = new ArrayList<>();
         Cursor memberCursor = db.query(FOTT_Contract.FOTT_Members.TABLE_NAME,
                 new String[]{FOTT_Contract.FOTT_Members.COLUMN_NAME_MEMBER_ID,
                         FOTT_Contract.FOTT_Members.COLUMN_NAME_NAME,
@@ -115,5 +118,9 @@ public class FOTT_MembersAdapter extends ArrayAdapter<String> {
                 members.add(m);
             } while (memberCursor.moveToNext());
         }
+    }
+
+    public long getMemberId(int position){
+        return members.get(position).getId();
     }
 }

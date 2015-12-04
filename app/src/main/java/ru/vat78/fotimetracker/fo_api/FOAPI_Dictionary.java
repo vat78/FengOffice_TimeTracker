@@ -42,7 +42,7 @@ public final class FOAPI_Dictionary {
     public static final String FO_API_FIELD_PATH = "path";
     public static final String FO_API_FIELD_COLOR = "color";
     public static final String FO_API_FIELD_DESC = "description";
-    public static final String FO_API_FIELD_MEMBERS = "members";
+    public static final String FO_API_FIELD_MEMBERS = "all_members";
     public static final String FO_API_FIELD_STATUS = "status";
     public static final String FO_API_FIELD_STARTDATE = "startDate";
     public static final String FO_API_FIELD_DUEDATE = "dueDate";
@@ -53,6 +53,8 @@ public final class FOAPI_Dictionary {
     public static final String FO_API_FIELD_WORKEDTIME = "worked_time";
     public static final String FO_API_FIELD_PENDINGTIME = "pending_time";
     public static final String FO_API_FIELD_USETIMESLOTS = "can_add_timeslots";
+
+    public static final String FO_API_ARG_STATUS = "status";
 
     public static final String FO_API_TRUE = "true";
     public static final String FO_API_FALSE = "false";

@@ -26,19 +26,24 @@ public class FOAPI_Members {
     private static ArrayList<ContentValues> convertResults(JSONObject data){
 
         if (data == null) {return null;}
-        JSONArray list;
+        JSONArray list = null;
         JSONObject jo;
-        ArrayList<ContentValues> res = new ArrayList<ContentValues>();
+        ArrayList<ContentValues> res = new ArrayList<>();
         try {
             list = data.getJSONArray(FOAPI_Dictionary.FO_API_MAIN_OBJ);
+        } catch (Exception e) {
+            Log.e("FOTT",e.getMessage());
+        }
 
-            for (int i = 0; i < list.length(); i++) {
+        if (list == null) {return null;}
+        for (int i = 0; i < list.length(); i++) {
+            try {
                 ContentValues el = new ContentValues();
                 jo = list.getJSONObject(i);
 
-                el.put(FOTT_Contract.FOTT_Members.COLUMN_NAME_MEMBER_ID,jo.getInt(FOAPI_Dictionary.FO_API_FIELD_ID));
+                el.put(FOTT_Contract.FOTT_Members.COLUMN_NAME_MEMBER_ID, jo.getInt(FOAPI_Dictionary.FO_API_FIELD_ID));
                 String name = jo.getString(FOAPI_Dictionary.FO_API_FIELD_NAME);
-                el.put(FOTT_Contract.FOTT_Members.COLUMN_NAME_NAME,name);
+                el.put(FOTT_Contract.FOTT_Members.COLUMN_NAME_NAME, name);
 
                 String path = jo.getString(FOAPI_Dictionary.FO_API_FIELD_PATH);
 
@@ -49,16 +54,18 @@ public class FOAPI_Members {
                     path = path + "/" + name;
                 }
                 String mpath[] = path.split("/");
-                el.put(FOTT_Contract.FOTT_Members.COLUMN_NAME_PATH,path);
-                el.put(FOTT_Contract.FOTT_Members.COLUMN_NAME_LEVEL,mpath.length);
-                el.put(FOTT_Contract.FOTT_Members.COLUMN_NAME_TYPE,jo.getString(FOAPI_Dictionary.FO_API_FIELD_TYPE));
-                el.put(FOTT_Contract.FOTT_Members.COLUMN_NAME_COLOR,jo.getString(FOAPI_Dictionary.FO_API_FIELD_COLOR));
+                el.put(FOTT_Contract.FOTT_Members.COLUMN_NAME_PATH, path);
+                el.put(FOTT_Contract.FOTT_Members.COLUMN_NAME_LEVEL, mpath.length);
+                el.put(FOTT_Contract.FOTT_Members.COLUMN_NAME_TYPE, jo.getString(FOAPI_Dictionary.FO_API_FIELD_TYPE));
+                el.put(FOTT_Contract.FOTT_Members.COLUMN_NAME_COLOR, jo.getString(FOAPI_Dictionary.FO_API_FIELD_COLOR));
 
-                if (!res.add(el)) {break;}
+                if (!res.add(el)) {
+                    break;
+                }
+
+            } catch (Exception e) {
+                Log.e("FOTT", e.getMessage());
             }
-
-        } catch (Exception e) {
-            Log.e("FOTT",e.getMessage());
         }
         return res;
     }

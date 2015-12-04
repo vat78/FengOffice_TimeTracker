@@ -10,7 +10,6 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.Array;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.KeyStore;
@@ -48,7 +47,6 @@ public class FOAPI_Connector {
     private static String FO_Pwd;
     private static String FO_URL;
     private String FO_Token;
-    private JSONObject jsonobject;
 
     private boolean UseUntrustCA = false;
 
@@ -179,10 +177,23 @@ public class FOAPI_Connector {
 
         if (!checkPlugin(FOAPI_Dictionary.FO_PLUGIN_NAME)) {return null;}
         resetError();
+        String argStr = "{}";
+        if (args.length > 0){
+            JSONObject jsargs = new JSONObject();
+            try {
+                for (int i = 0; i < args.length; i += 2) {
+                    jsargs.put(args[i], args[i + 1]);
+                }
+                argStr = jsargs.toString();
+            }
+            catch (Exception e) {
+                Log.e("log_tag", "Error parsing data " + e.toString());
+            }
+        }
         String request = this.FO_URL + FOAPI_Dictionary.FO_VAPI_REQUEST;
         request = request.replace(FOAPI_Dictionary.FO_API_METHOD,method);
         request = request.replace(FOAPI_Dictionary.FO_API_SERVICE,service);
-
+        request = request.replace(FOAPI_Dictionary.FO_API_ARGS,argStr);
         request = request.replace(FOAPI_Dictionary.FO_API_TOKEN,this.FO_Token);
 
         jo = JSONfunctions.getJSONObjfromURL(request, this.UseUntrustCA, this.ErrorMsg);
