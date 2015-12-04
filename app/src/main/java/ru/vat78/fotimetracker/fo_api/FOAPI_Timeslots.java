@@ -40,8 +40,20 @@ public class FOAPI_Timeslots {
             try {
                 jo = list.getJSONObject(i);
                 el.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_TIMESLOT_ID,jo.getInt(FOAPI_Dictionary.FO_API_FIELD_ID));
-                el.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_TITLE,jo.getString(FOAPI_Dictionary.FO_API_FIELD_NAME));
-
+                el.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_TITLE,jo.getString(FOAPI_Dictionary.FO_API_FIELD_TS_DESC));
+                JSONArray ja = jo.getJSONArray(FOAPI_Dictionary.FO_API_FIELD_MEMPATH);
+                String m = "";
+                for (int j = 0; j < ja.length(); j++)
+                    m = m + ja.getString(j) + ",";
+                el.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_MEMBERS_ID,m);
+                tmp = jo.getString(FOAPI_Dictionary.FO_API_FIELD_TS_DATE);
+                if (tmp == FOAPI_Dictionary.FO_API_FALSE) {
+                    el.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_START,0);
+                } else {
+                    el.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_START, jo.getLong(FOAPI_Dictionary.FO_API_FIELD_TS_DATE));
+                }
+                el.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_DURATION, jo.getInt(FOAPI_Dictionary.FO_API_FIELD_TS_DURATION));
+                el.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_TASK_ID, jo.getInt(FOAPI_Dictionary.FO_API_FIELD_TS_TASK));
             }
             catch (Exception e) {
                 Log.e("FOTT", e.getMessage());

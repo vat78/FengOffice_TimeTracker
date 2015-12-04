@@ -54,8 +54,11 @@ public final class FOAPI_Dictionary {
     public static final String FO_API_FIELD_WORKEDTIME = "worked_time";
     public static final String FO_API_FIELD_PENDINGTIME = "pending_time";
     public static final String FO_API_FIELD_USETIMESLOTS = "can_add_timeslots";
-    public static final String FO_API_FIELD_TS_NAME = "uname";
+    public static final String FO_API_FIELD_TS_AUTHOR = "uname";
     public static final String FO_API_FIELD_TS_DESC = "desc";
+    public static final String FO_API_FIELD_TS_DATE = "date";
+    public static final String FO_API_FIELD_TS_DURATION = "time";
+    public static final String FO_API_FIELD_TS_TASK = "ptid";
 
 
 

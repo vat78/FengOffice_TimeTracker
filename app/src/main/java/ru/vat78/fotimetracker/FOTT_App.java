@@ -6,13 +6,16 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 
 import ru.vat78.fotimetracker.database.FOTT_DBContract;
 import ru.vat78.fotimetracker.database.FOTT_DBHelper;
 import ru.vat78.fotimetracker.fo_api.FOAPI_Connector;
 import ru.vat78.fotimetracker.fo_api.FOAPI_Members;
 import ru.vat78.fotimetracker.fo_api.FOAPI_Tasks;
+import ru.vat78.fotimetracker.fo_api.FOAPI_Timeslots;
 
 /**
  * Created by vat on 24.11.2015.
@@ -27,6 +30,8 @@ public class FOTT_App extends Application {
     private long curMember;
     private long curTask;
     private long curTimeslot;
+
+    private long lastSync;
 
     @Override
     public void onCreate() {
@@ -135,7 +140,7 @@ public class FOTT_App extends Application {
                 database.insert(FOTT_DBContract.FOTT_DBTasks.TABLE_NAME, null, tasks.get(i));
                 if (tasks.get(i).containsKey(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_MEMPATH)) {
                     fillMembersLinks(tasks.get(i).getAsLong(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_TASK_ID),
-                            tasks.get(i).getAsString(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_MEMPATH));
+                            tasks.get(i).getAsString(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_MEMPATH),1);
                 }
             }
         }
@@ -147,11 +152,7 @@ public class FOTT_App extends Application {
         return true;
     }
 
-    private boolean syncTimeslots() {
-        return true;
-    }
-
-    private void fillMembersLinks(long objId, String members) {
+    private void fillMembersLinks(long objId, String members, int objType) {
 
         if (members == null) {return;}
         if (members.length() < 2){return;}
@@ -162,7 +163,7 @@ public class FOTT_App extends Application {
             el.put(FOTT_DBContract.FOTT_DBObject_Members.COLUMN_OBJECT_ID, objId);
             long memid = Long.parseLong(memarray[i]);
             el.put(FOTT_DBContract.FOTT_DBObject_Members.COLUMN_MEMBER_ID, memid);
-            el.put((FOTT_DBContract.FOTT_DBObject_Members.COLUMN_OBJECT_TYPE),1);
+            el.put((FOTT_DBContract.FOTT_DBObject_Members.COLUMN_OBJECT_TYPE),objType);
             try {
                 database.insert(FOTT_DBContract.FOTT_DBObject_Members.TABLE_NAME, null, el);
             }
@@ -201,6 +202,36 @@ public class FOTT_App extends Application {
                 database.update(FOTT_DBContract.FOTT_DBMembers.TABLE_NAME, t,
                         FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_MEMBER_ID + " = 0 ",null);
         }
+    }
+
+    private boolean syncTimeslots() {
+
+        if (curTimeslot > 0){
+            //TODO: if has selected timeslot
+        }
+
+        ArrayList<ContentValues> ts;
+        try {
+            Timestamp stamp = new Timestamp(System.currentTimeMillis());
+            ts = FOAPI_Timeslots.load(web_service);
+            if (ts == null) {return false;}
+            database.execSQL(FOTT_DBContract.FOTT_DBTimeslots.SQL_DELETE_ENTRIES);
+            database.execSQL(FOTT_DBContract.FOTT_DBTimeslots.SQL_CREATE_ENTRIES);
+
+            for (int i = 0; i < ts.size(); i++) {
+                database.insert(FOTT_DBContract.FOTT_DBTimeslots.TABLE_NAME, null, ts.get(i));
+                if (ts.get(i).containsKey(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_MEMBERS_ID)) {
+                    if (!ts.get(i).containsKey(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_TASK_ID))
+                        fillMembersLinks(ts.get(i).getAsLong(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_TIMESLOT_ID),
+                                ts.get(i).getAsString(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_MEMBERS_ID),2);
+                }
+            }
+        }
+        catch (Error e){
+            return  false;
+        }
+
+        return true;
     }
 
 }
