@@ -2,9 +2,12 @@ package ru.vat78.fotimetracker;
 
 import android.app.Application;
 import android.content.ContentValues;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
+import android.preference.PreferenceManager;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -33,12 +36,19 @@ public class FOTT_App extends Application {
 
     private long lastSync = 0;
 
+    private SharedPreferences preferences;
+
     @Override
     public void onCreate() {
         super.onCreate();
         web_service = new FOAPI_Connector();
         FOTT_DBHelper helper = new FOTT_DBHelper(this);
         database = helper.getWritableDatabase();
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+        curMember = preferences.getLong(getString(R.string.pref_stored_member), 0);
+        curTask = preferences.getLong(getString(R.string.pref_stored_task),0);
+        lastSync = preferences.getLong(getString(R.string.pref_stored_last_sync),0);
     }
 
     public SQLiteDatabase getDatabase() {
@@ -63,10 +73,12 @@ public class FOTT_App extends Application {
 
     public void setCurMember(long curMember) {
         this.curMember = curMember;
+        savePreference(getString(R.string.pref_stored_member),curMember);
     }
 
     public void setCurTask(long curTask) {
         this.curTask = curTask;
+        savePreference(getString(R.string.pref_stored_task),curTask);
     }
 
     public void setCurTimeslot(long curTimeslot) {
@@ -241,12 +253,19 @@ public class FOTT_App extends Application {
                 }
             }
             lastSync = stamp.getTime();
+            savePreference(getString(R.string.pref_stored_last_sync),lastSync);
         }
         catch (Error e){
             return  false;
         }
 
         return true;
+    }
+
+    private void savePreference(String key,long value) {
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putLong(key,value);
+        editor.commit();
     }
 
 }

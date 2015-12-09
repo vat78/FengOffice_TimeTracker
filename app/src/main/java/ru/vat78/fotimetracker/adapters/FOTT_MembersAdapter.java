@@ -35,6 +35,7 @@ public class FOTT_MembersAdapter extends ArrayAdapter<String> {
         super(context,R.layout.member_list_item);
         this.context = context;
         this.app = application;
+        this.members = new ArrayList<>();
     }
 
     @Override

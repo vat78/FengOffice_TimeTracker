@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 
 import android.os.AsyncTask;
@@ -67,14 +68,14 @@ public class FOTT_LoginActivity extends AppCompatActivity {
         mUntrustCA = (CheckBox) findViewById(R.id.untrustCA);
         mSaveCred = (CheckBox) findViewById(R.id.save_cred);
 
-        SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
-        mURLView.setText(preferences.getString(getString(R.string.prompt_url), ""));
-        mLoginView.setText(preferences.getString(getString(R.string.prompt_login), ""));
-        mUntrustCA.setChecked(preferences.getBoolean(getString(R.string.UseUntrustCA), false));
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(app);
+        mURLView.setText(preferences.getString(getString(R.string.pref_sync_url), ""));
+        mLoginView.setText(preferences.getString(getString(R.string.pref_sync_login), ""));
+        mUntrustCA.setChecked(preferences.getBoolean(getString(R.string.pref_sync_certs), false));
 
         mPasswordView = (EditText) findViewById(R.id.password);
-        mPasswordView.setText(preferences.getString(getString(R.string.prompt_password), ""));
-        boolean passwordEntered = !preferences.getString(getString(R.string.prompt_password), "").isEmpty();
+        mPasswordView.setText(preferences.getString(getString(R.string.pref_sync_password), ""));
+        boolean passwordEntered = !preferences.getString(getString(R.string.pref_sync_password), "").isEmpty();
         mSaveCred.setChecked(passwordEntered);
 
                 mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -254,15 +255,15 @@ public class FOTT_LoginActivity extends AppCompatActivity {
             showProgress(false);
 
             if (success) {
-                SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
+                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(app);
                 SharedPreferences.Editor editor = preferences.edit();
-                editor.putString(getString(R.string.prompt_url), mURLView.getText().toString());
-                editor.putString(getString(R.string.prompt_login), mLoginView.getText().toString());
-                editor.putBoolean(getString(R.string.UseUntrustCA), mUntrustCA.isChecked());
+                editor.putString(getString(R.string.pref_sync_url), mURLView.getText().toString());
+                editor.putString(getString(R.string.pref_sync_login), mLoginView.getText().toString());
+                editor.putBoolean(getString(R.string.pref_sync_certs), mUntrustCA.isChecked());
                 if (mSaveCred.isChecked()) {
-                    editor.putString(getString(R.string.prompt_password), mPasswordView.getText().toString());
+                    editor.putString(getString(R.string.pref_sync_password), mPasswordView.getText().toString());
                 } else {
-                    editor.putString(getString(R.string.prompt_password), "");
+                    editor.putString(getString(R.string.pref_sync_password), "");
                 }
                 editor.commit();
                 Intent intent = new Intent();

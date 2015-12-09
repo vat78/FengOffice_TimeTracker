@@ -34,6 +34,7 @@ public class FOTT_MembersFragment extends Fragment {
         MainApp = (FOTT_App) mainActivity.getApplication();
 
         membersAdapter = mainActivity.getMembers();
+        membersAdapter.load();
         mList = (ListView) rootView.findViewById(R.id.membersView);
         mList.setAdapter(membersAdapter);
         mList.setOnItemClickListener(new AdapterView.OnItemClickListener() {

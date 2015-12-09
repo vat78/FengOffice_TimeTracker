@@ -3,6 +3,7 @@ package ru.vat78.fotimetracker;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
@@ -78,9 +79,6 @@ public class FOTT_MainActivity extends AppCompatActivity {
             }
         });
 */
-        //Check login to a FengOffice system
-        CheckLogin();
-
         //Connect lists adapters
         members = new FOTT_MembersAdapter(this,MainApp);
 
@@ -102,10 +100,20 @@ public class FOTT_MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            Intent i = new Intent(this, SettingsActivity.class);
+            startActivity(i);
+        }
+        if (id == R.id.action_exit) {
             finish();
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        CheckLogin();
     }
 
     @Override
@@ -122,8 +130,8 @@ public class FOTT_MainActivity extends AppCompatActivity {
     }
 
     private void CheckLogin(){
-        SharedPreferences preferences = getPreferences(Context.MODE_PRIVATE);
-        if (preferences.getString(getString(R.string.prompt_password),"").isEmpty()){
+        SharedPreferences preferences =  PreferenceManager.getDefaultSharedPreferences(MainApp);
+        if (preferences.getString(getString(R.string.pref_sync_password),"").isEmpty()){
             Intent pickLogin = new Intent(this,FOTT_LoginActivity.class);
             startActivityForResult(pickLogin,PICK_LOGIN_REQUEST);
         }
