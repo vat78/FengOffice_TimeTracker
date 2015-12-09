@@ -3,8 +3,11 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <ListView
+
+    //TODO convert to RecyclerView
+    <android.support.v7.widget.RecyclerView
         android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:scrollbars="vertical"
         android:id="@+id/tasksView" />
 </LinearLayout>

@@ -83,7 +83,7 @@ public class FOTT_MembersAdapter extends ArrayAdapter<String> {
         return view;
     }
 
-    public void loadMembers(){
+    public void load(){
         SQLiteDatabase db = app.getDatabase();
 
         this.members = new ArrayList<>();

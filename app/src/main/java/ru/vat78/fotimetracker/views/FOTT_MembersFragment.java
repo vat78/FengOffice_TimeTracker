@@ -3,7 +3,6 @@ package ru.vat78.fotimetracker.views;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -42,9 +41,9 @@ public class FOTT_MembersFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View itemClicked, int position,
                                     long id){
                 MainApp.setCurMember(membersAdapter.getMemberId(position));
-                mainActivity.getTasks().loadTasks();
+                //mainActivity.getTasks().load();
                 membersAdapter.notifyDataSetChanged();
-
+                mainActivity.setCurrentFragment(1);
             }
         });
         return rootView;

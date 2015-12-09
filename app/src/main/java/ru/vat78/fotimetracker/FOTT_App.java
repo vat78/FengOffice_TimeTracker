@@ -31,7 +31,7 @@ public class FOTT_App extends Application {
     private long curTask;
     private long curTimeslot;
 
-    private long lastSync;
+    private long lastSync = 0;
 
     @Override
     public void onCreate() {
@@ -83,7 +83,17 @@ public class FOTT_App extends Application {
             database.execSQL(FOTT_DBContract.FOTT_DBObject_Object.SQL_CREATE_ENTRIES);
 
             if (syncTasks()) {
-                return syncTimeslots();
+                return syncTimeslots(true);
+            }
+        }
+        return false;
+    }
+
+    public boolean syncFO() {
+
+        if (syncMembers()) {
+            if (syncTasks()) {
+                return syncTimeslots(false);
             }
         }
         return false;
@@ -165,7 +175,7 @@ public class FOTT_App extends Application {
             el.put(FOTT_DBContract.FOTT_DBObject_Members.COLUMN_MEMBER_ID, memid);
             el.put((FOTT_DBContract.FOTT_DBObject_Members.COLUMN_OBJECT_TYPE),objType);
             try {
-                database.insert(FOTT_DBContract.FOTT_DBObject_Members.TABLE_NAME, null, el);
+                database.insertWithOnConflict(FOTT_DBContract.FOTT_DBObject_Members.TABLE_NAME, null, el, database.CONFLICT_REPLACE);
             }
             catch (Error e){
             }
@@ -204,7 +214,7 @@ public class FOTT_App extends Application {
         }
     }
 
-    private boolean syncTimeslots() {
+    private boolean syncTimeslots(boolean fullSync) {
 
         if (curTimeslot > 0){
             //TODO: if has selected timeslot
@@ -212,8 +222,12 @@ public class FOTT_App extends Application {
 
         ArrayList<ContentValues> ts;
         try {
-            Timestamp stamp = new Timestamp(System.currentTimeMillis());
-            ts = FOAPI_Timeslots.load(web_service);
+            Date stamp = new Date(System.currentTimeMillis());
+            if (fullSync) {
+                ts = FOAPI_Timeslots.load(web_service);
+            } else {
+                ts = FOAPI_Timeslots.load(web_service, lastSync);
+            }
             if (ts == null) {return false;}
             database.execSQL(FOTT_DBContract.FOTT_DBTimeslots.SQL_DELETE_ENTRIES);
             database.execSQL(FOTT_DBContract.FOTT_DBTimeslots.SQL_CREATE_ENTRIES);
@@ -226,6 +240,7 @@ public class FOTT_App extends Application {
                                 ts.get(i).getAsString(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_MEMBERS_ID),2);
                 }
             }
+            lastSync = stamp.getTime();
         }
         catch (Error e){
             return  false;

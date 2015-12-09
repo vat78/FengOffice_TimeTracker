@@ -42,32 +42,55 @@ public class FOAPI_Tasks {
 
                 el.put(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_TASK_ID,jo.getInt(FOAPI_Dictionary.FO_API_FIELD_ID));
                 el.put(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_TITLE,jo.getString(FOAPI_Dictionary.FO_API_FIELD_NAME));
-                el.put(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_DESC,jo.getString(FOAPI_Dictionary.FO_API_FIELD_DESC));
-                JSONArray ja = jo.getJSONArray(FOAPI_Dictionary.FO_API_FIELD_MEMPATH);
+
+                if (jo.isNull(FOAPI_Dictionary.FO_API_FIELD_DESC)) {
+                    el.put(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_DESC,"");
+                } else {
+                    el.put(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_DESC, jo.getString(FOAPI_Dictionary.FO_API_FIELD_DESC));
+                }
+
                 String m = "";
-                for (int j = 0; j < ja.length(); j++)
-                    m = m + ja.getString(j) + ",";
+                if (!jo.isNull(FOAPI_Dictionary.FO_API_FIELD_MEMPATH)) {
+                    JSONArray ja = jo.getJSONArray(FOAPI_Dictionary.FO_API_FIELD_MEMPATH);
+                    for (int j = 0; j < ja.length(); j++)
+                        m = m + ja.getString(j) + ",";
+                }
                 el.put(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_MEMPATH,m);
-                tmp = jo.getString(FOAPI_Dictionary.FO_API_FIELD_STARTDATE);
+
+                tmp = FOAPI_Dictionary.FO_API_FALSE;
+                if (!jo.isNull(FOAPI_Dictionary.FO_API_FIELD_STARTDATE))
+                    tmp = jo.getString(FOAPI_Dictionary.FO_API_FIELD_STARTDATE);
                 if (tmp == FOAPI_Dictionary.FO_API_FALSE) {
                     el.put(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_STARTDATE,0);
                 } else {
                     el.put(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_STARTDATE, jo.getLong(FOAPI_Dictionary.FO_API_FIELD_STARTDATE));
                 }
-                tmp = jo.getString(FOAPI_Dictionary.FO_API_FIELD_DUEDATE);
+
+                tmp = FOAPI_Dictionary.FO_API_FALSE;
+                if (!jo.isNull(FOAPI_Dictionary.FO_API_FIELD_DUEDATE))
+                    tmp = jo.getString(FOAPI_Dictionary.FO_API_FIELD_DUEDATE);
                 if (tmp == FOAPI_Dictionary.FO_API_FALSE) {
                     el.put(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_DUEDATE,0);
                 } else {
                     el.put(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_DUEDATE, jo.getLong(FOAPI_Dictionary.FO_API_FIELD_DUEDATE));
                 }
-                el.put(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_PRIORITY,jo.getInt(FOAPI_Dictionary.FO_API_FIELD_PRIORITY));
-                el.put(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_ASSIGNEDBY,jo.getString(FOAPI_Dictionary.FO_API_FIELD_ASSIGNEDBY));
-                el.put(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_ASSIGNEDTO,jo.getString(FOAPI_Dictionary.FO_API_FIELD_ASSIGNEDTO));
-                el.put(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_STATUS,jo.getString(FOAPI_Dictionary.FO_API_FIELD_STATUS));
-                el.put(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_PERCENT,jo.getInt(FOAPI_Dictionary.FO_API_FIELD_PERCENT));
-                el.put(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_WORKEDTIME,jo.getLong(FOAPI_Dictionary.FO_API_FIELD_WORKEDTIME));
-                el.put(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_PENDINGTIME,jo.getLong(FOAPI_Dictionary.FO_API_FIELD_PENDINGTIME));
-                el.put(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_USETIMESLOTS,(jo.getString(FOAPI_Dictionary.FO_API_FIELD_USETIMESLOTS) == FOAPI_Dictionary.FO_API_TRUE));
+
+                if (!jo.isNull(FOAPI_Dictionary.FO_API_FIELD_PRIORITY))
+                    el.put(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_PRIORITY,jo.getInt(FOAPI_Dictionary.FO_API_FIELD_PRIORITY));
+                if (!jo.isNull(FOAPI_Dictionary.FO_API_FIELD_ASSIGNEDBY))
+                    el.put(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_ASSIGNEDBY,jo.getString(FOAPI_Dictionary.FO_API_FIELD_ASSIGNEDBY));
+                if (!jo.isNull(FOAPI_Dictionary.FO_API_FIELD_ASSIGNEDTO))
+                    el.put(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_ASSIGNEDTO,jo.getString(FOAPI_Dictionary.FO_API_FIELD_ASSIGNEDTO));
+                if (!jo.isNull(FOAPI_Dictionary.FO_API_FIELD_STATUS))
+                    el.put(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_STATUS,jo.getString(FOAPI_Dictionary.FO_API_FIELD_STATUS));
+                if (!jo.isNull(FOAPI_Dictionary.FO_API_FIELD_PERCENT))
+                    el.put(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_PERCENT,jo.getInt(FOAPI_Dictionary.FO_API_FIELD_PERCENT));
+                if (!jo.isNull(FOAPI_Dictionary.FO_API_FIELD_WORKEDTIME))
+                    el.put(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_WORKEDTIME,jo.getLong(FOAPI_Dictionary.FO_API_FIELD_WORKEDTIME));
+                if (!jo.isNull(FOAPI_Dictionary.FO_API_FIELD_PENDINGTIME))
+                    el.put(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_PENDINGTIME,jo.getLong(FOAPI_Dictionary.FO_API_FIELD_PENDINGTIME));
+                if (!jo.isNull(FOAPI_Dictionary.FO_API_FIELD_USETIMESLOTS))
+                    el.put(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_USETIMESLOTS,(jo.getString(FOAPI_Dictionary.FO_API_FIELD_USETIMESLOTS) == FOAPI_Dictionary.FO_API_TRUE));
 
             }
             catch (Exception e) {

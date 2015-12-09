@@ -46,7 +46,7 @@ public final class FOTT_DBContract {
                         FOTT_DBMembers.COLUMN_NAME_LEVEL + INTEGER_TYPE + COMMA_SEP +
                         FOTT_DBMembers.COLUMN_NAME_TASKS + INTEGER_TYPE + COMMA_SEP +
                         FOTT_DBMembers.COLUMN_NAME_CHANGED + NUMERIC_TYPE + COMMA_SEP +
-                        FOTT_DBMembers.COLUMN_NAME_FO_CHANGED + NUMERIC_TYPE +
+                        FOTT_DBMembers.COLUMN_NAME_FO_CHANGED + NUMERIC_TYPE + COMMA_SEP +
                         FOTT_DBMembers.COLUMN_NAME_FO_ENABLE + NUMERIC_TYPE +" );";
         public static final String SQL_DELETE_ENTRIES =
                 DROP_TABLE + FOTT_DBMembers.TABLE_NAME +";";
@@ -91,9 +91,9 @@ public final class FOTT_DBContract {
                         FOTT_DBTasks.COLUMN_NAME_PERCENT + TEXT_TYPE + COMMA_SEP +
                         FOTT_DBTasks.COLUMN_NAME_WORKEDTIME + TEXT_TYPE + COMMA_SEP +
                         FOTT_DBTasks.COLUMN_NAME_PENDINGTIME + TEXT_TYPE + COMMA_SEP +
-                        FOTT_DBTasks.COLUMN_NAME_USETIMESLOTS + NUMERIC_TYPE +
+                        FOTT_DBTasks.COLUMN_NAME_USETIMESLOTS + NUMERIC_TYPE + COMMA_SEP +
                         FOTT_DBTasks.COLUMN_NAME_CHANGED + NUMERIC_TYPE + COMMA_SEP +
-                        FOTT_DBTasks.COLUMN_NAME_FO_CHANGED + NUMERIC_TYPE +
+                        FOTT_DBTasks.COLUMN_NAME_FO_CHANGED + NUMERIC_TYPE + COMMA_SEP +
                         FOTT_DBTasks.COLUMN_NAME_FO_ENABLE + NUMERIC_TYPE + " );";
         public static final String SQL_DELETE_ENTRIES =
                DROP_TABLE + FOTT_DBTasks.TABLE_NAME + ";";
@@ -118,12 +118,12 @@ public final class FOTT_DBContract {
                         FOTT_DBTimeslots.COLUMN_TIMESLOT_ID + INTEGER_TYPE + COMMA_SEP +
                         FOTT_DBTimeslots.COLUMN_NAME_TITLE + TEXT_TYPE + COMMA_SEP +
                         FOTT_DBTimeslots.COLUMN_NAME_DESC + TEXT_TYPE + COMMA_SEP +
-                        FOTT_DBTimeslots.COLUMN_NAME_START + NUMERIC_TYPE +
-                        FOTT_DBTimeslots.COLUMN_NAME_DURATION + INTEGER_TYPE +
+                        FOTT_DBTimeslots.COLUMN_NAME_START + NUMERIC_TYPE + COMMA_SEP +
+                        FOTT_DBTimeslots.COLUMN_NAME_DURATION + NUMERIC_TYPE + COMMA_SEP +
                         FOTT_DBTimeslots.COLUMN_NAME_TASK_ID + INTEGER_TYPE + COMMA_SEP +
                         FOTT_DBTimeslots.COLUMN_NAME_MEMBERS_ID + TEXT_TYPE + COMMA_SEP +
                         FOTT_DBTimeslots.COLUMN_NAME_CHANGED + NUMERIC_TYPE + COMMA_SEP +
-                        FOTT_DBTimeslots.COLUMN_NAME_FO_CHANGED + NUMERIC_TYPE +
+                        FOTT_DBTimeslots.COLUMN_NAME_FO_CHANGED + NUMERIC_TYPE + COMMA_SEP +
                         FOTT_DBTimeslots.COLUMN_NAME_FO_ENABLE + NUMERIC_TYPE + " );";
         public static final String SQL_DELETE_ENTRIES =
                 DROP_TABLE + FOTT_DBTimeslots.TABLE_NAME + ";";

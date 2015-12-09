@@ -3,11 +3,10 @@ package ru.vat78.fotimetracker.adapters;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Color;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import java.text.DateFormat;
@@ -18,24 +17,57 @@ import ru.vat78.fotimetracker.FOTT_App;
 import ru.vat78.fotimetracker.R;
 import ru.vat78.fotimetracker.database.FOTT_DBContract;
 import ru.vat78.fotimetracker.model.FOTT_Task;
+import ru.vat78.fotimetracker.views.FOTT_TasksFragment;
 
 /**
  * Created by vat on 02.12.2015.
  */
-public class FOTT_TasksAdapter extends ArrayAdapter<String> {
+public class FOTT_TasksAdapter extends RecyclerView.Adapter<FOTT_TasksAdapter.TasksViewHolder> {
 
     private List<FOTT_Task> tasks;
     private Context context;
     private FOTT_App app;
 
-    public FOTT_TasksAdapter(Context context, FOTT_App application) {
-        super(context, R.layout.task_list_item);
-        this.context = context;
+    private FOTT_TasksFragment parent;
+
+
+    public static class TasksViewHolder extends RecyclerView.ViewHolder
+            implements View.OnClickListener {
+        // each data item is just a string in this case
+        public TextView title;
+        public TextView duedate;
+
+        private FOTT_TasksFragment parent;
+
+        public TasksViewHolder(View itemView, FOTT_TasksFragment parent) {
+            super(itemView);
+            title = (TextView)itemView.findViewById(R.id.textTaskTitle);
+            duedate = (TextView)itemView.findViewById(R.id.textDueDate);
+            this.parent = parent;
+
+            itemView.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View v) {
+            if (parent != null) {
+                parent.onItemClicked(getPosition());
+            }
+
+        }
+
+    }
+
+    public FOTT_TasksAdapter(FOTT_App application, FOTT_TasksFragment parent) {
+        //this.context = context;
         this.app = application;
+        this.tasks = new ArrayList<>();
+
+        this.parent = parent;
     }
 
     @Override
-    public int getCount() {
+    public int getItemCount() {
         return tasks.size();
     }
 
@@ -45,40 +77,37 @@ public class FOTT_TasksAdapter extends ArrayAdapter<String> {
     }
 
     @Override
-    public String getItem(int position) {
-        return tasks.get(position).getName();
+    public TasksViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
+        View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.task_list_item, viewGroup, false);
+        TasksViewHolder vh = new TasksViewHolder(v, parent);
+        return vh;
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public void onBindViewHolder(TasksViewHolder taskViewHolder, int i) {
 
         DateFormat dateFormat = android.text.format.DateFormat.getDateFormat(app.getApplicationContext());
 
-        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        FOTT_Task objectItem = tasks.get(i);
 
-        View view = inflater.inflate(R.layout.task_list_item, parent, false);
+        taskViewHolder.title.setText(objectItem.getName());
+        taskViewHolder.duedate.setText(dateFormat.format(objectItem.getDueDate()));
 
-        TextView title = (TextView) view.findViewById(R.id.textTaskTitle);
-        TextView duedate = (TextView) view.findViewById(R.id.textDueDate);
+        taskViewHolder.title.setSelected(app.getCurTask() == objectItem.getId());
+        taskViewHolder.duedate.setSelected(app.getCurTask() == objectItem.getId());
 
-        FOTT_Task objectItem = tasks.get(position);
+    }
 
-        title.setText(objectItem.getName());
-        duedate.setText(dateFormat.format(objectItem.getDueDate()));
-
-        if (app.getCurTask() == objectItem.getId()) {
-            title.setBackgroundColor(Color.GRAY);
-            duedate.setBackgroundColor(Color.GRAY);
-        }
-
-        return view;
+    @Override
+    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
+        super.onAttachedToRecyclerView(recyclerView);
     }
 
     public long getTaskId(int position){
         return tasks.get(position).getId();
     }
 
-    public void loadTasks(){
+    public void load(){
         SQLiteDatabase db = app.getDatabase();
 
         this.tasks = new ArrayList<>();

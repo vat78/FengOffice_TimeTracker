@@ -43,19 +43,31 @@ public class FOAPI_Members {
                 String name = jo.getString(FOAPI_Dictionary.FO_API_FIELD_NAME);
                 el.put(FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_NAME, name);
 
-                String path = jo.getString(FOAPI_Dictionary.FO_API_FIELD_PATH);
+                String path = name;
+                if (!jo.isNull(FOAPI_Dictionary.FO_API_FIELD_PATH)) {
 
-                //Add current name to path for make better sort order in adapter
-                if (path.isEmpty()) {
-                    path = name;
-                } else {
-                    path = path + "/" + name;
+                    path = jo.getString(FOAPI_Dictionary.FO_API_FIELD_PATH);
+                    //Add current name to path for make better sort order in adapter
+                    if (path.isEmpty()) {
+                        path = name;
+                    } else {
+                        path = path + "/" + name;
+                    }
                 }
                 String mpath[] = path.split("/");
                 el.put(FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_PATH, path);
                 el.put(FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_LEVEL, mpath.length);
-                el.put(FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_TYPE, jo.getString(FOAPI_Dictionary.FO_API_FIELD_TYPE));
-                el.put(FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_COLOR, jo.getString(FOAPI_Dictionary.FO_API_FIELD_COLOR));
+
+                if (jo.isNull(FOAPI_Dictionary.FO_API_FIELD_TYPE)) {
+                    el.put(FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_TYPE,"");
+                } else {
+                    el.put(FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_TYPE, jo.getString(FOAPI_Dictionary.FO_API_FIELD_TYPE));
+                }
+                if (jo.isNull(FOAPI_Dictionary.FO_API_FIELD_TYPE)) {
+                    el.put(FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_COLOR, 0);
+                } else {
+                    el.put(FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_COLOR, jo.getString(FOAPI_Dictionary.FO_API_FIELD_COLOR));
+                }
 
                 if (!res.add(el)) {
                     break;

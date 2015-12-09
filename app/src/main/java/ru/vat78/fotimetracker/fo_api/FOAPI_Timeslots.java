@@ -16,8 +16,15 @@ import ru.vat78.fotimetracker.database.FOTT_DBContract;
 public class FOAPI_Timeslots {
 
     public static ArrayList<ContentValues> load(FOAPI_Connector web_service){
-        JSONObject jo = web_service.executeAPI(FOAPI_Dictionary.FO_METHOD_LISTING,FOAPI_Dictionary.FO_SERVICE_TASKS,
-                new String[] {FOAPI_Dictionary.FO_API_ARG_STATUS, "0"});
+        JSONObject jo = web_service.executeAPI(FOAPI_Dictionary.FO_METHOD_LISTING,FOAPI_Dictionary.FO_SERVICE_TIMESLOTS);
+        return convertResults(jo);
+    }
+
+    public static ArrayList<ContentValues> load(FOAPI_Connector web_service, long timestamp){
+        String[] args = new String[1];
+        args[0] = "lupdate";
+        args[1] = "" + timestamp;
+        JSONObject jo = web_service.executeAPI(FOAPI_Dictionary.FO_METHOD_LISTING,FOAPI_Dictionary.FO_SERVICE_TIMESLOTS,args);
         return convertResults(jo);
     }
 
@@ -40,20 +47,39 @@ public class FOAPI_Timeslots {
             try {
                 jo = list.getJSONObject(i);
                 el.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_TIMESLOT_ID,jo.getInt(FOAPI_Dictionary.FO_API_FIELD_ID));
-                el.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_TITLE,jo.getString(FOAPI_Dictionary.FO_API_FIELD_TS_DESC));
-                JSONArray ja = jo.getJSONArray(FOAPI_Dictionary.FO_API_FIELD_MEMPATH);
+                if (jo.isNull(FOAPI_Dictionary.FO_API_FIELD_TS_DESC)) {
+                    el.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_TITLE,"");
+                } else {
+                    el.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_TITLE, jo.getString(FOAPI_Dictionary.FO_API_FIELD_TS_DESC));
+                }
+
                 String m = "";
-                for (int j = 0; j < ja.length(); j++)
-                    m = m + ja.getString(j) + ",";
+                if (!jo.isNull(FOAPI_Dictionary.FO_API_FIELD_MEMPATH)) {
+                    JSONArray ja = jo.getJSONArray(FOAPI_Dictionary.FO_API_FIELD_MEMPATH);
+                    for (int j = 0; j < ja.length(); j++)
+                        m = m + ja.getString(j) + ",";
+                }
                 el.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_MEMBERS_ID,m);
-                tmp = jo.getString(FOAPI_Dictionary.FO_API_FIELD_TS_DATE);
+
+                tmp = FOAPI_Dictionary.FO_API_FALSE;
+                if (!jo.isNull(FOAPI_Dictionary.FO_API_FIELD_TS_DATE))
+                    tmp = jo.getString(FOAPI_Dictionary.FO_API_FIELD_TS_DATE);
                 if (tmp == FOAPI_Dictionary.FO_API_FALSE) {
                     el.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_START,0);
                 } else {
                     el.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_START, jo.getLong(FOAPI_Dictionary.FO_API_FIELD_TS_DATE));
                 }
-                el.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_DURATION, jo.getInt(FOAPI_Dictionary.FO_API_FIELD_TS_DURATION));
-                el.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_TASK_ID, jo.getInt(FOAPI_Dictionary.FO_API_FIELD_TS_TASK));
+
+                if (jo.isNull(FOAPI_Dictionary.FO_API_FIELD_TS_DURATION)) {
+                    el.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_DURATION,10);
+                } else {
+                    el.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_DURATION, jo.getInt(FOAPI_Dictionary.FO_API_FIELD_TS_DURATION));
+                }
+                if (jo.isNull(FOAPI_Dictionary.FO_API_FIELD_TS_TASK)){
+                    el.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_TASK_ID,0);
+                } else {
+                    el.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_TASK_ID, jo.getInt(FOAPI_Dictionary.FO_API_FIELD_TS_TASK));
+                }
             }
             catch (Exception e) {
                 Log.e("FOTT", e.getMessage());

@@ -21,8 +21,10 @@ import android.widget.TextView;
 
 import ru.vat78.fotimetracker.adapters.FOTT_MembersAdapter;
 import ru.vat78.fotimetracker.adapters.FOTT_TasksAdapter;
+import ru.vat78.fotimetracker.adapters.FOTT_TimeslotsAdapter;
 import ru.vat78.fotimetracker.views.FOTT_MembersFragment;
 import ru.vat78.fotimetracker.views.FOTT_TasksFragment;
+import ru.vat78.fotimetracker.views.FOTT_TimeslotsFragment;
 
 public class FOTT_MainActivity extends AppCompatActivity {
 
@@ -46,6 +48,7 @@ public class FOTT_MainActivity extends AppCompatActivity {
     private FOTT_App MainApp;
     private FOTT_MembersAdapter members;
     private FOTT_TasksAdapter tasks;
+    private FOTT_TimeslotsAdapter timeslots;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,14 +78,11 @@ public class FOTT_MainActivity extends AppCompatActivity {
             }
         });
 */
-        //Connect lists adapters
-        members = new FOTT_MembersAdapter(this,MainApp);
-        tasks = new FOTT_TasksAdapter(this,MainApp);
-
         //Check login to a FengOffice system
         CheckLogin();
 
-
+        //Connect lists adapters
+        members = new FOTT_MembersAdapter(this,MainApp);
 
     }
 
@@ -116,8 +116,9 @@ public class FOTT_MainActivity extends AppCompatActivity {
                 finish();
             }
         }
-        members.loadMembers();
-        tasks.loadTasks();
+        members.load();
+        //tasks.load();
+        //timeslots.load();
     }
 
     private void CheckLogin(){
@@ -136,6 +137,33 @@ public class FOTT_MainActivity extends AppCompatActivity {
         return tasks;
     }
 
+    public FOTT_TimeslotsAdapter getTimeslots() {
+        return timeslots;
+    }
+
+    public void setMembers(FOTT_MembersAdapter members) {
+        this.members = members;
+    }
+
+    public void setTasks(FOTT_TasksAdapter tasks) {
+        this.tasks = tasks;
+    }
+
+    public void setTimeslots(FOTT_TimeslotsAdapter timeslots) {
+        this.timeslots = timeslots;
+    }
+
+    public void setCurrentFragment(int fragment) {
+        if (fragment == 1) {
+            tasks.load();
+            tasks.notifyDataSetChanged();
+        }
+        if (fragment == 2) {
+            timeslots.load();
+            timeslots.notifyDataSetChanged();
+        }
+        mViewPager.setCurrentItem(fragment,true);
+    }
     /**
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
      * one of the sections/tabs/pages.
@@ -159,7 +187,7 @@ public class FOTT_MainActivity extends AppCompatActivity {
                     res = new FOTT_TasksFragment();
                     return res;
                 default:
-                    return PlaceholderFragment.newInstance(position + 1);
+                    return new FOTT_TimeslotsFragment();
             }
         }
 
