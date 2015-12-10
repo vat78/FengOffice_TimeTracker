@@ -11,6 +11,7 @@ import android.widget.TextView;
 
 import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import ru.vat78.fotimetracker.FOTT_App;
@@ -91,7 +92,8 @@ public class FOTT_TasksAdapter extends RecyclerView.Adapter<FOTT_TasksAdapter.Ta
         FOTT_Task objectItem = tasks.get(i);
 
         taskViewHolder.title.setText(objectItem.getName());
-        taskViewHolder.duedate.setText(dateFormat.format(objectItem.getDueDate()));
+        Date d = objectItem.getDueDate();
+        taskViewHolder.duedate.setText(dateFormat.format(d));
 
         taskViewHolder.title.setSelected(app.getCurTask() == objectItem.getId());
         taskViewHolder.duedate.setSelected(app.getCurTask() == objectItem.getId());
@@ -143,5 +145,29 @@ public class FOTT_TasksAdapter extends RecyclerView.Adapter<FOTT_TasksAdapter.Ta
                 tasks.add(m);
             } while (taskCursor.moveToNext());
         }
+    }
+
+    public FOTT_Task getTaskById(long id){
+        SQLiteDatabase db = app.getDatabase();
+        FOTT_Task res = new FOTT_Task(0,"");
+
+        if (id>0){
+            String filter = " " + FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_TASK_ID + " = " + id;
+            Cursor taskCursor = db.query(FOTT_DBContract.FOTT_DBTasks.TABLE_NAME,
+                    new String[]{FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_TASK_ID,
+                            FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_TITLE,
+                            FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_DUEDATE,
+                            FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_DESC},
+                    filter, null, null, null,
+                    FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_DUEDATE, null);
+            taskCursor.moveToFirst();
+            if (!taskCursor.isAfterLast()){
+                res.setId(taskCursor.getLong(0));
+                res.setName(taskCursor.getString(1));
+                res.setDuedate(taskCursor.getLong(2));
+                res.setDesc(taskCursor.getString(3));
+            }
+        }
+        return res;
     }
 }

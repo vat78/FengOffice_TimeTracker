@@ -9,11 +9,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import ru.vat78.fotimetracker.FOTT_App;
 import ru.vat78.fotimetracker.FOTT_MainActivity;
 import ru.vat78.fotimetracker.R;
 import ru.vat78.fotimetracker.adapters.FOTT_TimeslotsAdapter;
+import ru.vat78.fotimetracker.model.FOTT_Member;
+import ru.vat78.fotimetracker.model.FOTT_Task;
 
 /**
  * Created by vat on 04.12.2015.
@@ -50,5 +53,26 @@ public class FOTT_TimeslotsFragment extends Fragment {
         mList.setAdapter(tsAdapter);
 
         return rootView;
+    }
+
+    @Override
+    public void onResume (){
+        super.onResume();
+        TextView top_title = (TextView) mainActivity.findViewById(R.id.tsTopTitle);
+        TextView top_desc = (TextView) mainActivity.findViewById(R.id.tsTopDesc);
+        if (MainApp.getCurTask() > 0) {
+            FOTT_Task t = mainActivity.getTasks().getTaskById(MainApp.getCurTask());
+            top_title.setText(t.getName());
+            top_desc.setText(t.getDesc());
+        } else {
+            if (MainApp.getCurMember() > 0) {
+                FOTT_Member m = mainActivity.getMembers().getMemberById(MainApp.getCurMember());
+                top_title.setText(m.getName());
+                top_desc.setText("");
+            } else {
+                top_title.setText("Please select task or category");
+                top_desc.setText("");
+            }
+        }
     }
 }

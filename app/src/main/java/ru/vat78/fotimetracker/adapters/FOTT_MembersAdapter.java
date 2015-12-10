@@ -122,4 +122,30 @@ public class FOTT_MembersAdapter extends ArrayAdapter<String> {
     public long getMemberId(int position){
         return members.get(position).getId();
     }
+
+    public FOTT_Member getMemberById(long id){
+        SQLiteDatabase db = app.getDatabase();
+        FOTT_Member res = new FOTT_Member(0,"");
+
+        if (id>0){
+            String filter = " " + FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_MEMBER_ID + " = " + id;
+            Cursor memberCursor = db.query(FOTT_DBContract.FOTT_DBMembers.TABLE_NAME,
+                    new String[]{FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_MEMBER_ID,
+                            FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_NAME,
+                            FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_PATH,
+                            FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_LEVEL,
+                            FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_COLOR,
+                            FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_TASKS},
+                    filter, null, null, null,
+                    FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_PATH,null);
+            memberCursor.moveToFirst();
+            if (!memberCursor.isAfterLast()){
+                res.setId(memberCursor.getLong(0));
+                res.setName(memberCursor.getString(1));
+                res.setColor(memberCursor.getInt(4));
+                res.setTasksCnt(memberCursor.getInt(5));
+            }
+        }
+        return res;
+    }
 }

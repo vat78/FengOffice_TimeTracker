@@ -8,7 +8,7 @@ import java.util.Date;
 public class FOTT_Timeslot extends FOTT_Object {
 
     private Date start;
-    private int duration;
+    private long duration;
 
 
     public FOTT_Timeslot(long tsId, String tsTitle){
@@ -20,8 +20,18 @@ public class FOTT_Timeslot extends FOTT_Object {
         return start;
     }
 
-    public int getDuration() {
+    public long getDuration() {
         return duration;
+    }
+
+    public String getDurationString() {
+        String res = "";
+        Date dur = new Date(duration * 1000);
+        if (duration >= 24 * 3600) res += "" + Math.round(duration / 24 / 3600) + " days";
+        if (dur.getHours() > 0) res += " " + dur.getHours() + " hours";
+        if (dur.getMinutes() > 0) res += " " + dur.getMinutes() + " minutes";
+
+        return res;
     }
 
     public void setStart(Date start) {
@@ -32,7 +42,7 @@ public class FOTT_Timeslot extends FOTT_Object {
         this.start = new Date(start * 1000);;
     }
 
-    public void setDuration(int duration) {
+    public void setDuration(long duration) {
         this.duration = duration;
     }
 }

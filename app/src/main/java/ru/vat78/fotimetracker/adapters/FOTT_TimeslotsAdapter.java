@@ -73,8 +73,8 @@ public class FOTT_TimeslotsAdapter extends RecyclerView.Adapter<FOTT_TimeslotsAd
 
         holder.tsText.setText(objectItem.getName());
         holder.tsAuthor.setText("");
-        holder.tsStart.setText("");
-        holder.tsDuration.setText("");
+        holder.tsStart.setText(objectItem.getStart().toString());
+        holder.tsDuration.setText(objectItem.getDurationString());
     }
 
     @Override

@@ -2,18 +2,22 @@
 
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent">
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:padding="16dp">
     <!-- A CardView that contains a TextView -->
     <android.support.v7.widget.CardView
         xmlns:card_view="http://schemas.android.com/apk/res-auto"
         android:id="@+id/tsElemCard"
         android:layout_gravity="center"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        card_view:cardCornerRadius="4dp">
+        card_view:cardCornerRadius="4dp"
+        android:layout_centerHorizontal="true"
+        android:background="@color/cardview_light_background">
 
         <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-            android:layout_width="match_parent" android:layout_height="match_parent">
+            android:layout_width="match_parent" android:layout_height="match_parent"
+            android:padding="8dp">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -46,7 +50,8 @@
                 android:layout_height="wrap_content"
                 android:text="New Text"
                 android:id="@+id/tsText"
-                android:layout_below="@+id/tsAuthor" />
+                android:layout_below="@+id/tsAuthor"
+                android:height="@dimen/abc_text_size_display_3_material" />
 
         </RelativeLayout>
 

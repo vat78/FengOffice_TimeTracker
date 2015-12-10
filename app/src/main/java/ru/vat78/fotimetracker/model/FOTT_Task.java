@@ -19,6 +19,6 @@ public class FOTT_Task extends FOTT_Object {
     }
 
     public Date getDueDate(){
-        return new Date(duedate);
+        return new Date(duedate * 1000);
     }
 }
