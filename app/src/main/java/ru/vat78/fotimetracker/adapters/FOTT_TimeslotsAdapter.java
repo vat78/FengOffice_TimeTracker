@@ -1,5 +1,6 @@
 package ru.vat78.fotimetracker.adapters;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -11,6 +12,7 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import ru.vat78.fotimetracker.FOTT_App;
@@ -106,7 +108,7 @@ public class FOTT_TimeslotsAdapter extends RecyclerView.Adapter<FOTT_TimeslotsAd
                         FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_START,
                         FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_DURATION,},
                 filter, null, null, null,
-                FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_START, null);
+                FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_START + " DESC", null);
 
         tsCursor.moveToFirst();
         FOTT_Timeslot el;
@@ -124,5 +126,24 @@ public class FOTT_TimeslotsAdapter extends RecyclerView.Adapter<FOTT_TimeslotsAd
                 timeslots.add(el);
             } while (tsCursor.moveToNext());
         }
+    }
+
+    public boolean saveNewTimeslot(Date start, long duration, String text){
+
+        if (start == null || duration == 0) return false;
+        ContentValues ts = new ContentValues();
+        ts.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_START,start.getTime());
+        ts.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_DURATION,duration);
+        if (app.getCurTask() != 0) {
+            ts.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_TASK_ID,app.getCurTask());
+        }
+
+        SQLiteDatabase db = app.getDatabase();
+        long id = db.insert(FOTT_DBContract.FOTT_DBTimeslots.TABLE_NAME,null,ts);
+
+        if (app.getCurTask() == 0){
+            //TODO Add link to members path
+        }
+        return (id != 0);
     }
 }
