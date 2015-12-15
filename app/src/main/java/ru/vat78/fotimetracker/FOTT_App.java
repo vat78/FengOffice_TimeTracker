@@ -10,8 +10,11 @@ import android.graphics.Color;
 import android.preference.PreferenceManager;
 
 import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.TimeZone;
 
 import ru.vat78.fotimetracker.database.FOTT_DBContract;
 import ru.vat78.fotimetracker.database.FOTT_DBHelper;
@@ -27,6 +30,10 @@ import ru.vat78.fotimetracker.fo_api.FOAPI_Timeslots;
  */
 public class FOTT_App extends Application {
 
+    final String FOTT_DATE_FORMAT = "dd.MM.yyyy";
+    final String FOTT_TIME_FORMAT = "HH:mm";
+
+
     private FOAPI_Connector web_service;
     private SQLiteDatabase database;
 
@@ -35,6 +42,9 @@ public class FOTT_App extends Application {
     private long curTimeslot;
 
     private long lastSync = 0;
+
+    private SimpleDateFormat dateFormat;
+    private SimpleDateFormat timeFormat;
 
     private SharedPreferences preferences;
 
@@ -47,8 +57,13 @@ public class FOTT_App extends Application {
         preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         curMember = preferences.getLong(getString(R.string.pref_stored_member), 0);
-        curTask = preferences.getLong(getString(R.string.pref_stored_task),0);
+        curTask = preferences.getLong(getString(R.string.pref_stored_task), 0);
         lastSync = preferences.getLong(getString(R.string.pref_stored_last_sync),0);
+
+        dateFormat = new SimpleDateFormat(FOTT_DATE_FORMAT);
+        dateFormat.setTimeZone(TimeZone.getDefault());
+        timeFormat = new SimpleDateFormat(FOTT_TIME_FORMAT);
+        timeFormat.setTimeZone(TimeZone.getDefault());
     }
 
     public SQLiteDatabase getDatabase() {
@@ -69,6 +84,14 @@ public class FOTT_App extends Application {
 
     public long getCurTimeslot() {
         return curTimeslot;
+    }
+
+    public SimpleDateFormat getDateFormat() {
+        return dateFormat;
+    }
+
+    public SimpleDateFormat getTimeFormat() {
+        return timeFormat;
     }
 
     public void setCurMember(long curMember) {

@@ -75,7 +75,7 @@ public class FOTT_TimeslotsAdapter extends RecyclerView.Adapter<FOTT_TimeslotsAd
 
         holder.tsText.setText(objectItem.getName());
         holder.tsAuthor.setText("");
-        holder.tsStart.setText(objectItem.getStart().toString());
+        holder.tsStart.setText(app.getDateFormat().format(objectItem.getStart()) + " " + app.getTimeFormat().format(objectItem.getStart()));
         holder.tsDuration.setText(objectItem.getDurationString());
     }
 
@@ -128,22 +128,50 @@ public class FOTT_TimeslotsAdapter extends RecyclerView.Adapter<FOTT_TimeslotsAd
         }
     }
 
-    public boolean saveNewTimeslot(Date start, long duration, String text){
-
+    public boolean saveTimeslot(long id, Date start, long duration, String text){
         if (start == null || duration == 0) return false;
+
         ContentValues ts = new ContentValues();
         ts.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_START,start.getTime());
         ts.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_DURATION,duration);
+        ts.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_DESC,text);
+        if (text.length()>250) text = text.substring(0,249);
+        ts.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_TITLE,text);
+        long now = Math.round(System.currentTimeMillis() / 1000);
+        ts.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_CHANGED,now);
         if (app.getCurTask() != 0) {
             ts.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_TASK_ID,app.getCurTask());
         }
 
+        if (id ==0) {
+            return saveNewTimeslot(ts);
+        } else {
+            return saveChangedTimeslot(id, ts);
+        }
+    }
+
+    private boolean saveNewTimeslot(ContentValues ts_values){
+
         SQLiteDatabase db = app.getDatabase();
-        long id = db.insert(FOTT_DBContract.FOTT_DBTimeslots.TABLE_NAME,null,ts);
+        long id = db.insert(FOTT_DBContract.FOTT_DBTimeslots.TABLE_NAME,null,ts_values);
 
         if (app.getCurTask() == 0){
             //TODO Add link to members path
         }
         return (id != 0);
+    }
+
+    private boolean saveChangedTimeslot(long id, ContentValues ts_values){
+        if (id == 0) return false;
+
+        String filter = FOTT_DBContract.FOTT_DBTimeslots.COLUMN_TIMESLOT_ID + " = " + String.valueOf(id);
+
+        SQLiteDatabase db = app.getDatabase();
+        int res = db.update(FOTT_DBContract.FOTT_DBTimeslots.TABLE_NAME, ts_values,filter,null);
+
+        if (app.getCurTask() == 0){
+            //TODO Add link to members path
+        }
+        return (res != 0);
     }
 }

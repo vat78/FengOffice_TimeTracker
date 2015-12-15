@@ -1,6 +1,5 @@
 package ru.vat78.fotimetracker;
 
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
@@ -20,6 +19,8 @@ import android.view.ViewGroup;
 
 import android.widget.TextView;
 
+import java.util.Date;
+
 import ru.vat78.fotimetracker.adapters.FOTT_MembersAdapter;
 import ru.vat78.fotimetracker.adapters.FOTT_TasksAdapter;
 import ru.vat78.fotimetracker.adapters.FOTT_TimeslotsAdapter;
@@ -30,6 +31,13 @@ import ru.vat78.fotimetracker.views.FOTT_TimeslotsFragment;
 public class FOTT_MainActivity extends AppCompatActivity {
 
     static final int PICK_LOGIN_REQUEST = 1;
+    static final int PICK_TSEDIT_REQUEST = 2;
+
+    static final String EXTRA_MESSAGE_TS_EDIT_ID = "ru.vat78.fotimetracker.TSID";
+    static final String EXTRA_MESSAGE_TS_EDIT_DURATION = "ru.vat78.fotimetracker.TSDURATION";
+    static final String EXTRA_MESSAGE_TS_EDIT_START = "ru.vat78.fotimetracker.TSSTART";
+    static final String EXTRA_MESSAGE_TS_EDIT_DESC = "ru.vat78.fotimetracker.TSDESC";
+
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -123,10 +131,24 @@ public class FOTT_MainActivity extends AppCompatActivity {
             if (resultCode != RESULT_OK) {
                 finish();
             }
+            members.load();
         }
-        members.load();
-        //tasks.load();
-        //timeslots.load();
+        if (requestCode == PICK_TSEDIT_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                long l = data.getLongExtra(EXTRA_MESSAGE_TS_EDIT_START,0);
+                Date d = new Date(l);
+                l = data.getLongExtra(EXTRA_MESSAGE_TS_EDIT_DURATION, 0);
+                long id = data.getLongExtra(EXTRA_MESSAGE_TS_EDIT_ID,0);
+                String s = data.getStringExtra(EXTRA_MESSAGE_TS_EDIT_DESC);
+
+                if (timeslots.saveTimeslot(id,d,l,s)){
+                    timeslots.load();
+                } else {
+                    //Todo: save error
+                }
+
+            }
+        }
     }
 
     private void CheckLogin(){
@@ -171,6 +193,23 @@ public class FOTT_MainActivity extends AppCompatActivity {
             timeslots.notifyDataSetChanged();
         }
         mViewPager.setCurrentItem(fragment,true);
+    }
+
+    public void editTimeslot(long tsId, long duration) {
+        Intent pickTS = new Intent(this,FOTT_TSEditActivity.class);
+        if (tsId == 0) {
+            pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_ID, 0);
+            if (duration == 0) {
+                //ToDo: get default duration from preferences
+                duration = 15;
+            }
+            pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_DURATION, duration);
+        } else {
+            pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_ID, tsId);
+            pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_DURATION, duration);
+        }
+
+        startActivityForResult(pickTS,PICK_TSEDIT_REQUEST);
     }
     /**
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
@@ -218,41 +257,4 @@ public class FOTT_MainActivity extends AppCompatActivity {
             return null;
         }
     }
-
-    /**
-     * A placeholder fragment containing a simple view.
-     */
-    public static class PlaceholderFragment extends Fragment {
-        /**
-         * The fragment argument representing the section number for this
-         * fragment.
-         */
-        private static final String ARG_SECTION_NUMBER = "section_number";
-
-        /**
-         * Returns a new instance of this fragment for the given section
-         * number.
-         */
-        public static PlaceholderFragment newInstance(int sectionNumber) {
-            PlaceholderFragment fragment = new PlaceholderFragment();
-            Bundle args = new Bundle();
-            args.putInt(ARG_SECTION_NUMBER, sectionNumber);
-            fragment.setArguments(args);
-            return fragment;
-        }
-
-        public PlaceholderFragment() {
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                                 Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_fott__main, container, false);
-            TextView textView = (TextView) rootView.findViewById(R.id.section_label);
-            textView.setText(getString(R.string.section_format, getArguments().getInt(ARG_SECTION_NUMBER)));
-            return rootView;
-        }
-    }
-
-
 }

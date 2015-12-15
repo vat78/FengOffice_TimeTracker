@@ -42,7 +42,7 @@ public class FOTT_MembersFragment extends Fragment {
             public void onItemClick(AdapterView<?> parent, View itemClicked, int position,
                                     long id){
                 MainApp.setCurMember(membersAdapter.getMemberId(position));
-                //mainActivity.getTasks().load();
+                MainApp.setCurTask(0);
                 membersAdapter.notifyDataSetChanged();
                 mainActivity.setCurrentFragment(1);
             }

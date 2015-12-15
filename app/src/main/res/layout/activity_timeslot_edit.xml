@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content" android:layout_height="wrap_content"
+    android:background="@android:color/darker_gray"
+    android:padding="8dp">
+
+
+
+        <EditText
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/tsAddDesc"
+            android:layout_below="@+id/tsAddMinutes"
+            android:layout_alignParentStart="true"
+            android:lines="4"
+            android:enabled="true"
+            android:editable="true"
+            android:inputType="textAutoCorrect|textMultiLine"
+            android:hint="@string/addform_description" />
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="number"
+        android:ems="10"
+        android:id="@+id/tsAddHours"
+        android:layout_alignParentTop="true"
+        android:layout_toEndOf="@+id/tsAddHoursLabel"
+        android:maxWidth="40dp"
+        android:maxLines="1"
+        android:width="40dp"
+        android:numeric="integer"
+        android:editable="true"
+        android:enabled="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/addform_hours"
+        android:id="@+id/tsAddHoursLabel"
+        android:layout_alignParentTop="true"
+        android:layout_toEndOf="@+id/tsAddStartDate"
+        android:labelFor="@id/tsAddHours"
+        android:textIsSelectable="true" />
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/addform_minutes_short"
+        android:id="@+id/tsAddMinutesLabel"
+        android:layout_alignParentTop="true"
+        android:layout_toEndOf="@id/tsAddHours"
+        android:labelFor="@id/tsAddMinutes" />
+
+    <Spinner
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/tsAddMinutes"
+        android:layout_alignParentTop="true"
+        android:layout_toEndOf="@+id/tsAddMinutesLabel"
+        android:layout_alignBottom="@+id/tsAddHours"
+        android:clickable="true"
+        android:spinnerMode="dropdown"
+        android:entries="@array/addform_minutes_values"
+        android:minWidth="80dp" />
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/addform_start"
+        android:id="@+id/tsAddStartLabel"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/tsAddDesc"
+        android:layout_marginLeft="18dp"
+        android:labelFor="@id/tsAddStartDate" />
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/tsAddStartDate"
+        android:layout_alignParentBottom="false"
+        android:layout_alignTop="@+id/tsAddStartLabel"
+        android:layout_toEndOf="@+id/tsAddStartLabel"
+        android:width="120dp"
+        android:textAlignment="textEnd"
+        android:layout_marginLeft="18dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/tsAddStartTime"
+        android:layout_alignParentBottom="false"
+        android:layout_alignTop="@+id/tsAddStartLabel"
+        android:layout_toEndOf="@id/tsAddStartDate"
+        android:width="60dp"
+        android:textAlignment="center"
+        android:layout_marginLeft="18dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/tsAddEndDate"
+        android:layout_alignParentBottom="false"
+        android:layout_toEndOf="@+id/tsAddStartLabel"
+        android:width="120dp"
+        android:textAlignment="textEnd"
+        android:layout_alignTop="@+id/tsAddEndLabel"
+        android:layout_alignLeft="@+id/tsAddStartDate" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/addform_end"
+        android:id="@+id/tsAddEndLabel"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/tsAddStartDate"
+        android:layout_marginTop="8dp"
+        android:layout_alignLeft="@+id/tsAddStartLabel"
+        android:layout_marginLeft="18dp"
+        android:labelFor="@id/tsAddEndDate" />
+
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/tsAddEndTime"
+        android:layout_alignParentBottom="false"
+        android:layout_alignTop="@+id/tsAddEndLabel"
+        android:layout_toEndOf="@id/tsAddEndDate"
+        android:width="60dp"
+        android:textAlignment="center"
+        android:layout_alignLeft="@+id/tsAddStartTime" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/addform_save"
+        android:id="@+id/tsAddSaveBtn"
+        android:layout_below="@+id/tsAddEndDate"
+        android:layout_alignParentStart="true"
+        android:layout_marginLeft="16dp"
+        android:layout_marginBottom="16dp"
+        android:layout_marginTop="16dp" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/addform_cancel"
+        android:id="@+id/tsAddCancelBtn"
+        android:layout_alignParentEnd="true"
+        android:layout_marginRight="16dp"
+        android:layout_alignBottom="@+id/tsAddSaveBtn" />
+
+</RelativeLayout>
