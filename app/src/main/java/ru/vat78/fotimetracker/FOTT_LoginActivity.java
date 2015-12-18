@@ -5,10 +5,8 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 
 import android.os.AsyncTask;
@@ -68,7 +66,7 @@ public class FOTT_LoginActivity extends AppCompatActivity {
         mUntrustCA = (CheckBox) findViewById(R.id.untrustCA);
         mSaveCred = (CheckBox) findViewById(R.id.save_cred);
 
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(app);
+        FOTT_Preferences preferences = app.getPreferences();
         mURLView.setText(preferences.getString(getString(R.string.pref_sync_url), ""));
         mLoginView.setText(preferences.getString(getString(R.string.pref_sync_login), ""));
         mUntrustCA.setChecked(preferences.getBoolean(getString(R.string.pref_sync_certs), false));
@@ -245,7 +243,7 @@ public class FOTT_LoginActivity extends AppCompatActivity {
         protected Boolean doInBackground(Void... params) {
 
             if (!FOApp.testConnection()) { return false;}
-            app.syncFOFull();
+            app.syncFO(true);
             return true;
         }
 
@@ -255,17 +253,15 @@ public class FOTT_LoginActivity extends AppCompatActivity {
             showProgress(false);
 
             if (success) {
-                SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(app);
-                SharedPreferences.Editor editor = preferences.edit();
-                editor.putString(getString(R.string.pref_sync_url), mURLView.getText().toString());
-                editor.putString(getString(R.string.pref_sync_login), mLoginView.getText().toString());
-                editor.putBoolean(getString(R.string.pref_sync_certs), mUntrustCA.isChecked());
+                FOTT_Preferences preferences = app.getPreferences();
+                preferences.set(getString(R.string.pref_sync_url), mURLView.getText().toString());
+                preferences.set(getString(R.string.pref_sync_login), mLoginView.getText().toString());
+                preferences.set(getString(R.string.pref_sync_certs), mUntrustCA.isChecked());
                 if (mSaveCred.isChecked()) {
-                    editor.putString(getString(R.string.pref_sync_password), mPasswordView.getText().toString());
+                    preferences.set(getString(R.string.pref_sync_password), mPasswordView.getText().toString());
                 } else {
-                    editor.putString(getString(R.string.pref_sync_password), "");
+                    preferences.set(getString(R.string.pref_sync_password), "");
                 }
-                editor.commit();
                 Intent intent = new Intent();
                 setResult(RESULT_OK, intent);
                 finish();

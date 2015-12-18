@@ -18,7 +18,7 @@ public final class FOTT_DBContract {
     private static final String EOL = "; ";
 
     private static final String DROP_TABLE = "DROP TABLE IF EXISTS ";
-    private static final String CREATE_TABLE = "CREATE TABLE ";
+    private static final String CREATE_TABLE = "CREATE TABLE IF NOT EXISTS ";
 
     public static abstract class FOTT_DBMembers implements BaseColumns {
         public static final String TABLE_NAME = "members";

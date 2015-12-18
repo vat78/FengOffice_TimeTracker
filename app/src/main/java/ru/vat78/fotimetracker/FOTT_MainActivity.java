@@ -1,8 +1,6 @@
 package ru.vat78.fotimetracker;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
@@ -145,7 +143,7 @@ public class FOTT_MainActivity extends AppCompatActivity {
                     timeslots.load();
 
                     FOAPI_Timeslots.saveChangedTimeslots(MainApp,timeslots);
-                    MainApp.syncFO();
+                    MainApp.syncFO(false);
                 } else {
                     //Todo: save error
                 }
@@ -155,11 +153,11 @@ public class FOTT_MainActivity extends AppCompatActivity {
     }
 
     private void CheckLogin(){
-        SharedPreferences preferences =  PreferenceManager.getDefaultSharedPreferences(MainApp);
-        //if (preferences.getString(getString(R.string.pref_sync_password),"").isEmpty()){
+        FOTT_Preferences preferences = MainApp.getPreferences();
+        if (preferences.getString(getString(R.string.pref_sync_password),"").isEmpty() || MainApp.isNeedFullSync()){
             Intent pickLogin = new Intent(this,FOTT_LoginActivity.class);
             startActivityForResult(pickLogin,PICK_LOGIN_REQUEST);
-        //}
+        }
     }
 
     public FOTT_MembersAdapter getMembers() {

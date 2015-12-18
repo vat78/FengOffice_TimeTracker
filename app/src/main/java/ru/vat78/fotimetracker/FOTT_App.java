@@ -36,6 +36,7 @@ public class FOTT_App extends Application {
 
     private FOAPI_Connector web_service;
     private SQLiteDatabase database;
+    private boolean needFullSync;
 
     private long curMember;
     private long curTask;
@@ -46,15 +47,23 @@ public class FOTT_App extends Application {
     private SimpleDateFormat dateFormat;
     private SimpleDateFormat timeFormat;
 
-    private SharedPreferences preferences;
+    private FOTT_Preferences preferences;
 
     @Override
     public void onCreate() {
         super.onCreate();
         web_service = new FOAPI_Connector();
-        FOTT_DBHelper helper = new FOTT_DBHelper(this);
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
+        preferences = new FOTT_Preferences(pref);
+        int db_version = preferences.getInt(getString(R.string.pref_db_version),0);
+        FOTT_DBHelper helper = new FOTT_DBHelper(this, db_version);
         database = helper.getWritableDatabase();
-        preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        if (db_version != helper.getDb_version()) {
+            //DB structure was changed and all records were deleted
+            //Need to reload from web-service
+            needFullSync = true;
+            preferences.set(getString(R.string.pref_db_version),helper.getDb_version());
+        }
 
         curMember = preferences.getLong(getString(R.string.pref_stored_member), 0);
         curTask = preferences.getLong(getString(R.string.pref_stored_task), 0);
@@ -70,6 +79,14 @@ public class FOTT_App extends Application {
         return database;
     }
 
+    public FOTT_Preferences getPreferences() {
+        return preferences;
+    }
+
+    public boolean isNeedFullSync() {
+        return needFullSync;
+    }
+
     public FOAPI_Connector getWeb_service() {
         return web_service;
     }
@@ -80,10 +97,6 @@ public class FOTT_App extends Application {
 
     public long getCurTask() {
         return curTask;
-    }
-
-    public long getCurTimeslot() {
-        return curTimeslot;
     }
 
     public long getLastSync() {return lastSync;}
@@ -98,45 +111,34 @@ public class FOTT_App extends Application {
 
     public void setCurMember(long curMember) {
         this.curMember = curMember;
-        savePreference(getString(R.string.pref_stored_member),curMember);
+        preferences.set(getString(R.string.pref_stored_member), curMember);
     }
 
     public void setCurTask(long curTask) {
         this.curTask = curTask;
-        savePreference(getString(R.string.pref_stored_task),curTask);
+        preferences.set(getString(R.string.pref_stored_task), curTask);
     }
 
-    public void setCurTimeslot(long curTimeslot) {
-        this.curTimeslot = curTimeslot;
+    public void setLastSync(long lastSync) {
+        this.lastSync = lastSync;
+        preferences.set(getString(R.string.pref_stored_last_sync), lastSync);
     }
 
-    public boolean syncFOFull() {
+    public boolean syncFO(boolean isNeedFullSync) {
 
-        if (syncMembers()) {
-            //If syncing works good clear links-tables
-            database.execSQL(FOTT_DBContract.FOTT_DBObject_Members.SQL_DELETE_ENTRIES);
-            database.execSQL(FOTT_DBContract.FOTT_DBObject_Object.SQL_DELETE_ENTRIES);
-            database.execSQL(FOTT_DBContract.FOTT_DBObject_Members.SQL_CREATE_ENTRIES);
-            database.execSQL(FOTT_DBContract.FOTT_DBObject_Object.SQL_CREATE_ENTRIES);
-
-            if (syncTasks()) {
-                return syncTimeslots(true);
+        long stamp = System.currentTimeMillis();
+        if (syncMembers(isNeedFullSync)) {
+            if (syncTasks(isNeedFullSync)) {
+                if (syncTimeslots(isNeedFullSync)){
+                    setLastSync(stamp);
+                    return true;
+                }
             }
         }
         return false;
     }
 
-    public boolean syncFO() {
-
-        if (syncMembers()) {
-            if (syncTasks()) {
-                return syncTimeslots(false);
-            }
-        }
-        return false;
-    }
-
-    private boolean syncMembers() {
+    private boolean syncMembers(boolean fullSync) {
 
         if (curMember > 0){
             //TODO: if has selected member
@@ -163,10 +165,17 @@ public class FOTT_App extends Application {
         catch (Error e){
             return  false;
         }
+        if (fullSync) {
+            //If syncing works good clear links-tables
+            database.execSQL(FOTT_DBContract.FOTT_DBObject_Members.SQL_DELETE_ENTRIES);
+            database.execSQL(FOTT_DBContract.FOTT_DBObject_Object.SQL_DELETE_ENTRIES);
+            database.execSQL(FOTT_DBContract.FOTT_DBObject_Members.SQL_CREATE_ENTRIES);
+            database.execSQL(FOTT_DBContract.FOTT_DBObject_Object.SQL_CREATE_ENTRIES);
+        }
         return true;
     }
 
-    private boolean syncTasks() {
+    private boolean syncTasks(boolean fullSync) {
 
         if (curTask > 0){
             //TODO: if has selected task
@@ -256,7 +265,6 @@ public class FOTT_App extends Application {
         if (curTimeslot > 0){
             //TODO: if has selected timeslot
         }
-        long stamp = System.currentTimeMillis();
 
         ArrayList<ContentValues> ts;
         try {
@@ -268,10 +276,8 @@ public class FOTT_App extends Application {
             if (ts == null) {return false;}
             database.execSQL(FOTT_DBContract.FOTT_DBTimeslots.SQL_DELETE_ENTRIES);
             database.execSQL(FOTT_DBContract.FOTT_DBTimeslots.SQL_CREATE_ENTRIES);
-            String now = String.valueOf(stamp);
 
             for (int i = 0; i < ts.size(); i++) {
-                ts.get(i).put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_FO_CHANGED,now);
                 database.insert(FOTT_DBContract.FOTT_DBTimeslots.TABLE_NAME, null, ts.get(i));
                 if (ts.get(i).containsKey(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_MEMBERS_ID)) {
                     if (!ts.get(i).containsKey(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_TASK_ID))
@@ -279,20 +285,12 @@ public class FOTT_App extends Application {
                                 ts.get(i).getAsString(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_MEMBERS_ID),2);
                 }
             }
-            lastSync = stamp;
-            savePreference(getString(R.string.pref_stored_last_sync),lastSync);
         }
         catch (Error e){
             return  false;
         }
 
         return true;
-    }
-
-    private void savePreference(String key,long value) {
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putLong(key,value);
-        editor.commit();
     }
 
 }

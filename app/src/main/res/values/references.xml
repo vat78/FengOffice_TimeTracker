@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pref_db_version">database version</string>
+    <string name="pref_sync_url">fo_url</string>
+    <string name="pref_sync_certs">fo_certs</string>
+    <string name="pref_sync_login">fo_login</string>
+    <string name="pref_sync_password">fo_password</string>
+    <string name="pref_sync_save_creds">fo_save</string>
+
+    <string name="pref_title_system_sync_settings">System sync settings</string>
+
+    <!-- Example settings for Notifications -->
+    <string name="pref_header_notifications">Notifications</string>
+
+    <string name="pref_title_new_message_notifications">New message notifications</string>
+
+    <string name="pref_title_ringtone">Ringtone</string>
+    <string name="pref_ringtone_silent">Silent</string>
+
+    <string name="pref_title_vibrate">Vibrate</string>
+
+    <string name="pref_stored_member">cur_member_id</string>
+    <string name="pref_stored_task">cur_task_id</string>
+    <string name="pref_stored_ts">cur_timeslot_id</string>
+    <string name="pref_stored_last_sync">last_sync</string>
+</resources>
