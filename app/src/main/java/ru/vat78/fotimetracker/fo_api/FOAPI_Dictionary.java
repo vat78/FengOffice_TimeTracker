@@ -59,10 +59,11 @@ public final class FOAPI_Dictionary {
     public static final String FO_API_FIELD_TS_DATE = "date";
     public static final String FO_API_FIELD_TS_DURATION = "time";
     public static final String FO_API_FIELD_TS_TASK = "ptid";
-
-
+    public static final String FO_API_FIELD_LAST_UPDATE = "lastupdated";
+    public static final String FO_API_FIELD_UPDATE_BY = "lastupdatedby";
 
     public static final String FO_API_ARG_STATUS = "status";
+    public static final String FO_API_ARG_LASTUPDATE = "lupdate";
 
     public static final String FO_API_TRUE = "true";
     public static final String FO_API_FALSE = "false";

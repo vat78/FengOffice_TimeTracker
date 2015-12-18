@@ -11,6 +11,7 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
+import java.sql.Time;
 import java.util.Date;
 
 /**
@@ -141,20 +142,21 @@ public class FOTT_TSEditActivity extends AppCompatActivity {
 
             int m = Integer.parseInt(minutes.getSelectedItem().toString());
             int h = Integer.parseInt(hours.getText().toString());
-            duration = h * 60 + m;
+            duration = 1000* (h * 60 + m);
 
         } catch (Exception e) {}
 
         if (useDuration){
             if (finish == 0) finish = now;
-            start = finish - duration * 60 * 1000;
+            start = finish - duration * 60 ;
         } else {
-            duration = Math.round((finish - start)/1000);
-            if (duration <= 0) duration = 1;
+            duration = Math.round((finish - start));
+            if (duration <= 0) duration = 1000;
         }
 
-        int h = Math.round(duration / 60);
-        int m = Math.round((duration - h*60) / 5);
+        Time d = new Time(duration);
+        int h = d.getHours();
+        int m = d.getMinutes();
 
         hours.setText(String.valueOf(h));
         minutes.setSelection(m);

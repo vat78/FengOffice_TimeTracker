@@ -24,6 +24,7 @@ import java.util.Date;
 import ru.vat78.fotimetracker.adapters.FOTT_MembersAdapter;
 import ru.vat78.fotimetracker.adapters.FOTT_TasksAdapter;
 import ru.vat78.fotimetracker.adapters.FOTT_TimeslotsAdapter;
+import ru.vat78.fotimetracker.fo_api.FOAPI_Timeslots;
 import ru.vat78.fotimetracker.views.FOTT_MembersFragment;
 import ru.vat78.fotimetracker.views.FOTT_TasksFragment;
 import ru.vat78.fotimetracker.views.FOTT_TimeslotsFragment;
@@ -89,7 +90,7 @@ public class FOTT_MainActivity extends AppCompatActivity {
 */
         //Connect lists adapters
         members = new FOTT_MembersAdapter(this,MainApp);
-
+        CheckLogin();
     }
 
     @Override
@@ -121,7 +122,6 @@ public class FOTT_MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        CheckLogin();
     }
 
     @Override
@@ -143,6 +143,9 @@ public class FOTT_MainActivity extends AppCompatActivity {
 
                 if (timeslots.saveTimeslot(id,d,l,s)){
                     timeslots.load();
+
+                    FOAPI_Timeslots.saveChangedTimeslots(MainApp,timeslots);
+                    MainApp.syncFO();
                 } else {
                     //Todo: save error
                 }
@@ -153,10 +156,10 @@ public class FOTT_MainActivity extends AppCompatActivity {
 
     private void CheckLogin(){
         SharedPreferences preferences =  PreferenceManager.getDefaultSharedPreferences(MainApp);
-        if (preferences.getString(getString(R.string.pref_sync_password),"").isEmpty()){
+        //if (preferences.getString(getString(R.string.pref_sync_password),"").isEmpty()){
             Intent pickLogin = new Intent(this,FOTT_LoginActivity.class);
             startActivityForResult(pickLogin,PICK_LOGIN_REQUEST);
-        }
+        //}
     }
 
     public FOTT_MembersAdapter getMembers() {

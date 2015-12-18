@@ -109,6 +109,7 @@ public final class FOTT_DBContract {
         public static final String COLUMN_NAME_TASK_ID = "taskid";
         public static final String COLUMN_NAME_MEMBERS_ID = "membersid";
         public static final String COLUMN_NAME_CHANGED = "changed";
+        public static final String COLUMN_NAME_CHANGED_BY = "changed_by";
         public static final String COLUMN_NAME_FO_CHANGED = "fochanged";
         public static final String COLUMN_NAME_FO_ENABLE = "enable";
 
@@ -123,6 +124,7 @@ public final class FOTT_DBContract {
                         FOTT_DBTimeslots.COLUMN_NAME_TASK_ID + INTEGER_TYPE + COMMA_SEP +
                         FOTT_DBTimeslots.COLUMN_NAME_MEMBERS_ID + TEXT_TYPE + COMMA_SEP +
                         FOTT_DBTimeslots.COLUMN_NAME_CHANGED + NUMERIC_TYPE + COMMA_SEP +
+                        FOTT_DBTimeslots.COLUMN_NAME_CHANGED_BY + TEXT_TYPE + COMMA_SEP +
                         FOTT_DBTimeslots.COLUMN_NAME_FO_CHANGED + NUMERIC_TYPE + COMMA_SEP +
                         FOTT_DBTimeslots.COLUMN_NAME_FO_ENABLE + NUMERIC_TYPE + " );";
         public static final String SQL_DELETE_ENTRIES =

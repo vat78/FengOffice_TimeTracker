@@ -54,9 +54,9 @@
                 android:text="New Text"
                 android:id="@+id/tsText"
                 android:layout_below="@+id/tsAuthor"
-                android:height="@dimen/abc_text_size_display_3_material"
                 android:ellipsize="end"
-                style="@android:style/Widget.Material.TextView" />
+                style="@android:style/Widget.Material.TextView"
+                android:maxHeight="@dimen/abc_text_size_display_3_material" />
 
         </RelativeLayout>
 

@@ -57,6 +57,10 @@ public class FOTT_TimeslotsAdapter extends RecyclerView.Adapter<FOTT_TimeslotsAd
         return timeslots.size();
     }
 
+    public FOTT_Timeslot getItem(int index){
+        return  timeslots.get(index);
+    }
+
     @Override
     public FOTT_TimeslotsAdapter.ViewHolder onCreateViewHolder(ViewGroup parent,
                                                    int viewType) {
@@ -74,7 +78,7 @@ public class FOTT_TimeslotsAdapter extends RecyclerView.Adapter<FOTT_TimeslotsAd
         FOTT_Timeslot objectItem = timeslots.get(position);
 
         holder.tsText.setText(objectItem.getName());
-        holder.tsAuthor.setText("");
+        holder.tsAuthor.setText(objectItem.getAuthor());
         holder.tsStart.setText(app.getDateFormat().format(objectItem.getStart()) + " " + app.getTimeFormat().format(objectItem.getStart()));
         holder.tsDuration.setText(objectItem.getDurationString());
     }
@@ -106,7 +110,11 @@ public class FOTT_TimeslotsAdapter extends RecyclerView.Adapter<FOTT_TimeslotsAd
                 new String[]{FOTT_DBContract.FOTT_DBTimeslots.COLUMN_TIMESLOT_ID,
                         FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_TITLE,
                         FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_START,
-                        FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_DURATION,},
+                        FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_DURATION,
+                        FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_CHANGED,
+                        FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_CHANGED_BY,
+                        FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_TASK_ID,
+                        FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_DESC},
                 filter, null, null, null,
                 FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_START + " DESC", null);
 
@@ -118,10 +126,17 @@ public class FOTT_TimeslotsAdapter extends RecyclerView.Adapter<FOTT_TimeslotsAd
                 String name = tsCursor.getString(1);
                 long start = tsCursor.getLong(2);
                 int dur = tsCursor.getInt(3);
+                long changed = tsCursor.getLong(4);
+                String author = tsCursor.getString(5);
+                long tid = tsCursor.getLong(6);
 
                 el = new FOTT_Timeslot(id, name);
                 el.setStart(start);
                 el.setDuration(dur);
+                el.setChanged(changed);
+                el.setAuthor(author);
+                el.setTaskId(tid);
+                el.setDesc(tsCursor.getString(7));
 
                 timeslots.add(el);
             } while (tsCursor.moveToNext());
@@ -137,7 +152,7 @@ public class FOTT_TimeslotsAdapter extends RecyclerView.Adapter<FOTT_TimeslotsAd
         ts.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_DESC,text);
         if (text.length()>250) text = text.substring(0,249);
         ts.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_TITLE,text);
-        long now = Math.round(System.currentTimeMillis() / 1000);
+        long now = System.currentTimeMillis();
         ts.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_CHANGED,now);
         if (app.getCurTask() != 0) {
             ts.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_TASK_ID,app.getCurTask());

@@ -86,6 +86,8 @@ public class FOTT_App extends Application {
         return curTimeslot;
     }
 
+    public long getLastSync() {return lastSync;}
+
     public SimpleDateFormat getDateFormat() {
         return dateFormat;
     }
@@ -254,10 +256,10 @@ public class FOTT_App extends Application {
         if (curTimeslot > 0){
             //TODO: if has selected timeslot
         }
+        long stamp = System.currentTimeMillis();
 
         ArrayList<ContentValues> ts;
         try {
-            Date stamp = new Date(System.currentTimeMillis());
             if (fullSync) {
                 ts = FOAPI_Timeslots.load(web_service);
             } else {
@@ -266,8 +268,10 @@ public class FOTT_App extends Application {
             if (ts == null) {return false;}
             database.execSQL(FOTT_DBContract.FOTT_DBTimeslots.SQL_DELETE_ENTRIES);
             database.execSQL(FOTT_DBContract.FOTT_DBTimeslots.SQL_CREATE_ENTRIES);
+            String now = String.valueOf(stamp);
 
             for (int i = 0; i < ts.size(); i++) {
+                ts.get(i).put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_FO_CHANGED,now);
                 database.insert(FOTT_DBContract.FOTT_DBTimeslots.TABLE_NAME, null, ts.get(i));
                 if (ts.get(i).containsKey(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_MEMBERS_ID)) {
                     if (!ts.get(i).containsKey(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_TASK_ID))
@@ -275,7 +279,7 @@ public class FOTT_App extends Application {
                                 ts.get(i).getAsString(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_MEMBERS_ID),2);
                 }
             }
-            lastSync = stamp.getTime();
+            lastSync = stamp;
             savePreference(getString(R.string.pref_stored_last_sync),lastSync);
         }
         catch (Error e){

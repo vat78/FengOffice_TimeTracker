@@ -87,13 +87,11 @@ public class FOTT_TasksAdapter extends RecyclerView.Adapter<FOTT_TasksAdapter.Ta
     @Override
     public void onBindViewHolder(TasksViewHolder taskViewHolder, int i) {
 
-        DateFormat dateFormat = android.text.format.DateFormat.getDateFormat(app.getApplicationContext());
-
         FOTT_Task objectItem = tasks.get(i);
 
         taskViewHolder.title.setText(objectItem.getName());
         Date d = objectItem.getDueDate();
-        taskViewHolder.duedate.setText(dateFormat.format(d));
+        taskViewHolder.duedate.setText(app.getDateFormat().format(d));
 
         taskViewHolder.title.setSelected(app.getCurTask() == objectItem.getId());
         taskViewHolder.duedate.setSelected(app.getCurTask() == objectItem.getId());
