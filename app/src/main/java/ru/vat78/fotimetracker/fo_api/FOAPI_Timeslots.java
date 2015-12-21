@@ -7,11 +7,12 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 import ru.vat78.fotimetracker.FOTT_App;
 import ru.vat78.fotimetracker.adapters.FOTT_TimeslotsAdapter;
-import ru.vat78.fotimetracker.database.FOTT_DBContract;
 import ru.vat78.fotimetracker.model.FOTT_Timeslot;
+import ru.vat78.fotimetracker.views.FOTT_ErrorsHandler;
 
 import static ru.vat78.fotimetracker.fo_api.FOAPI_Dictionary.*;
 
@@ -19,32 +20,35 @@ import static ru.vat78.fotimetracker.fo_api.FOAPI_Dictionary.*;
  * Created by vat on 04.12.2015.
  */
 public class FOAPI_Timeslots {
+    private static final String CLASS_NAME = "FOAPI_Timeslots";
 
-    public static ArrayList<ContentValues> load(FOAPI_Connector web_service){
-        JSONObject jo = web_service.executeAPI(FO_METHOD_LISTING, FO_SERVICE_TIMESLOTS);
-        return convertResults(jo);
+    public static ArrayList<FOTT_Timeslot> load(FOTT_App app){
+        JSONObject jo = app.getWeb_service().executeAPI(FO_METHOD_LISTING, FO_SERVICE_TIMESLOTS);
+        return convertResults(app, jo);
     }
 
-    public static ArrayList<ContentValues> load(FOAPI_Connector web_service, long timestamp){
+    public static ArrayList<FOTT_Timeslot> load(FOTT_App app, Date timestamp){
         String[] args = new String[1];
         args[0] = FO_API_ARG_LASTUPDATE;
-        args[1] = "" + timestamp;
-        JSONObject jo = web_service.executeAPI(FO_METHOD_LISTING, FO_SERVICE_TIMESLOTS,args);
-        return convertResults(jo);
+        long l = (long) timestamp.getTime() / FO_API_DATE_CONVERTOR;
+        args[1] = "" + l;
+        JSONObject jo = app.getWeb_service().executeAPI(FO_METHOD_LISTING, FO_SERVICE_TIMESLOTS, args);
+        return convertResults(app,jo);
     }
 
-    public static boolean saveChangedTimeslots(FOTT_App app, FOTT_TimeslotsAdapter timeslots){
+    public static boolean saveChangedTimeslots(FOTT_App app, ArrayList<FOTT_Timeslot> timeslots){
 
         boolean res = true;
-        long l = app.getLastSync();
+        Date l = app.getLastSync();
 
-        for (int i=0; i < timeslots.getItemCount(); i++) {
+        for (int i=0; i < timeslots.size(); i++) {
             try {
-                FOTT_Timeslot ts = timeslots.getItem(i);
-                if (ts.getChanged() > l) {
+                FOTT_Timeslot ts = timeslots.get(i);
+                if (ts.getChanged().after(l)) {
                     save(app.getWeb_service(), ts);
                 }
             } catch (Exception e) {
+                app.getError().error_handler(FOTT_ErrorsHandler.ERROR_SAVE_ERROR,CLASS_NAME,e.getMessage());
                 res = false;
             }
         }
@@ -59,10 +63,10 @@ public class FOAPI_Timeslots {
         args[2] = FO_API_FIELD_DESC;
         args[3] = timeslot.getDesc();
         args[4] = FO_API_FIELD_TS_DATE;
-        l = (long) timeslot.getStart().getTime() / 1000;
+        l = (long) timeslot.getStart().getTime() / FO_API_DATE_CONVERTOR;
         args[5] = "" + l;
         args[6] = FO_API_FIELD_TS_DURATION;
-        l = (long) timeslot.getDuration() / 1000;
+        l = (long) timeslot.getDuration().getTime() / FO_API_DATE_CONVERTOR;
         args[7] = "" + l;
         args[8] = FO_API_FIELD_TS_TASK;
         args[9] = timeslot.getTaskId() == 0 ? "" : "" + timeslot.getTaskId();
@@ -75,75 +79,77 @@ public class FOAPI_Timeslots {
         return jo.toString() == "[\"true\"]";
     }
 
-    private static ArrayList<ContentValues> convertResults(JSONObject data){
+    private static ArrayList<FOTT_Timeslot> convertResults(FOTT_App app, JSONObject data){
 
         if (data == null) {return null;}
         JSONArray list = null;
         JSONObject jo;
         String tmp;
-        ArrayList<ContentValues> res = new ArrayList<>();
+        ArrayList<FOTT_Timeslot> res = new ArrayList<>();
         try {
             list = data.getJSONArray(FO_API_MAIN_OBJ);
         } catch (Exception e) {
-            Log.e("FOTT", e.getMessage());
+            app.getError().error_handler(FOTT_ErrorsHandler.ERROR_SAVE_ERROR,CLASS_NAME,e.getMessage());
         }
         if (list == null) {return null;}
 
         for (int i = 0; i < list.length(); i++) {
-            ContentValues el = new ContentValues();
+            FOTT_Timeslot el = null;
             try {
                 jo = list.getJSONObject(i);
-                el.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_TIMESLOT_ID,jo.getInt(FO_API_FIELD_ID));
+                long id = jo.getLong(FO_API_FIELD_ID);
+                String s;
                 if (jo.isNull(FO_API_FIELD_TS_DESC)) {
-                    el.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_TITLE,"");
+                    s="";
                 } else {
-                    el.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_TITLE, jo.getString(FO_API_FIELD_TS_DESC));
+                    s= jo.getString(FO_API_FIELD_TS_DESC);
                 }
+                el = new FOTT_Timeslot(id,s);
 
-                String m = "";
+                s = "";
                 if (!jo.isNull(FO_API_FIELD_MEMPATH)) {
                     JSONArray ja = jo.getJSONArray(FO_API_FIELD_MEMPATH);
                     for (int j = 0; j < ja.length(); j++)
-                        m = m + ja.getString(j) + ",";
+                        s = s + ja.getString(j) + ",";
                 }
-                el.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_MEMBERS_ID,m);
+                el.setMembersPath(s);
 
                 tmp = FO_API_FALSE;
                 if (!jo.isNull(FO_API_FIELD_TS_DATE))
                     tmp = jo.getString(FO_API_FIELD_TS_DATE);
                 if (tmp == FO_API_FALSE) {
-                    el.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_START,0);
+                    el.setStart(0);
                 } else {
-                    el.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_START, jo.getLong(FO_API_FIELD_TS_DATE)*1000);
+                    el.setStart(jo.getLong(FO_API_FIELD_TS_DATE)*FO_API_DATE_CONVERTOR);
                 }
 
                 if (jo.isNull(FO_API_FIELD_TS_DURATION)) {
-                    el.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_DURATION,10);
+                    el.setDuration(FO_API_DATE_CONVERTOR);
                 } else {
-                    el.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_DURATION, jo.getInt(FO_API_FIELD_TS_DURATION)*1000);
+                    el.setDuration(jo.getInt(FO_API_FIELD_TS_DURATION)*FO_API_DATE_CONVERTOR);
                 }
                 if (jo.isNull(FO_API_FIELD_TS_TASK)){
-                    el.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_TASK_ID,0);
+                    el.setTaskId(0);
                 } else {
-                    el.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_TASK_ID, jo.getInt(FO_API_FIELD_TS_TASK));
+                    el.setTaskId(jo.getLong(FO_API_FIELD_TS_TASK));
                 }
                 if (jo.isNull(FO_API_FIELD_LAST_UPDATE)){
-                    el.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_CHANGED,0);
+                    el.setChanged(0);
                 } else {
-                    el.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_CHANGED, jo.getLong(FO_API_FIELD_LAST_UPDATE)*1000);
+                    el.setChanged(jo.getLong(FO_API_FIELD_LAST_UPDATE)*FO_API_DATE_CONVERTOR);
                 }
                 if (jo.isNull(FO_API_FIELD_UPDATE_BY)){
-                    el.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_CHANGED_BY,0);
+                    el.setAuthor("");
                 } else {
-                    el.put(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_CHANGED_BY, jo.getString(FO_API_FIELD_UPDATE_BY));
+                    el.setAuthor(jo.getString(FO_API_FIELD_UPDATE_BY));
                 }
 
             }
             catch (Exception e) {
-                Log.e("FOTT", e.getMessage());
+                app.getError().error_handler(FOTT_ErrorsHandler.ERROR_LOG_MESSAGE,CLASS_NAME, e.getMessage());
             }
             finally {
-                if (el.size()>0)
+                if (el != null)
                     if (!res.add(el)) {break;}
             }
         }

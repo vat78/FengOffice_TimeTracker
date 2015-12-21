@@ -21,6 +21,8 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Date;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -31,6 +33,11 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import ru.vat78.fotimetracker.FOTT_App;
+import ru.vat78.fotimetracker.model.FOTT_Member;
+import ru.vat78.fotimetracker.model.FOTT_Task;
+import ru.vat78.fotimetracker.model.FOTT_Timeslot;
+
 /**
  * Created by vat on 17.11.2015.
  *
@@ -40,6 +47,7 @@ import javax.net.ssl.X509TrustManager;
 
 public class FOAPI_Connector {
 
+    private FOTT_App app;
     private int ErrorCode=0;
     private String ErrorMsg="";
 
@@ -47,6 +55,10 @@ public class FOAPI_Connector {
     private static String FO_Pwd;
     private static String FO_URL;
     private String FO_Token;
+
+    public FOAPI_Connector(FOTT_App application){
+        app = application;
+    }
 
     private boolean UseUntrustCA = false;
 
@@ -157,7 +169,7 @@ public class FOAPI_Connector {
         String request = this.FO_URL + FOAPI_Dictionary.FO_VAPI_REQUEST;
         request = request.replace(FOAPI_Dictionary.FO_API_METHOD,method);
         request = request.replace(FOAPI_Dictionary.FO_API_SERVICE,service);
-        request = request.replace(FOAPI_Dictionary.FO_API_TOKEN,this.FO_Token);
+        request = request.replace(FOAPI_Dictionary.FO_API_TOKEN, this.FO_Token);
 
         JSONObject jo = null;
         jo = JSONfunctions.getJSONObjfromURL(request, this.UseUntrustCA, this.ErrorMsg);
@@ -202,9 +214,22 @@ public class FOAPI_Connector {
     }
 
 
+
     private void resetError(){
         this.ErrorCode = 0;
         this.ErrorMsg = "";
+    }
+
+    public ArrayList<FOTT_Member> loadMembers() {
+        return FOAPI_Members.load(app);
+    }
+
+    public ArrayList<FOTT_Task> loadTasks(Date lastSync) {
+        return lastSync == null ? FOAPI_Tasks.load(app) : FOAPI_Tasks.load(app, lastSync);
+    }
+
+    public ArrayList<FOTT_Timeslot> loadTimeslots(Date lastSync) {
+        return lastSync == null ? FOAPI_Timeslots.load(app) : FOAPI_Timeslots.load(app, lastSync);
     }
 
     private static class MyTrustManager implements X509TrustManager

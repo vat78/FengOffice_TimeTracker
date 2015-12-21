@@ -69,4 +69,6 @@ public final class FOAPI_Dictionary {
     public static final String FO_API_FALSE = "false";
 
     public static final String FO_API_MAIN_OBJ = "fo_obj";
+
+    public static final long FO_API_DATE_CONVERTOR = 1000;
 }

@@ -11,7 +11,8 @@ public class FOTT_Object {
     private String name;
     private String desc;
     private String author;
-    private long changed;
+    private Date changed;
+    private String memPath;
 
     public long getId() {
         return foid;
@@ -25,11 +26,13 @@ public class FOTT_Object {
         return desc;
     }
 
+    public String getMembersPath() { return memPath;}
+
     public void setId(long foid) {
         this.foid = foid;
     }
 
-    public long getChanged() {
+    public Date getChanged() {
         return changed;
     }
 
@@ -45,12 +48,14 @@ public class FOTT_Object {
         this.author = author;
     }
 
+    public void setMembersPath(String membersPath) {memPath = membersPath;}
+
     public void setChanged(long changed) {
-        this.changed = changed;
+        this.changed = new Date(changed);
     }
 
     public void setChanged(Date changed) {
-        this.changed = changed.getTime();
+        this.changed = changed;
     }
 
     public String getAuthor() {

@@ -8,9 +8,6 @@ import android.view.View;
  */
 public class FOTT_Member extends FOTT_Object {
 
-    //private long id;
-    //private String name;
-    private String path;
     private int color;
     private int level = 0;
     private boolean visible = true;
@@ -22,9 +19,6 @@ public class FOTT_Member extends FOTT_Object {
         setName(memberName);
     }
 
-    public String getPath() {
-        return path;
-    }
 
     public int getColor() {
         return color;
@@ -40,10 +34,6 @@ public class FOTT_Member extends FOTT_Object {
 
     public int getState() {
         return state;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
     }
 
     public void setColor(int color) {

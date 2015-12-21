@@ -7,18 +7,28 @@ import java.util.Date;
  */
 public class FOTT_Task extends FOTT_Object {
 
-    private long duedate;
+    private Date startdate;
+    private Date duedate;
+    private int priority;
 
     public FOTT_Task(long taskId, String taskTitle){
         setId(taskId);
         setName(taskTitle);
     }
 
-    public void setDuedate(long duedate) {
-        this.duedate = duedate;
+    public void setStartDate(long startdate) {
+        this.startdate = new Date (startdate);
+    }
+
+    public void setDueDate(long duedate) {
+        this.duedate = new Date (duedate);
+    }
+
+    public void setPriority(int priority) {
+        this.priority = priority;
     }
 
     public Date getDueDate(){
-        return new Date(duedate * 1000);
+        return duedate;
     }
 }

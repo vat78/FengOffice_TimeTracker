@@ -23,4 +23,7 @@
     <string name="pref_stored_task">cur_task_id</string>
     <string name="pref_stored_ts">cur_timeslot_id</string>
     <string name="pref_stored_last_sync">last_sync</string>
+
+    <string name="pref_date_format">date_format</string>
+    <string name="pref_time_format">time_format</string>
 </resources>
