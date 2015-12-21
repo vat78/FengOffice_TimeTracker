@@ -1,5 +1,6 @@
 package ru.vat78.fotimetracker.model;
 
+import java.util.ArrayList;
 import java.util.Date;
 
 /**
@@ -12,7 +13,16 @@ public class FOTT_Object {
     private String desc;
     private String author;
     private Date changed;
-    private String memPath;
+    private String membersIds;
+
+    public FOTT_Object(){
+        foid = 0;
+        name = "";
+        desc = "";
+        author = "";
+        changed = new Date(0);
+        membersIds = "" ;
+    }
 
     public long getId() {
         return foid;
@@ -26,7 +36,7 @@ public class FOTT_Object {
         return desc;
     }
 
-    public String getMembersPath() { return memPath;}
+    public String getMembersIds() { return membersIds;}
 
     public void setId(long foid) {
         this.foid = foid;
@@ -48,7 +58,7 @@ public class FOTT_Object {
         this.author = author;
     }
 
-    public void setMembersPath(String membersPath) {memPath = membersPath;}
+    public void setMembersPath(String members) {membersIds = members;}
 
     public void setChanged(long changed) {
         this.changed = new Date(changed);
@@ -61,4 +71,13 @@ public class FOTT_Object {
     public String getAuthor() {
         return author;
     }
+
+    public String[] getMembersArray() {
+        if (!membersIds.isEmpty()){
+            return membersIds.split("/");
+        }  else {
+            return null;
+        }
+    }
+
 }

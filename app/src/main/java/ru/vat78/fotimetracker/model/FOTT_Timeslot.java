@@ -2,6 +2,7 @@ package ru.vat78.fotimetracker.model;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 /**
@@ -12,13 +13,14 @@ public class FOTT_Timeslot extends FOTT_Object {
     private Date start;
     private Date duration;
     private long task_id;
-    private long member_id;
 
 
     public FOTT_Timeslot(long tsId, String tsTitle){
+        super();
         setId(tsId);
         setName(tsTitle.length() > 250 ? tsTitle.substring(0, 250) : tsTitle);
         setDesc(tsTitle);
+        setTaskId(0);
     }
 
     public Date getStart() {
@@ -44,9 +46,6 @@ public class FOTT_Timeslot extends FOTT_Object {
         return task_id;
     }
 
-    public long getMemberId() {
-        return member_id;
-    }
 
     public void setStart(long start) {
         this.start = new Date(start);
@@ -62,10 +61,6 @@ public class FOTT_Timeslot extends FOTT_Object {
 
     public void setTaskId(long task_id) {
         this.task_id = task_id;
-    }
-
-    public void setMemberId(long member_id) {
-        this.member_id = member_id;
     }
 
 }

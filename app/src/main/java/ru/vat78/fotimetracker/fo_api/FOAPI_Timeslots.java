@@ -70,9 +70,13 @@ public class FOAPI_Timeslots {
         args[7] = "" + l;
         args[8] = FO_API_FIELD_TS_TASK;
         args[9] = timeslot.getTaskId() == 0 ? "" : "" + timeslot.getTaskId();
-        if (timeslot.getMemberId() > 0) {
+        if (!timeslot.getMembersIds().isEmpty() && timeslot.getTaskId() == 0) {
             args[10] = FO_API_FIELD_MEMBERS;
-            args[11] = "[\"" + timeslot.getMemberId() + "\"]";
+            args[11] = "[";
+            String[] members = timeslot.getMembersArray();
+            for (int i = 0; i<members.length; i++)
+                args[11] += "\"" + members[i] + "\",";
+            args[11] += "]";
         }
 
         JSONObject jo = web_service.executeAPI(FO_METHOD_SAVE_OBJ, FO_SERVICE_TIMESLOT,args);
@@ -110,7 +114,7 @@ public class FOAPI_Timeslots {
                 if (!jo.isNull(FO_API_FIELD_MEMPATH)) {
                     JSONArray ja = jo.getJSONArray(FO_API_FIELD_MEMPATH);
                     for (int j = 0; j < ja.length(); j++)
-                        s = s + ja.getString(j) + ",";
+                        s = s + ja.getString(j) + "/";
                 }
                 el.setMembersPath(s);
 

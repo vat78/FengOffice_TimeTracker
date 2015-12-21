@@ -12,6 +12,7 @@ public class FOTT_Task extends FOTT_Object {
     private int priority;
 
     public FOTT_Task(long taskId, String taskTitle){
+        super();
         setId(taskId);
         setName(taskTitle);
     }

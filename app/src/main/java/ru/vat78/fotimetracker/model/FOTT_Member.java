@@ -15,6 +15,7 @@ public class FOTT_Member extends FOTT_Object {
     private int tasksCnt = 0;
 
     public FOTT_Member(long memberId, String memberName){
+        super();
         setId(memberId);
         setName(memberName);
     }

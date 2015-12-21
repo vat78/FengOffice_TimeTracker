@@ -13,11 +13,13 @@ import ru.vat78.fotimetracker.fo_api.FOAPI_Members;
 import ru.vat78.fotimetracker.fo_api.FOAPI_Tasks;
 import ru.vat78.fotimetracker.fo_api.FOAPI_Timeslots;
 import ru.vat78.fotimetracker.model.FOTT_Timeslot;
+import ru.vat78.fotimetracker.views.FOTT_ErrorsHandler;
 
 /**
  * Created by vat on 21.12.2015.
  */
 public class FOTT_DB {
+    private static final String CLASS_NAME = "FOTT_DB";
 
     private SQLiteDatabase database;
     private FOTT_App app;
@@ -37,6 +39,27 @@ public class FOTT_DB {
     public long getDb_version() {
         return FOTT_DBContract.DATABASE_VERSION;
     }
+
+    public void execSQL(String sql){
+        database.execSQL(sql);
+    }
+
+    public long insert(String table, ContentValues values){
+        long res = database.insert(table,null,values);
+        if (res == -1) app.getError().error_handler(FOTT_ErrorsHandler.ERROR_LOG_MESSAGE, CLASS_NAME, app.getString(R.string.db_insert_empty_row));
+        return res;
+    }
+
+    public long insertOrUpdate(String table, ContentValues values){
+        long res = database.insertWithOnConflict(table, null, values, database.CONFLICT_REPLACE);
+        if (res == -1) app.getError().error_handler(FOTT_ErrorsHandler.ERROR_LOG_MESSAGE, CLASS_NAME, app.getString(R.string.db_insert_empty_row));
+        return res;
+    }
+
+    public Cursor query(String table, String[] columns, String filter, String order){
+        return database.query(table,columns,filter,null,null,null,order);
+    }
+
 
     public boolean syncMembers(boolean fullSync) {
 
@@ -74,38 +97,7 @@ public class FOTT_DB {
         }
         return true;
     }
-    public boolean syncTasks(boolean fullSync) {
 
-        if (app.getCurTask() > 0){
-            //TODO: if has selected task
-        }
-
-        ArrayList<ContentValues> tasks;
-        try {
-            tasks = FOAPI_Tasks.load(app.getWeb_service());
-            if (tasks == null) {return false;}
-            database.execSQL(FOTT_DBContract.FOTT_DBTasks.SQL_DELETE_ENTRIES);
-            database.execSQL(FOTT_DBContract.FOTT_DBTasks.SQL_CREATE_ENTRIES);
-
-            ContentValues any = new ContentValues();
-            any.put(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_TASK_ID,0);
-            any.put(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_TITLE,"..");
-            tasks.add(any);
-            for (int i = 0; i < tasks.size(); i++) {
-                database.insert(FOTT_DBContract.FOTT_DBTasks.TABLE_NAME, null, tasks.get(i));
-                if (tasks.get(i).containsKey(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_MEMPATH)) {
-                    fillMembersLinks(tasks.get(i).getAsLong(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_TASK_ID),
-                            tasks.get(i).getAsString(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_MEMPATH),1);
-                }
-            }
-        }
-        catch (Error e){
-            return  false;
-        }
-        calcTasksInMembers();
-
-        return true;
-    }
 
     private void fillMembersLinks(long objId, String members, int objType) {
 
@@ -159,33 +151,6 @@ public class FOTT_DB {
         }
     }
 
-    public boolean syncTimeslots(boolean fullSync) {
 
-        ArrayList<FOTT_Timeslot> ts;
-        try {
-            if (fullSync) {
-                ts = app.getWeb_service().loadTimeslots(null);
-            } else {
-                ts = app.getWeb_service().loadTimeslots(app.getLastSync());
-            }
-            if (ts == null) {return false;}
-            database.execSQL(FOTT_DBContract.FOTT_DBTimeslots.SQL_DELETE_ENTRIES);
-            database.execSQL(FOTT_DBContract.FOTT_DBTimeslots.SQL_CREATE_ENTRIES);
-
-            for (int i = 0; i < ts.size(); i++) {
-                database.insert(FOTT_DBContract.FOTT_DBTimeslots.TABLE_NAME, null, ts.get(i));
-                if (ts.get(i).containsKey(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_MEMBERS_ID)) {
-                    if (!ts.get(i).containsKey(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_TASK_ID))
-                        fillMembersLinks(ts.get(i).getAsLong(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_TIMESLOT_ID),
-                                ts.get(i).getAsString(FOTT_DBContract.FOTT_DBTimeslots.COLUMN_NAME_MEMBERS_ID),2);
-                }
-            }
-        }
-        catch (Error e){
-            return  false;
-        }
-
-        return true;
-    }
 
 }

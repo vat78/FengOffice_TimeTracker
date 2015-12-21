@@ -136,18 +136,4 @@ public class FOTT_App extends Application {
         this.needFullSync = true;
     }
 
-    public boolean syncFO() {
-
-        long stamp = System.currentTimeMillis();
-        if (database.syncMembers(needFullSync)) {
-            if (database.syncTasks(needFullSync)) {
-                if (database.syncTimeslots(needFullSync)){
-                    setLastSync(stamp);
-                    needFullSync = false;
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
 }
