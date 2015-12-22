@@ -48,4 +48,17 @@ public class FOTT_DBMembers_Objects extends FOTT_DBContract {
                 String.valueOf(member_id) + " AND " +
                 COLUMN_OBJECT_TYPE + " = " + String.valueOf(object_type);
     }
+
+    public static String getSQLObectsCnt(String parent_id) {
+        return "SELECT COUNT(" +
+                "o." + COLUMN_OBJECT_ID +
+                ") FROM " + TABLE_NAME +
+                " o WHERE o." +
+                COLUMN_MEMBER_ID + " = " + parent_id;
+    }
+
+    public static void rebuild(FOTT_App app) {
+        app.getDatabase().execSQL(SQL_DELETE_ENTRIES);
+        app.getDatabase().execSQL(SQL_CREATE_ENTRIES);
+    }
 }

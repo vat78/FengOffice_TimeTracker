@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import ru.vat78.fotimetracker.database.FOTT_DBContract;
+import ru.vat78.fotimetracker.database.FOTT_DBMembers;
+import ru.vat78.fotimetracker.database.FOTT_DBTasks;
 import ru.vat78.fotimetracker.database.FOTT_DBTimeslots;
 import ru.vat78.fotimetracker.fo_api.FOAPI_Members;
 import ru.vat78.fotimetracker.fo_api.FOAPI_Tasks;
@@ -33,10 +35,13 @@ public class FOTT_SyncTask extends AsyncTask<FOTT_App, Void, Boolean> {
         //Sync members
         ArrayList<FOTT_Member> members = FOAPI_Members.load(MainApp);
         if (MainApp.getError().is_error()) {return false;}
-
+        FOTT_DBMembers.save(MainApp, members);
+        if (MainApp.getError().is_error()) {return false;}
 
         //Sync task
         ArrayList<FOTT_Task> tasks = FOAPI_Tasks.load(MainApp, d);
+        if (MainApp.getError().is_error()) {return false;}
+        FOTT_DBTasks.save(MainApp,tasks,fullSync);
         if (MainApp.getError().is_error()) {return false;}
 
         //Sync timeslots

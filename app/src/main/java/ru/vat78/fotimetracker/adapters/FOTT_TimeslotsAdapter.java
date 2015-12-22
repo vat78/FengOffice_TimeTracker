@@ -26,9 +26,13 @@ import ru.vat78.fotimetracker.model.FOTT_Timeslot;
  */
 public class FOTT_TimeslotsAdapter extends RecyclerView.Adapter<FOTT_TimeslotsAdapter.ViewHolder> {
 
-    private List<FOTT_Timeslot> timeslots;
+    private ArrayList<FOTT_Timeslot> timeslots;
     private Context context;
     private FOTT_App app;
+
+    public ArrayList<FOTT_Timeslot> getAllTimeslots() {
+        return timeslots;
+    }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         // each data item is just a string in this case

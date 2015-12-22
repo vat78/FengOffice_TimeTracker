@@ -16,6 +16,7 @@ import java.util.List;
 import ru.vat78.fotimetracker.FOTT_App;
 import ru.vat78.fotimetracker.R;
 import ru.vat78.fotimetracker.database.FOTT_DBContract;
+import ru.vat78.fotimetracker.database.FOTT_DBMembers;
 import ru.vat78.fotimetracker.model.FOTT_Member;
 
 /**
@@ -85,38 +86,7 @@ public class FOTT_MembersAdapter extends ArrayAdapter<String> {
     }
 
     public void load(){
-        SQLiteDatabase db = app.getDatabase();
-
-        this.members = new ArrayList<>();
-        Cursor memberCursor = db.query(FOTT_DBContract.FOTT_DBMembers.TABLE_NAME,
-                new String[]{FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_MEMBER_ID,
-                        FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_NAME,
-                        FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_PATH,
-                        FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_LEVEL,
-                        FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_COLOR,
-                        FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_TASKS},
-                null, null, null, null,
-                FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_PATH,null);
-
-        memberCursor.moveToFirst();
-        FOTT_Member m;
-        if (!memberCursor.isAfterLast()){
-            do {
-                long id = memberCursor.getLong(0);
-                String name = memberCursor.getString(1);
-                String path = memberCursor.getString(2);
-                int color = memberCursor.getInt(4);
-                int level = memberCursor.getInt(3);
-
-                m = new FOTT_Member(id, name);
-                m.setPath(path);
-                m.setColor(color);
-                m.setLevel(level);
-                m.setTasksCnt(memberCursor.getInt(5));
-
-                members.add(m);
-            } while (memberCursor.moveToNext());
-        }
+        members = FOTT_DBMembers.load(app);
     }
 
     public long getMemberId(int position){
@@ -124,28 +94,6 @@ public class FOTT_MembersAdapter extends ArrayAdapter<String> {
     }
 
     public FOTT_Member getMemberById(long id){
-        SQLiteDatabase db = app.getDatabase();
-        FOTT_Member res = new FOTT_Member(0,"");
-
-        if (id>0){
-            String filter = " " + FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_MEMBER_ID + " = " + id;
-            Cursor memberCursor = db.query(FOTT_DBContract.FOTT_DBMembers.TABLE_NAME,
-                    new String[]{FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_MEMBER_ID,
-                            FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_NAME,
-                            FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_PATH,
-                            FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_LEVEL,
-                            FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_COLOR,
-                            FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_TASKS},
-                    filter, null, null, null,
-                    FOTT_DBContract.FOTT_DBMembers.COLUMN_NAME_PATH,null);
-            memberCursor.moveToFirst();
-            if (!memberCursor.isAfterLast()){
-                res.setId(memberCursor.getLong(0));
-                res.setName(memberCursor.getString(1));
-                res.setColor(memberCursor.getInt(4));
-                res.setTasksCnt(memberCursor.getInt(5));
-            }
-        }
-        return res;
+        return FOTT_DBMembers.getMemberById(app,id);
     }
 }

@@ -43,13 +43,16 @@ public class FOTT_DBTimeslots extends FOTT_DBContract {
     private static final String SQL_DELETE_ENTRIES =
             DROP_TABLE + TABLE_NAME + ";";
 
+    public static void rebuild(FOTT_App app){
+        app.getDatabase().execSQL(SQL_DELETE_ENTRIES);
+        app.getDatabase().execSQL(SQL_CREATE_ENTRIES);
+    }
 
     public static void save(FOTT_App app, ArrayList<FOTT_Timeslot> ts_list, boolean fullSync) {
 
         try {
             if (fullSync) {
-                app.getDatabase().execSQL(SQL_DELETE_ENTRIES);
-                app.getDatabase().execSQL(SQL_CREATE_ENTRIES);
+                rebuild(app);
             }
 
             for (int i = 0; i < ts_list.size(); i++) {

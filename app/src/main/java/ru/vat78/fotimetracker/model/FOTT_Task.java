@@ -32,4 +32,8 @@ public class FOTT_Task extends FOTT_Object {
     public Date getDueDate(){
         return duedate;
     }
+
+    public void setDuedate(long duedate) {
+        this.duedate = new Date(duedate);
+    }
 }

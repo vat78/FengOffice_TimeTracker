@@ -1,22 +1,19 @@
 package ru.vat78.fotimetracker.adapters;
 
 import android.content.Context;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import ru.vat78.fotimetracker.FOTT_App;
 import ru.vat78.fotimetracker.R;
-import ru.vat78.fotimetracker.database.FOTT_DBContract;
+import ru.vat78.fotimetracker.database.FOTT_DBTasks;
 import ru.vat78.fotimetracker.model.FOTT_Task;
 import ru.vat78.fotimetracker.views.FOTT_TasksFragment;
 
@@ -108,64 +105,10 @@ public class FOTT_TasksAdapter extends RecyclerView.Adapter<FOTT_TasksAdapter.Ta
     }
 
     public void load(){
-        SQLiteDatabase db = app.getDatabase();
-
-        this.tasks = new ArrayList<>();
-        String memFilter = null;
-        if (app.getCurMember() > 0) {
-            //memFilter = " " + FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_MEMBERS + " LIKE '%\"" + app.getCurMember() + "\"%' OR " +
-            //    FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_TASK_ID + " = 0";
-            memFilter = " " + FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_TASK_ID + " IN ( SELECT " +
-                    FOTT_DBContract.FOTT_DBObject_Members.COLUMN_OBJECT_ID + " FROM " +
-                    FOTT_DBContract.FOTT_DBObject_Members.TABLE_NAME + " WHERE " +
-                    FOTT_DBContract.FOTT_DBObject_Members.COLUMN_MEMBER_ID + " = " +
-                    String.valueOf(app.getCurMember()) + " AND " +
-                    FOTT_DBContract.FOTT_DBObject_Members.COLUMN_OBJECT_TYPE + " = 1)";
-        }
-        Cursor taskCursor = db.query(FOTT_DBContract.FOTT_DBTasks.TABLE_NAME,
-                new String[]{FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_TASK_ID,
-                        FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_TITLE,
-                        FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_DUEDATE},
-                        memFilter, null, null, null,
-                FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_DUEDATE, null);
-
-        taskCursor.moveToFirst();
-        FOTT_Task m;
-        if (!taskCursor.isAfterLast()){
-            do {
-                long id = taskCursor.getLong(0);
-                String name = taskCursor.getString(1);
-                long duedate = taskCursor.getLong(2);
-
-                m = new FOTT_Task(id, name);
-                m.setDuedate(duedate);
-
-                tasks.add(m);
-            } while (taskCursor.moveToNext());
-        }
+        this.tasks = FOTT_DBTasks.load(app);
     }
 
     public FOTT_Task getTaskById(long id){
-        SQLiteDatabase db = app.getDatabase();
-        FOTT_Task res = new FOTT_Task(0,"");
-
-        if (id>0){
-            String filter = " " + FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_TASK_ID + " = " + id;
-            Cursor taskCursor = db.query(FOTT_DBContract.FOTT_DBTasks.TABLE_NAME,
-                    new String[]{FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_TASK_ID,
-                            FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_TITLE,
-                            FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_DUEDATE,
-                            FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_DESC},
-                    filter, null, null, null,
-                    FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_DUEDATE, null);
-            taskCursor.moveToFirst();
-            if (!taskCursor.isAfterLast()){
-                res.setId(taskCursor.getLong(0));
-                res.setName(taskCursor.getString(1));
-                res.setDuedate(taskCursor.getLong(2));
-                res.setDesc(taskCursor.getString(3));
-            }
-        }
-        return res;
+        return FOTT_DBTasks.getTaskById(app, id);
     }
 }

@@ -41,6 +41,8 @@ public class FOTT_App extends Application {
 
     private FOTT_ErrorsHandler error;
 
+    private FOTT_SyncTask syncTask;
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -58,6 +60,8 @@ public class FOTT_App extends Application {
         preferences.set(getString(R.string.pref_db_version), database.getDb_version());
 
         load_preferences();
+
+        syncTask = new FOTT_SyncTask();
     }
 
     private void load_preferences() {
@@ -136,4 +140,8 @@ public class FOTT_App extends Application {
         this.needFullSync = true;
     }
 
+    public void SyncWithFO(){
+        syncTask.doInBackground(this);
+        needFullSync = false;
+    }
 }
