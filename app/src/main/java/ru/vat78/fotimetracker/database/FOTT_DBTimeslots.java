@@ -28,9 +28,9 @@ public class FOTT_DBTimeslots extends FOTT_DBContract {
     private static final String COLUMN_NAME_CHANGED = "changed";
     private static final String COLUMN_NAME_CHANGED_BY = "changed_by";
 
-    private static final String SQL_CREATE_ENTRIES =
+    public static final String SQL_CREATE_ENTRIES =
             CREATE_TABLE + TABLE_NAME + " (" +
-                    BaseColumns._ID + INTEGER_TYPE + PRIMARY_KEY + COMMA_SEP +
+                    //BaseColumns._ID + INTEGER_TYPE + PRIMARY_KEY + COMMA_SEP +
                     COLUMN_NAME_TIMESLOT_ID + INTEGER_TYPE + PRIMARY_KEY + COMMA_SEP +
                     COLUMN_NAME_TITLE + TEXT_TYPE + COMMA_SEP +
                     COLUMN_NAME_DESC + TEXT_TYPE + COMMA_SEP +
@@ -39,8 +39,8 @@ public class FOTT_DBTimeslots extends FOTT_DBContract {
                     COLUMN_NAME_TASK_ID + INTEGER_TYPE + COMMA_SEP +
                     COLUMN_NAME_MEMBERS_ID + TEXT_TYPE + COMMA_SEP +
                     COLUMN_NAME_CHANGED + NUMERIC_TYPE + COMMA_SEP +
-                    COLUMN_NAME_CHANGED_BY + TEXT_TYPE + COMMA_SEP + " );";
-    private static final String SQL_DELETE_ENTRIES =
+                    COLUMN_NAME_CHANGED_BY + TEXT_TYPE +  " );";
+    public static final String SQL_DELETE_ENTRIES =
             DROP_TABLE + TABLE_NAME + ";";
 
     public static void rebuild(FOTT_App app){

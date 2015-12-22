@@ -29,10 +29,10 @@ public class FOTT_DBMembers extends FOTT_DBContract {
     private static final String COLUMN_NAME_CHANGED = "changed";
     private static final String COLUMN_NAME_TASKS = "tasks_cnt";
 
-    private static final String SQL_CREATE_ENTRIES =
+    public static final String SQL_CREATE_ENTRIES =
             CREATE_TABLE + TABLE_NAME + " (" +
-                    BaseColumns._ID + " INTEGER PRIMARY KEY," +
-                    COLUMN_NAME_MEMBER_ID + INTEGER_TYPE + COMMA_SEP +
+                    //BaseColumns._ID + " INTEGER PRIMARY KEY," +
+                    COLUMN_NAME_MEMBER_ID + INTEGER_TYPE + PRIMARY_KEY + COMMA_SEP +
                     COLUMN_NAME_NAME + TEXT_TYPE + COMMA_SEP +
                     COLUMN_NAME_COLOR + INTEGER_TYPE + COMMA_SEP +
                     COLUMN_NAME_TYPE + TEXT_TYPE + COMMA_SEP +
@@ -40,9 +40,9 @@ public class FOTT_DBMembers extends FOTT_DBContract {
                     COLUMN_NAME_PARENT + TEXT_TYPE + COMMA_SEP +
                     COLUMN_NAME_LEVEL + INTEGER_TYPE + COMMA_SEP +
                     COLUMN_NAME_TASKS + INTEGER_TYPE + COMMA_SEP +
-                    COLUMN_NAME_CHANGED + NUMERIC_TYPE + COMMA_SEP +
+                    COLUMN_NAME_CHANGED + NUMERIC_TYPE +
                     " );";
-    private static final String SQL_DELETE_ENTRIES =
+    public static final String SQL_DELETE_ENTRIES =
             DROP_TABLE + TABLE_NAME +";";
 
     public static void rebuild(FOTT_App app){
@@ -111,7 +111,7 @@ public class FOTT_DBMembers extends FOTT_DBContract {
                         "(" + FOTT_DBMembers_Objects.getSQLObectsCnt("m." +
                         COLUMN_NAME_MEMBER_ID) + ") AS TaskCnt"},
                 null,
-                COLUMN_NAME_PATH + "ASC");
+                COLUMN_NAME_PATH + " ASC");
 
         memberCursor.moveToFirst();
         FOTT_Member m;

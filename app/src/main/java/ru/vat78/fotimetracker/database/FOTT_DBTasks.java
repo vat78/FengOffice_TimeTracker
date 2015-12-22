@@ -36,9 +36,9 @@ public class FOTT_DBTasks extends FOTT_DBContract {
     private static final String COLUMN_NAME_CHANGED = "changed";
 
 
-    private static final String SQL_CREATE_ENTRIES =
+    public static final String SQL_CREATE_ENTRIES =
             CREATE_TABLE + TABLE_NAME + " (" +
-                    BaseColumns._ID + PRIMARY_KEY + COMMA_SEP +
+                    //BaseColumns._ID + PRIMARY_KEY + COMMA_SEP +
                     COLUMN_NAME_TASK_ID + INTEGER_TYPE + PRIMARY_KEY + COMMA_SEP +
                     COLUMN_NAME_TITLE + TEXT_TYPE + COMMA_SEP +
                     COLUMN_NAME_DESC + TEXT_TYPE + COMMA_SEP +
@@ -53,10 +53,11 @@ public class FOTT_DBTasks extends FOTT_DBContract {
                     COLUMN_NAME_WORKEDTIME + TEXT_TYPE + COMMA_SEP +
                     COLUMN_NAME_PENDINGTIME + TEXT_TYPE + COMMA_SEP +
                     COLUMN_NAME_USETIMESLOTS + NUMERIC_TYPE + COMMA_SEP +
-                    COLUMN_NAME_CHANGED + NUMERIC_TYPE + COMMA_SEP +
+                    COLUMN_NAME_CHANGED + NUMERIC_TYPE +
                     " );";
-    private static final String SQL_DELETE_ENTRIES =
+    public static final String SQL_DELETE_ENTRIES =
             DROP_TABLE + TABLE_NAME + ";";
+
 
     public static void rebuild(FOTT_App app){
         app.getDatabase().execSQL(SQL_DELETE_ENTRIES);
@@ -127,7 +128,7 @@ public class FOTT_DBTasks extends FOTT_DBContract {
                         COLUMN_NAME_TITLE,
                         COLUMN_NAME_DUEDATE},
                 memFilter,
-                COLUMN_NAME_DUEDATE + "ASC");
+                COLUMN_NAME_DUEDATE + " ASC");
 
         taskCursor.moveToFirst();
         FOTT_Task m;

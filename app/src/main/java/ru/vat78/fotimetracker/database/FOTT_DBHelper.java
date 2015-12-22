@@ -18,29 +18,30 @@ public class FOTT_DBHelper extends SQLiteOpenHelper {
     private  int db_version;
     private FOTT_App MainApp;
 
-    public int getDb_version() {
+    public int getDB_version() {
         return db_version;
     }
 
-    public FOTT_DBHelper(Context context, int database_version, FOTT_App app) {
+    public FOTT_DBHelper(Context context, FOTT_App app) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
         MainApp = app;
-        db_version = database_version;
+        db_version = DATABASE_VERSION;
     }
+
+    @Override
     public void onCreate(SQLiteDatabase db) {
-        if (DATABASE_VERSION != db_version)
-        {
-            int tmp = db_version;
-            db_version = DATABASE_VERSION;
-            this.onUpgrade(db,tmp,DATABASE_VERSION);
-        }
+        db.execSQL(FOTT_DBMembers.SQL_CREATE_ENTRIES);
+        db.execSQL(FOTT_DBTasks.SQL_CREATE_ENTRIES);
+        db.execSQL(FOTT_DBTimeslots.SQL_CREATE_ENTRIES);
     }
+
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // This database is only a cache for online data, so its upgrade policy is
         // to simply to discard the data and start over
-        FOTT_DBMembers.rebuild(MainApp);
-        FOTT_DBTasks.rebuild(MainApp);
-        FOTT_DBTimeslots.rebuild(MainApp);
+        db.execSQL(FOTT_DBMembers.SQL_DELETE_ENTRIES);
+        db.execSQL(FOTT_DBTasks.SQL_DELETE_ENTRIES);
+        db.execSQL(FOTT_DBTimeslots.SQL_DELETE_ENTRIES);
+        onCreate(db);
     }
     public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         onUpgrade(db, oldVersion, newVersion);

@@ -76,7 +76,7 @@ public class FOTT_Object {
         if (!membersIds.isEmpty()){
             return membersIds.split("/");
         }  else {
-            return null;
+            return new String[0];
         }
     }
 

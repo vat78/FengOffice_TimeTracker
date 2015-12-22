@@ -28,7 +28,7 @@ public class FOAPI_Timeslots {
     }
 
     public static ArrayList<FOTT_Timeslot> load(FOTT_App app, Date timestamp){
-        String[] args = new String[1];
+        String[] args = new String[2];
         args[0] = FO_API_ARG_LASTUPDATE;
         long l = (long) timestamp.getTime() / FO_API_DATE_CONVERTOR;
         args[1] = "" + l;

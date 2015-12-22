@@ -27,7 +27,7 @@ public class FOAPI_Tasks {
     }
 
     public static ArrayList<FOTT_Task> load(FOTT_App app, Date timestamp){
-        String[] args = new String[3];
+        String[] args = new String[4];
         args[0]= FO_API_ARG_STATUS;
         args[1] = "0";
         args[2] = FO_API_ARG_LASTUPDATE;
@@ -71,7 +71,7 @@ public class FOAPI_Tasks {
                 if (!jo.isNull(FOAPI_Dictionary.FO_API_FIELD_MEMPATH)) {
                     JSONArray ja = jo.getJSONArray(FOAPI_Dictionary.FO_API_FIELD_MEMPATH);
                     for (int j = 0; j < ja.length(); j++)
-                        s = s + ja.getString(j) + ",";
+                        s = s + ja.getString(j) + "/";
                 }
                 el.setMembersPath(s);
 

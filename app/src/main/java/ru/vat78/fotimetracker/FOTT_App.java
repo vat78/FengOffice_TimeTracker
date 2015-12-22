@@ -41,7 +41,7 @@ public class FOTT_App extends Application {
 
     private FOTT_ErrorsHandler error;
 
-    private FOTT_SyncTask syncTask;
+    private boolean syncing;
 
     @Override
     public void onCreate() {
@@ -55,13 +55,14 @@ public class FOTT_App extends Application {
         preferences = new FOTT_Preferences(pref);
 
         //Create database connection
-        int db_version = preferences.getInt(getString(R.string.pref_db_version),0);
+        long db_version = preferences.getLong(getString(R.string.pref_db_version),0);
         database = new FOTT_DB(this,db_version);
         preferences.set(getString(R.string.pref_db_version), database.getDb_version());
 
-        load_preferences();
+        //Create error handler
+        error = new FOTT_ErrorsHandler();
 
-        syncTask = new FOTT_SyncTask();
+        load_preferences();
     }
 
     private void load_preferences() {
@@ -104,6 +105,8 @@ public class FOTT_App extends Application {
 
     public Date getLastSync() {return lastSync;}
 
+    public boolean isSyncing() {return syncing;}
+
     public FOTT_ErrorsHandler getError() {
         return error;
     }
@@ -131,17 +134,17 @@ public class FOTT_App extends Application {
         preferences.set(getString(R.string.pref_stored_last_sync), lastSync);
     }
 
+    public void setSyncing(boolean syncing) {
+        this.syncing = syncing;
+    }
+
     public void setLastSync(Date lastSync) {
         this.lastSync = lastSync;
         preferences.set(getString(R.string.pref_stored_last_sync), lastSync.getTime());
     }
 
-    public void setNeedFullSync() {
-        this.needFullSync = true;
+    public void setNeedFullSync(boolean value) {
+        this.needFullSync = value;
     }
 
-    public void SyncWithFO(){
-        syncTask.doInBackground(this);
-        needFullSync = false;
-    }
 }

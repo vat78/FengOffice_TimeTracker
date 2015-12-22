@@ -37,6 +37,7 @@ public class FOTT_MainActivity extends AppCompatActivity {
     static final String EXTRA_MESSAGE_TS_EDIT_START = "ru.vat78.fotimetracker.TSSTART";
     static final String EXTRA_MESSAGE_TS_EDIT_DESC = "ru.vat78.fotimetracker.TSDESC";
 
+    private FOTT_SyncTask syncTask;
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -129,6 +130,9 @@ public class FOTT_MainActivity extends AppCompatActivity {
             if (resultCode != RESULT_OK) {
                 finish();
             }
+            syncWithFO();
+            do {} while (MainApp.isSyncing());
+            syncTask = null;
             members.load();
         }
         if (requestCode == PICK_TSEDIT_REQUEST) {
@@ -143,7 +147,7 @@ public class FOTT_MainActivity extends AppCompatActivity {
                     timeslots.load();
 
                     FOAPI_Timeslots.saveChangedTimeslots(MainApp,timeslots.getAllTimeslots());
-                    MainApp.SyncWithFO();
+                    syncWithFO();
                 } else {
                     //Todo: save error
                 }
@@ -154,7 +158,7 @@ public class FOTT_MainActivity extends AppCompatActivity {
 
     private void CheckLogin(){
         FOTT_Preferences preferences = MainApp.getPreferences();
-        if (preferences.getString(getString(R.string.pref_sync_password),"").isEmpty() || MainApp.isNeedFullSync()){
+        if (preferences.getString(getString(R.string.pref_sync_password),"").isEmpty() || MainApp.isNeedFullSync() || 1 == 1){
             Intent pickLogin = new Intent(this,FOTT_LoginActivity.class);
             startActivityForResult(pickLogin,PICK_LOGIN_REQUEST);
         }
@@ -194,6 +198,14 @@ public class FOTT_MainActivity extends AppCompatActivity {
             timeslots.notifyDataSetChanged();
         }
         mViewPager.setCurrentItem(fragment,true);
+    }
+
+    public void syncWithFO(){
+        if (syncTask != null) return;
+
+        syncTask = new FOTT_SyncTask();
+        MainApp.setSyncing(true);
+        syncTask.execute(MainApp);
     }
 
     public void editTimeslot(long tsId, long duration) {
@@ -258,4 +270,5 @@ public class FOTT_MainActivity extends AppCompatActivity {
             return null;
         }
     }
+
 }

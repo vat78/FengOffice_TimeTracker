@@ -243,6 +243,7 @@ public class FOTT_LoginActivity extends AppCompatActivity {
         protected Boolean doInBackground(Void... params) {
 
             if (!FOApp.testConnection()) { return false;}
+            app.setNeedFullSync(true);
             return true;
         }
 

@@ -24,15 +24,15 @@ public class FOTT_DB {
     private SQLiteDatabase database;
     private FOTT_App app;
 
-    public FOTT_DB(FOTT_App application, int db_version) {
+    public FOTT_DB(FOTT_App application, long db_version) {
 
         app = application;
-        FOTT_DBHelper helper = new FOTT_DBHelper(application, db_version, app);
+        FOTT_DBHelper helper = new FOTT_DBHelper(application, app);
         database = helper.getWritableDatabase();
-        if (db_version != helper.getDb_version()) {
+        if (db_version != helper.getDB_version()) {
             //DB structure was changed and all records were deleted
             //Need to reload from web-service
-            application.setNeedFullSync();
+            application.setNeedFullSync(true);
         }
     }
 
