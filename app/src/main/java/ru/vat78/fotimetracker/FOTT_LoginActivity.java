@@ -244,6 +244,7 @@ public class FOTT_LoginActivity extends AppCompatActivity {
 
             if (!FOApp.testConnection()) { return false;}
             app.setNeedFullSync(true);
+            app.dataSynchronization();
             return true;
         }
 

@@ -8,6 +8,8 @@ import java.util.Date;
  */
 public class FOTT_Object {
 
+    protected static final String MEMBER_SPLITTER = "/";
+
     private long foid;
     private String name;
     private String desc;
@@ -58,7 +60,7 @@ public class FOTT_Object {
         this.author = author;
     }
 
-    public void setMembersPath(String members) {membersIds = members;}
+    public void setMembersIDs(String members) {membersIds = members;}
 
     public void setChanged(long changed) {
         this.changed = new Date(changed);
@@ -74,10 +76,12 @@ public class FOTT_Object {
 
     public String[] getMembersArray() {
         if (!membersIds.isEmpty()){
-            return membersIds.split("/");
+            return membersIds.split(MEMBER_SPLITTER);
         }  else {
             return new String[0];
         }
     }
+
+    public String getMemberSplitter() { return MEMBER_SPLITTER;}
 
 }

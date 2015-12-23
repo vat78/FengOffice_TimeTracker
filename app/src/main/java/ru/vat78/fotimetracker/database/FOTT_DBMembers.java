@@ -3,7 +3,6 @@ package ru.vat78.fotimetracker.database;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.graphics.Color;
-import android.provider.BaseColumns;
 
 import java.util.ArrayList;
 
@@ -62,7 +61,7 @@ public class FOTT_DBMembers extends FOTT_DBContract {
             members.add(generateAnyMember(app));
 
             for (int i = 0; i < members.size(); i++) {
-                insert(app, members.get(i));
+                if (members.get(i).getId() != 0) insert(app, members.get(i));
             }
         }
         catch (Error e){
@@ -81,7 +80,7 @@ public class FOTT_DBMembers extends FOTT_DBContract {
         res.put(COLUMN_NAME_MEMBER_ID, member.getId());
         res.put(COLUMN_NAME_NAME,member.getName());
 
-        res.put(COLUMN_NAME_PATH,member.getMembersIds());
+        res.put(COLUMN_NAME_PATH,member.getPath());
         res.put(COLUMN_NAME_LEVEL, member.getLevel());
         res.put(COLUMN_NAME_COLOR, member.getColor());
 
@@ -93,8 +92,7 @@ public class FOTT_DBMembers extends FOTT_DBContract {
 
     private static FOTT_Member generateAnyMember(FOTT_App app) {
         FOTT_Member any = new FOTT_Member(0,app.getString(R.string.any_category));
-        any.setMembersPath("/");
-        any.setLevel(0);
+        any.setPath("");
         any.setColor(Color.TRANSPARENT);
         return any;
     }
@@ -124,12 +122,15 @@ public class FOTT_DBMembers extends FOTT_DBContract {
                 int level = memberCursor.getInt(3);
 
                 m = new FOTT_Member(id, name);
-                m.setMembersPath(path);
+                m.setPath(path);
                 m.setColor(color);
-                m.setLevel(level);
                 m.setTasksCnt(memberCursor.getInt(5));
-
                 members.add(m);
+                if (id == app.getCurTask()){
+                    for (int i = members.size() - 1;members.get(i).getLevel() > 1;i--)
+                        members.get(i).setVisible(true);
+                }
+
             } while (memberCursor.moveToNext());
         }
         return members;

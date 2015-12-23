@@ -1,8 +1,5 @@
 package ru.vat78.fotimetracker.fo_api;
 
-import android.content.ContentValues;
-import android.util.Log;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -10,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import ru.vat78.fotimetracker.FOTT_App;
-import ru.vat78.fotimetracker.adapters.FOTT_TimeslotsAdapter;
 import ru.vat78.fotimetracker.model.FOTT_Timeslot;
 import ru.vat78.fotimetracker.views.FOTT_ErrorsHandler;
 
@@ -116,7 +112,7 @@ public class FOAPI_Timeslots {
                     for (int j = 0; j < ja.length(); j++)
                         s = s + ja.getString(j) + "/";
                 }
-                el.setMembersPath(s);
+                el.setMembersIDs(s);
 
                 tmp = FO_API_FALSE;
                 if (!jo.isNull(FO_API_FIELD_TS_DATE))

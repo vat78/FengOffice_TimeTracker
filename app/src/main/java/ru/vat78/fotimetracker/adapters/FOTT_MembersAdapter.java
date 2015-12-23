@@ -4,6 +4,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,29 +19,63 @@ import ru.vat78.fotimetracker.R;
 import ru.vat78.fotimetracker.database.FOTT_DBContract;
 import ru.vat78.fotimetracker.database.FOTT_DBMembers;
 import ru.vat78.fotimetracker.model.FOTT_Member;
+import ru.vat78.fotimetracker.views.FOTT_MembersFragment;
 
 /**
  * Created by vat on 30.11.2015.
  */
-public class FOTT_MembersAdapter extends ArrayAdapter<String> {
+public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapter.MembersViewHolder> {
 
     private List<FOTT_Member> members;
     private Context context;
     private FOTT_App app;
+    private FOTT_MembersFragment parent;
 
     private int memColors[] = {Color.GRAY,Color.DKGRAY,Color.RED,Color.BLUE,Color.GREEN,Color.MAGENTA,Color.CYAN,Color.YELLOW,
             Color.GRAY,Color.DKGRAY,Color.RED,Color.BLUE,Color.GREEN,Color.MAGENTA,Color.CYAN,Color.YELLOW,
             Color.GRAY,Color.DKGRAY,Color.RED,Color.BLUE,Color.GREEN,Color.MAGENTA,Color.CYAN,Color.YELLOW,Color.WHITE};
 
-    public FOTT_MembersAdapter(Context context, FOTT_App application) {
-        super(context,R.layout.member_list_item);
-        this.context = context;
+    public static class MembersViewHolder extends RecyclerView.ViewHolder
+            implements View.OnClickListener {
+        // each data item is just a string in this case
+        private TextView title ;
+        private TextView color;
+        private TextView margine;
+        private TextView tasks;
+
+        private FOTT_MembersFragment parent;
+
+        public MembersViewHolder(View itemView, FOTT_MembersFragment parent) {
+            super(itemView);
+            title = (TextView) itemView.findViewById(R.id.textMemName);
+            color = (TextView) itemView.findViewById(R.id.textMemColor);
+            margine = (TextView) itemView.findViewById(R.id.textMargin);
+            tasks = (TextView) itemView.findViewById(R.id.textMemTasks);
+            this.parent = parent;
+
+            itemView.setOnClickListener(this);
+        }
+
+        @Override
+        public void onClick(View v) {
+            if (parent != null) {
+                parent.onItemClicked(getPosition());
+            }
+
+        }
+
+    }
+
+    public FOTT_MembersAdapter(FOTT_App application, FOTT_MembersFragment parent) {
+        super();
+        //this.context = context;
         this.app = application;
         this.members = new ArrayList<>();
+        this.parent = parent;
     }
 
     @Override
-    public int getCount() {
+    public int getItemCount() {
         return members.size();
     }
 
@@ -50,40 +85,41 @@ public class FOTT_MembersAdapter extends ArrayAdapter<String> {
     }
 
     @Override
-    public String getItem(int position) {
-        return members.get(position).getName();
+    public MembersViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
+        View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.member_list_item, viewGroup, false);
+        MembersViewHolder vh = new MembersViewHolder(v, parent);
+        return vh;
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public void onBindViewHolder(MembersViewHolder memberViewHolder, int i) {
 
-        LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        FOTT_Member objectItem = members.get(i);
 
-        View view = inflater.inflate(R.layout.member_list_item, parent, false);
+        memberViewHolder.title.setText("   " + objectItem.getName());
+        memberViewHolder.tasks.setText(String.valueOf(objectItem.getTasksCnt()));
+        memberViewHolder.color.setBackgroundColor(memColors[objectItem.getColor()]);
 
-        TextView title = (TextView) view.findViewById(R.id.textMemName);
-        TextView color = (TextView) view.findViewById(R.id.textMemColor);
-        TextView margine = (TextView) view.findViewById(R.id.textMargin);
-        TextView tasks = (TextView) view.findViewById(R.id.textMemTasks);
-
-        FOTT_Member objectItem = members.get(position);
-
-        title.setText("   " + objectItem.getName());
-        tasks.setText(String.valueOf(objectItem.getTasksCnt()));
-        color.setBackgroundColor(memColors[objectItem.getColor()]);
-
-        margine.setWidth(36 * objectItem.getLevel());
-
-        String tasksCnt = "" + objectItem.getTasksCnt();
-        tasks.setText(tasksCnt);
+        memberViewHolder.margine.setWidth(36 * objectItem.getLevel());
 
         if (app.getCurMember() == objectItem.getId()) {
-            title.setBackgroundColor(memColors[objectItem.getColor()]);
-            tasks.setBackgroundColor(memColors[objectItem.getColor()]);
+            memberViewHolder.title.setBackgroundColor(memColors[objectItem.getColor()]);
+            memberViewHolder.tasks.setBackgroundColor(memColors[objectItem.getColor()]);
         }
-
-        return view;
+        /*
+        if (objectItem.isVisible()){
+            memberViewHolder.setVisibility(View.VISIBLE);
+        } else {
+            memberViewHolder.setVisibility(View.INVISIBLE);
+        } */
     }
+
+    @Override
+    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
+        super.onAttachedToRecyclerView(recyclerView);
+    }
+
+
 
     public void load(){
         members = FOTT_DBMembers.load(app);

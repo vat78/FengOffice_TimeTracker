@@ -77,18 +77,6 @@ public class FOTT_MainActivity extends AppCompatActivity {
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
-/*
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
-*/
-        //Connect lists adapters
-        members = new FOTT_MembersAdapter(this,MainApp);
         CheckLogin();
     }
 
@@ -121,6 +109,31 @@ public class FOTT_MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        redraw();
+    }
+
+    private void redraw() {
+        int fragment = mViewPager.getCurrentItem();
+        switch (fragment) {
+            case 0:
+                if (members != null) {
+                    members.load();
+                    members.notifyDataSetChanged();
+                }
+                break;
+            case 1:
+                if (tasks != null) {
+                    tasks.load();
+                    tasks.notifyDataSetChanged();
+                }
+                break;
+            case 2:
+                if (timeslots != null) {
+                    timeslots.load();
+                    timeslots.notifyDataSetChanged();
+                }
+                break;
+        }
     }
 
     @Override
@@ -130,10 +143,6 @@ public class FOTT_MainActivity extends AppCompatActivity {
             if (resultCode != RESULT_OK) {
                 finish();
             }
-            syncWithFO();
-            do {} while (MainApp.isSyncing());
-            syncTask = null;
-            members.load();
         }
         if (requestCode == PICK_TSEDIT_REQUEST) {
             if (resultCode == RESULT_OK) {
@@ -158,7 +167,7 @@ public class FOTT_MainActivity extends AppCompatActivity {
 
     private void CheckLogin(){
         FOTT_Preferences preferences = MainApp.getPreferences();
-        if (preferences.getString(getString(R.string.pref_sync_password),"").isEmpty() || MainApp.isNeedFullSync() || 1 == 1){
+        if (preferences.getString(getString(R.string.pref_sync_password),"").isEmpty() || MainApp.isNeedFullSync() || 1==1){
             Intent pickLogin = new Intent(this,FOTT_LoginActivity.class);
             startActivityForResult(pickLogin,PICK_LOGIN_REQUEST);
         }
@@ -189,23 +198,15 @@ public class FOTT_MainActivity extends AppCompatActivity {
     }
 
     public void setCurrentFragment(int fragment) {
-        if (fragment == 1) {
-            tasks.load();
-            tasks.notifyDataSetChanged();
-        }
-        if (fragment == 2) {
-            timeslots.load();
-            timeslots.notifyDataSetChanged();
-        }
         mViewPager.setCurrentItem(fragment,true);
+        redraw();
     }
 
     public void syncWithFO(){
         if (syncTask != null) return;
 
-        syncTask = new FOTT_SyncTask();
-        MainApp.setSyncing(true);
-        syncTask.execute(MainApp);
+        syncTask = new FOTT_SyncTask(MainApp);
+        syncTask.execute();
     }
 
     public void editTimeslot(long tsId, long duration) {

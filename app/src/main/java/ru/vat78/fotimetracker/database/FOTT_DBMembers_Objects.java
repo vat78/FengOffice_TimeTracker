@@ -38,6 +38,14 @@ public class FOTT_DBMembers_Objects extends FOTT_DBContract {
                 app.getDatabase().insertOrUpdate(TABLE_NAME, data);
             }
         }
+        //Add link with member "Any"
+        if (object_type == 1 && obj_id != 0) {
+            ContentValues data = new ContentValues();
+            data.put(COLUMN_OBJECT_ID, obj_id);
+            data.put(COLUMN_MEMBER_ID, 0);
+            data.put(COLUMN_OBJECT_TYPE, object_type);
+            app.getDatabase().insertOrUpdate(TABLE_NAME, data);
+        }
     }
 
     public static String getSQLCondition(long member_id, int object_type){
@@ -53,7 +61,7 @@ public class FOTT_DBMembers_Objects extends FOTT_DBContract {
         return "SELECT COUNT(" +
                 "o." + COLUMN_OBJECT_ID +
                 ") FROM " + TABLE_NAME +
-                " o WHERE o." +
+                " o WHERE o." + COLUMN_OBJECT_TYPE + " = 1 AND " +
                 COLUMN_MEMBER_ID + " = " + parent_id;
     }
 

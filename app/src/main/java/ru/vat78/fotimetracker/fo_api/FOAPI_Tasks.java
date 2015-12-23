@@ -1,7 +1,5 @@
 package ru.vat78.fotimetracker.fo_api;
 
-import android.content.ContentValues;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -71,9 +69,9 @@ public class FOAPI_Tasks {
                 if (!jo.isNull(FOAPI_Dictionary.FO_API_FIELD_MEMPATH)) {
                     JSONArray ja = jo.getJSONArray(FOAPI_Dictionary.FO_API_FIELD_MEMPATH);
                     for (int j = 0; j < ja.length(); j++)
-                        s = s + ja.getString(j) + "/";
+                        s = s + ja.getString(j) + el.getMemberSplitter();
                 }
-                el.setMembersPath(s);
+                el.setMembersIDs(s);
 
                 tmp = FOAPI_Dictionary.FO_API_FALSE;
                 if (!jo.isNull(FOAPI_Dictionary.FO_API_FIELD_STARTDATE))
@@ -81,7 +79,7 @@ public class FOAPI_Tasks {
                 if (tmp == FOAPI_Dictionary.FO_API_FALSE) {
                     el.setStartDate(0);
                 } else {
-                    el.setStartDate(jo.getLong(FOAPI_Dictionary.FO_API_FIELD_STARTDATE));
+                    el.setStartDate(jo.getLong(FOAPI_Dictionary.FO_API_FIELD_STARTDATE) * FO_API_DATE_CONVERTOR);
                 }
 
                 tmp = FOAPI_Dictionary.FO_API_FALSE;
@@ -90,7 +88,7 @@ public class FOAPI_Tasks {
                 if (tmp == FOAPI_Dictionary.FO_API_FALSE) {
                     el.setDueDate(0);
                 } else {
-                    el.setDueDate(jo.getLong(FOAPI_Dictionary.FO_API_FIELD_DUEDATE));
+                    el.setDueDate(jo.getLong(FOAPI_Dictionary.FO_API_FIELD_DUEDATE) * FO_API_DATE_CONVERTOR);
                 }
 
                 if (!jo.isNull(FOAPI_Dictionary.FO_API_FIELD_PRIORITY))

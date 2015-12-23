@@ -1,8 +1,5 @@
 package ru.vat78.fotimetracker.fo_api;
 
-import android.content.ContentValues;
-import android.util.Log;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -55,10 +52,10 @@ public class FOAPI_Members {
                     if (path.isEmpty()) {
                         path = s;
                     } else {
-                        path = path + "/" + s;
+                        path = path + el.getMemberSplitter() + s;
                     }
                 }
-                el.setMembersPath(path);
+                el.setPath(path);
 
                 if (jo.isNull(FOAPI_Dictionary.FO_API_FIELD_TYPE)) {
                     el.setColor(0);
