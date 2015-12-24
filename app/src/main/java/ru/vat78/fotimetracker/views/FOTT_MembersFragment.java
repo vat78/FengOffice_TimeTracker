@@ -51,7 +51,7 @@ public class FOTT_MembersFragment extends Fragment {
         return rootView;
     }
 
-    public void onItemClicked(int position) {
+    public void onMemberSelect(int position) {
         MainApp.setCurMember(membersAdapter.getMemberId(position));
         MainApp.setCurTask(0);
         membersAdapter.notifyDataSetChanged();

@@ -167,7 +167,7 @@ public class FOTT_MainActivity extends AppCompatActivity {
 
     private void CheckLogin(){
         FOTT_Preferences preferences = MainApp.getPreferences();
-        if (preferences.getString(getString(R.string.pref_sync_password),"").isEmpty() || MainApp.isNeedFullSync() || 1==1){
+        if (preferences.getString(getString(R.string.pref_sync_password),"").isEmpty() || MainApp.isNeedFullSync()){
             Intent pickLogin = new Intent(this,FOTT_LoginActivity.class);
             startActivityForResult(pickLogin,PICK_LOGIN_REQUEST);
         }

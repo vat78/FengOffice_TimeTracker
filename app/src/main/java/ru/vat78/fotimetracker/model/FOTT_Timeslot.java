@@ -14,7 +14,6 @@ public class FOTT_Timeslot extends FOTT_Object {
     private Date duration;
     private long task_id;
 
-
     public FOTT_Timeslot(long tsId, String tsTitle){
         super();
         setId(tsId);

@@ -6,15 +6,19 @@ package ru.vat78.fotimetracker.model;
 public class FOTT_Member extends FOTT_Object {
 
     private int color;
-    private int level = 0;
-    private boolean visible = true;
-    private String path = "";
-    private int tasksCnt = 0;
+    private int level;
+    private boolean visible;
+    private int node;
+    private String path;
+    private int tasksCnt;
 
     public FOTT_Member(long memberId, String memberName){
         super();
         setId(memberId);
         setName(memberName);
+        visible = false;
+        setPath("");
+        tasksCnt = 0;
     }
 
 
@@ -54,5 +58,13 @@ public class FOTT_Member extends FOTT_Object {
 
     public String getPath() {
         return path;
+    }
+
+    public int getNode() {
+        return node;
+    }
+
+    public void setNode(int node) {
+        this.node = node;
     }
 }

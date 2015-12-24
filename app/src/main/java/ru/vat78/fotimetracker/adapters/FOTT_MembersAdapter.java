@@ -1,14 +1,12 @@
 package ru.vat78.fotimetracker.adapters;
 
 import android.content.Context;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -16,7 +14,6 @@ import java.util.List;
 
 import ru.vat78.fotimetracker.FOTT_App;
 import ru.vat78.fotimetracker.R;
-import ru.vat78.fotimetracker.database.FOTT_DBContract;
 import ru.vat78.fotimetracker.database.FOTT_DBMembers;
 import ru.vat78.fotimetracker.model.FOTT_Member;
 import ru.vat78.fotimetracker.views.FOTT_MembersFragment;
@@ -27,6 +24,7 @@ import ru.vat78.fotimetracker.views.FOTT_MembersFragment;
 public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapter.MembersViewHolder> {
 
     private List<FOTT_Member> members;
+    private List<FOTT_Member> visibleMembers;
     private Context context;
     private FOTT_App app;
     private FOTT_MembersFragment parent;
@@ -35,13 +33,13 @@ public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapt
             Color.GRAY,Color.DKGRAY,Color.RED,Color.BLUE,Color.GREEN,Color.MAGENTA,Color.CYAN,Color.YELLOW,
             Color.GRAY,Color.DKGRAY,Color.RED,Color.BLUE,Color.GREEN,Color.MAGENTA,Color.CYAN,Color.YELLOW,Color.WHITE};
 
-    public static class MembersViewHolder extends RecyclerView.ViewHolder
-            implements View.OnClickListener {
+    public static class MembersViewHolder extends RecyclerView.ViewHolder {
         // each data item is just a string in this case
         private TextView title ;
         private TextView color;
         private TextView margine;
         private TextView tasks;
+        private ImageButton selector;
 
         private FOTT_MembersFragment parent;
 
@@ -51,19 +49,21 @@ public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapt
             color = (TextView) itemView.findViewById(R.id.textMemColor);
             margine = (TextView) itemView.findViewById(R.id.textMargin);
             tasks = (TextView) itemView.findViewById(R.id.textMemTasks);
+            selector = (ImageButton) itemView.findViewById(R.id.imageMemSymbol);
             this.parent = parent;
 
-            itemView.setOnClickListener(this);
+            //selector.setOnClickListener(this);
+            //itemView.setOnClickListener(this);
         }
-
+/*
         @Override
         public void onClick(View v) {
+
             if (parent != null) {
-                parent.onItemClicked(getPosition());
+                parent.onMemberSelect(getAdapterPosition());
             }
 
-        }
-
+        }*/
     }
 
     public FOTT_MembersAdapter(FOTT_App application, FOTT_MembersFragment parent) {
@@ -76,7 +76,7 @@ public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapt
 
     @Override
     public int getItemCount() {
-        return members.size();
+        return visibleMembers.size();
     }
 
     @Override
@@ -93,8 +93,9 @@ public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapt
 
     @Override
     public void onBindViewHolder(MembersViewHolder memberViewHolder, int i) {
+        final int position = i;
 
-        FOTT_Member objectItem = members.get(i);
+        FOTT_Member objectItem = visibleMembers.get(i);
 
         memberViewHolder.title.setText("   " + objectItem.getName());
         memberViewHolder.tasks.setText(String.valueOf(objectItem.getTasksCnt()));
@@ -105,13 +106,33 @@ public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapt
         if (app.getCurMember() == objectItem.getId()) {
             memberViewHolder.title.setBackgroundColor(memColors[objectItem.getColor()]);
             memberViewHolder.tasks.setBackgroundColor(memColors[objectItem.getColor()]);
+            memberViewHolder.selector.setBackgroundColor(memColors[objectItem.getColor()]);
         }
-        /*
-        if (objectItem.isVisible()){
-            memberViewHolder.setVisibility(View.VISIBLE);
-        } else {
-            memberViewHolder.setVisibility(View.INVISIBLE);
-        } */
+
+        switch (objectItem.getNode()) {
+            case 1:
+                memberViewHolder.selector.setImageResource(R.drawable.ic_chevron_right_24dp);
+                break;
+            case 2:
+                memberViewHolder.selector.setImageResource(R.drawable.ic_expand_more_24dp);
+                break;
+            default:
+                memberViewHolder.selector.setImageResource(R.drawable.ic_check_box_outline_blank_24dp);
+        }
+
+        memberViewHolder.title.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onClickMember(position);
+            }
+        });
+
+        memberViewHolder.selector.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onClickSelector(position);
+            }
+        });
     }
 
     @Override
@@ -119,17 +140,78 @@ public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapt
         super.onAttachedToRecyclerView(recyclerView);
     }
 
+    public void onClickMember(int position){
+        if (parent != null) {
+            parent.onMemberSelect(position);
+        }
+    }
 
+    public void onClickSelector(int position){
+        switch (visibleMembers.get(position).getNode()) {
+            case 1:
+                expandBranch(position);
+                break;
+            case 2:
+                closeBranch(position);
+                break;
+        }
+    }
 
     public void load(){
         members = FOTT_DBMembers.load(app);
+        rebuildFilteredList();
+        notifyDataSetChanged();
     }
 
     public long getMemberId(int position){
-        return members.get(position).getId();
+        return visibleMembers.get(position).getId();
     }
 
     public FOTT_Member getMemberById(long id){
-        return FOTT_DBMembers.getMemberById(app,id);
+        return FOTT_DBMembers.getMemberById(app, id);
+    }
+
+    private void rebuildFilteredList(){
+        visibleMembers = new ArrayList<>();
+        for (FOTT_Member el: members){
+            if (el.isVisible()) visibleMembers.add(el);
+        }
+    }
+
+    public void expandBranch(int position){
+        int curLevel = visibleMembers.get(position).getLevel();
+        int curMem = members.indexOf(visibleMembers.get(position));
+        int newItems = 0;
+        for (int i = curMem+1; i < members.size(); i++) {
+            FOTT_Member el = members.get(i);
+            if (el.getLevel() <= curLevel) break;
+            if (el.getLevel() == curLevel+1) {
+                el.setVisible(true);
+                newItems++;
+            }
+        }
+        members.get(curMem).setNode(2);
+        rebuildFilteredList();
+        notifyItemChanged(position);
+        notifyItemRangeInserted(position,newItems);
+    }
+    public void closeBranch(int position){
+        int curLevel = visibleMembers.get(position).getLevel();
+        int curMem = members.indexOf(visibleMembers.get(position));
+        int delItems = 0;
+        for (int i = curMem+1; i < members.size(); i++) {
+            FOTT_Member el = members.get(i);
+            if (el.getLevel() <= curLevel) break;
+            if (el.isVisible()){
+                el.setVisible(false);
+                delItems++;
+            }
+            if (el.getNode() == 2)el.setNode(1);
+            if (el.getId() == app.getCurMember()) app.setCurMember(visibleMembers.get(position).getId());
+        }
+        members.get(curMem).setNode(1);
+        rebuildFilteredList();
+        notifyItemChanged(position);
+        notifyItemRangeRemoved(position+1, delItems);
     }
 }

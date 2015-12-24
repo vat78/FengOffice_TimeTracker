@@ -113,24 +113,42 @@ public class FOTT_DBMembers extends FOTT_DBContract {
 
         memberCursor.moveToFirst();
         FOTT_Member m;
+        FOTT_Member prev = new FOTT_Member(0,"");
+        int shownLevel = 1;
+
         if (!memberCursor.isAfterLast()){
             do {
                 long id = memberCursor.getLong(0);
                 String name = memberCursor.getString(1);
                 String path = memberCursor.getString(2);
                 int color = memberCursor.getInt(4);
-                int level = memberCursor.getInt(3);
 
                 m = new FOTT_Member(id, name);
                 m.setPath(path);
                 m.setColor(color);
                 m.setTasksCnt(memberCursor.getInt(5));
-                members.add(m);
-                if (id == app.getCurTask()){
-                    for (int i = members.size() - 1;members.get(i).getLevel() > 1;i--)
-                        members.get(i).setVisible(true);
-                }
+                int curLevel = m.getLevel();
+                if (curLevel > prev.getLevel()) {prev.setNode(1);}
+                m.setVisible(curLevel <= shownLevel);
+                if (curLevel < shownLevel) shownLevel = curLevel;
 
+                if (id == app.getCurMember()){
+                    //Make visible branch with selected member
+                    shownLevel = curLevel;
+                    m.setVisible(true);
+                    for (int i = members.size() - 1; i>=0 && shownLevel > 1;i--) {
+                        FOTT_Member el = members.get(i);
+                        el.setVisible(el.getLevel() <= shownLevel);
+                        if (el.getLevel() <shownLevel) {
+                            el.setNode(2);
+                            shownLevel = el.getLevel();
+                        }
+                    }
+                    shownLevel = curLevel;
+                }
+                members.add(m);
+
+                prev = m;
             } while (memberCursor.moveToNext());
         }
         return members;
