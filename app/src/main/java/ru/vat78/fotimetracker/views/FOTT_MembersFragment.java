@@ -16,6 +16,7 @@ import ru.vat78.fotimetracker.FOTT_App;
 import ru.vat78.fotimetracker.FOTT_MainActivity;
 import ru.vat78.fotimetracker.R;
 import ru.vat78.fotimetracker.adapters.FOTT_MembersAdapter;
+import ru.vat78.fotimetracker.model.FOTT_Member;
 
 /**
  * Created by vat on 30.11.2015.
@@ -51,8 +52,8 @@ public class FOTT_MembersFragment extends Fragment {
         return rootView;
     }
 
-    public void onMemberSelect(int position) {
-        MainApp.setCurMember(membersAdapter.getMemberId(position));
+    public void onMemberSelect(FOTT_Member selection) {
+        MainApp.setCurMember(selection.getId());
         MainApp.setCurTask(0);
         membersAdapter.notifyDataSetChanged();
         mainActivity.setCurrentFragment(1);

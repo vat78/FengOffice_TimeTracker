@@ -93,9 +93,9 @@ public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapt
 
     @Override
     public void onBindViewHolder(MembersViewHolder memberViewHolder, int i) {
-        final int position = i;
+        final FOTT_Member objectItem;
 
-        FOTT_Member objectItem = visibleMembers.get(i);
+        objectItem = visibleMembers.get(i);
 
         memberViewHolder.title.setText("   " + objectItem.getName());
         memberViewHolder.tasks.setText(String.valueOf(objectItem.getTasksCnt()));
@@ -107,7 +107,13 @@ public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapt
             memberViewHolder.title.setBackgroundColor(memColors[objectItem.getColor()]);
             memberViewHolder.tasks.setBackgroundColor(memColors[objectItem.getColor()]);
             memberViewHolder.selector.setBackgroundColor(memColors[objectItem.getColor()]);
+            //memberViewHolder.setIsRecyclable(false);
+        } else {
+            memberViewHolder.title.setBackgroundColor(0);
+            memberViewHolder.tasks.setBackgroundColor(0);
+            memberViewHolder.selector.setBackgroundColor(0);
         }
+
 
         switch (objectItem.getNode()) {
             case 1:
@@ -123,14 +129,14 @@ public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapt
         memberViewHolder.title.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onClickMember(position);
+                onClickMember(objectItem);
             }
         });
 
         memberViewHolder.selector.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                onClickSelector(position);
+                onClickSelector(objectItem);
             }
         });
     }
@@ -140,14 +146,16 @@ public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapt
         super.onAttachedToRecyclerView(recyclerView);
     }
 
-    public void onClickMember(int position){
+    public void onClickMember(FOTT_Member selection){
         if (parent != null) {
-            parent.onMemberSelect(position);
+            parent.onMemberSelect(selection);
         }
     }
 
-    public void onClickSelector(int position){
-        switch (visibleMembers.get(position).getNode()) {
+    public void onClickSelector(FOTT_Member selection){
+        //???
+        int position = visibleMembers.indexOf(selection);
+        switch (selection.getNode()) {
             case 1:
                 expandBranch(position);
                 break;
@@ -193,7 +201,7 @@ public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapt
         members.get(curMem).setNode(2);
         rebuildFilteredList();
         notifyItemChanged(position);
-        notifyItemRangeInserted(position,newItems);
+        notifyItemRangeInserted(position+1,newItems);
     }
     public void closeBranch(int position){
         int curLevel = visibleMembers.get(position).getLevel();
@@ -207,7 +215,7 @@ public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapt
                 delItems++;
             }
             if (el.getNode() == 2)el.setNode(1);
-            if (el.getId() == app.getCurMember()) app.setCurMember(visibleMembers.get(position).getId());
+            //if (el.getId() == app.getCurMember()) app.setCurMember(0);
         }
         members.get(curMem).setNode(1);
         rebuildFilteredList();
