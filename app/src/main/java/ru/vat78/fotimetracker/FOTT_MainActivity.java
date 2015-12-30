@@ -23,6 +23,8 @@ import ru.vat78.fotimetracker.adapters.FOTT_MembersAdapter;
 import ru.vat78.fotimetracker.adapters.FOTT_TasksAdapter;
 import ru.vat78.fotimetracker.adapters.FOTT_TimeslotsAdapter;
 import ru.vat78.fotimetracker.fo_api.FOAPI_Timeslots;
+import ru.vat78.fotimetracker.model.FOTT_Member;
+import ru.vat78.fotimetracker.model.FOTT_Task;
 import ru.vat78.fotimetracker.views.FOTT_MembersFragment;
 import ru.vat78.fotimetracker.views.FOTT_TasksFragment;
 import ru.vat78.fotimetracker.views.FOTT_TimeslotsFragment;
@@ -53,6 +55,7 @@ public class FOTT_MainActivity extends AppCompatActivity {
      * The {@link ViewPager} that will host the section contents.
      */
     private ViewPager mViewPager;
+    private Toolbar mActionBarToolbar;
 
     private FOTT_App MainApp;
     private FOTT_MembersAdapter members;
@@ -76,6 +79,8 @@ public class FOTT_MainActivity extends AppCompatActivity {
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
+
+        mActionBarToolbar = (Toolbar) findViewById(R.id.toolbar);
 
         CheckLogin();
     }
@@ -225,6 +230,24 @@ public class FOTT_MainActivity extends AppCompatActivity {
 
         startActivityForResult(pickTS,PICK_TSEDIT_REQUEST);
     }
+
+    private void TimeslotsFragmentCaption() {
+        TextView top_title = (TextView)findViewById(R.id.tsTopTitle);
+        TextView top_desc = (TextView) findViewById(R.id.tsTopDesc);
+        if (MainApp.getCurTask() > 0) {
+            FOTT_Task t = getTasks().getTaskById(MainApp.getCurTask());
+            top_title.setText(t.getName());
+            top_desc.setText(t.getDesc());
+        } else {
+            if (MainApp.getCurMember() > 0) {
+                top_title.setText("No tasks");
+                top_desc.setText("Timeslots for selected category");
+            } else {
+                top_title.setText("Please select task or category");
+                top_desc.setText("");
+            }
+        }
+    }
     /**
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
      * one of the sections/tabs/pages.
@@ -262,13 +285,33 @@ public class FOTT_MainActivity extends AppCompatActivity {
         public CharSequence getPageTitle(int position) {
             switch (position) {
                 case 0:
-                    return "Categories";
+                    return getString(R.string.title_categories);
                 case 1:
-                    return "Tasks";
+                    return getString(R.string.title_tasks);
                 case 2:
-                    return "Timeslots";
+                    return getString(R.string.title_timeslots);
             }
             return null;
+        }
+
+        @Override
+        public void startUpdate(ViewGroup container){
+            super.startUpdate(container);
+            int fragment = mViewPager.getCurrentItem();
+            if (mActionBarToolbar != null) {
+                mActionBarToolbar.setTitle(getPageTitle(fragment));
+
+                if (fragment > 0 && MainApp.getCurMember() != 0) {
+                    FOTT_Member m = members.getMemberById(MainApp.getCurMember());
+                    CharSequence s = getString(R.string.title_category) + ": " + m.getName();
+                    mActionBarToolbar.setSubtitle(s);
+                    mActionBarToolbar.setBackgroundColor(m.getColor());
+                }
+                else {
+                    mActionBarToolbar.setSubtitle("");
+                }
+                if (fragment == 2) TimeslotsFragmentCaption();
+            }
         }
     }
 

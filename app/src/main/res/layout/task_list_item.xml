@@ -1,35 +1,58 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent"
-    >
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:paddingLeft="4dp"
+    android:paddingRight="4dp"
+    android:paddingBottom="8dp">
 
-    <TextView
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="Medium Text"
-        android:id="@+id/textTaskTitle"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true"
-        android:height="36dp"
-        android:ellipsize="end"
-        android:textAlignment="gravity"
-        android:gravity="center_vertical"
-        android:layout_marginLeft="12dp"
-        android:background="@drawable/task_bg"/>
-
-    <TextView
+    <android.support.v7.widget.CardView
+        xmlns:card_view="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/tsElemCard"
+        android:layout_gravity="center"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Small Text"
-        android:id="@+id/textDueDate"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:layout_marginRight="12dp"
-        android:layout_marginTop="6dp"
-        android:textStyle="italic"
-        android:textAlignment="textEnd"
-        android:singleLine="true"
-        android:textSize="12dp"
-        android:background="@drawable/task_bg"/>
+        card_view:cardCornerRadius="4dp"
+        android:layout_centerHorizontal="true"
+        android:background="@color/cardview_light_background">
+
+        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            >
+
+            <TextView
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:text="Medium Text"
+                android:id="@+id/textTaskTitle"
+                android:layout_alignParentTop="false"
+                android:layout_alignParentStart="true"
+                android:height="36dp"
+                android:ellipsize="end"
+                android:textAlignment="gravity"
+                android:gravity="center_vertical"
+                android:layout_marginLeft="8dp"
+                android:textSize="@dimen/abc_text_size_small_material"
+                android:lines="2"
+                android:layout_alignParentBottom="false"
+                android:layout_below="@+id/textDueDate"
+                android:layout_marginBottom="4dp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Small Text"
+                android:id="@+id/textDueDate"
+                android:layout_alignParentTop="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginRight="12dp"
+                android:layout_marginTop="6dp"
+                android:textStyle="italic"
+                android:textAlignment="textEnd"
+                android:singleLine="true"
+                android:textSize="@dimen/abc_text_size_caption_material" />
+
+        </RelativeLayout>
+
+    </android.support.v7.widget.CardView>
 
 </RelativeLayout>

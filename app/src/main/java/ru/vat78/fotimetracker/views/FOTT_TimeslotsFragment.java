@@ -64,7 +64,7 @@ public class FOTT_TimeslotsFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 //showTimeslotAddWindow(inflater, rootView,15);
-                mainActivity.editTimeslot(0,0);
+                mainActivity.editTimeslot(0, 0);
             }
         });
 
@@ -74,22 +74,6 @@ public class FOTT_TimeslotsFragment extends Fragment {
     @Override
     public void onResume (){
         super.onResume();
-        TextView top_title = (TextView) mainActivity.findViewById(R.id.tsTopTitle);
-        TextView top_desc = (TextView) mainActivity.findViewById(R.id.tsTopDesc);
-        if (MainApp.getCurTask() > 0) {
-            FOTT_Task t = mainActivity.getTasks().getTaskById(MainApp.getCurTask());
-            top_title.setText(t.getName());
-            top_desc.setText(t.getDesc());
-        } else {
-            if (MainApp.getCurMember() > 0) {
-                FOTT_Member m = mainActivity.getMembers().getMemberById(MainApp.getCurMember());
-                top_title.setText(m.getName());
-                top_desc.setText("");
-            } else {
-                top_title.setText("Please select task or category");
-                top_desc.setText("");
-            }
-        }
-    }
 
+    }
 }

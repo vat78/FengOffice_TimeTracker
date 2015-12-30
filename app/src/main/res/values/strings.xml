@@ -85,6 +85,10 @@
     <string name="addform_end">Finish:</string>
     <string name="addform_save">Save</string>
     <string name="addform_cancel">Cancel</string>
+    <string name="title_category">Category</string>
+    <string name="title_categories">Categories</string>
+    <string name="title_tasks">Tasks</string>
+    <string name="title_timeslots">Timeslots</string>
 
     <string-array name="addform_minutes_values">
         <item>00</item>

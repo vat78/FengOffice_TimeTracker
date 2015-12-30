@@ -2,9 +2,11 @@
 
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent"
-    android:padding="16dp">
-    <!-- A CardView that contains a TextView -->
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:paddingLeft="8dp"
+    android:paddingRight="8dp"
+    android:paddingBottom="8dp">
+
     <android.support.v7.widget.CardView
         xmlns:card_view="http://schemas.android.com/apk/res-auto"
         android:id="@+id/tsElemCard"
@@ -17,7 +19,8 @@
 
         <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
             android:layout_width="match_parent" android:layout_height="match_parent"
-            android:padding="8dp">
+            android:paddingLeft="4dp"
+            android:paddingRight="4dp">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -26,7 +29,9 @@
                 android:id="@+id/tsAuthor"
                 android:layout_alignParentStart="true"
                 android:textStyle="italic"
-                style="@android:style/Widget.Material.Light.TextView" />
+                style="@android:style/Widget.Material.Light.TextView"
+                android:textSize="@dimen/abc_text_size_caption_material"
+                android:layout_marginLeft="4dp" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -36,7 +41,8 @@
                 android:layout_alignParentEnd="false"
                 android:layout_toLeftOf="@+id/tsDuration"
                 android:textStyle="italic"
-                style="@android:style/Widget.Material.TextView" />
+                style="@android:style/Widget.Material.TextView"
+                android:textSize="@dimen/abc_text_size_caption_material" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -44,9 +50,11 @@
                 android:text="New Text"
                 android:id="@+id/tsDuration"
                 android:layout_alignParentEnd="true"
-                android:layout_marginLeft="24dp"
+                android:layout_marginLeft="16dp"
                 android:textStyle="italic"
-                style="@android:style/Widget.TextView" />
+                style="@android:style/Widget.TextView"
+                android:textSize="@dimen/abc_text_size_caption_material"
+                android:layout_marginRight="4dp" />
 
             <TextView
                 android:layout_width="fill_parent"
@@ -55,8 +63,12 @@
                 android:id="@+id/tsText"
                 android:layout_below="@+id/tsAuthor"
                 android:ellipsize="end"
+                android:lines="4"
                 style="@android:style/Widget.Material.TextView"
-                android:maxHeight="@dimen/abc_text_size_display_3_material" />
+                android:textSize="@dimen/abc_text_size_small_material"
+                android:layout_marginLeft="4dp"
+                android:layout_marginRight="4dp"
+                android:layout_marginTop="4dp" />
 
         </RelativeLayout>
 
