@@ -1,7 +1,6 @@
 package ru.vat78.fotimetracker.adapters;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,10 +27,6 @@ public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapt
     private Context context;
     private FOTT_App app;
     private FOTT_MembersFragment parent;
-
-    private int memColors[] = {Color.GRAY,Color.DKGRAY,Color.RED,Color.BLUE,Color.GREEN,Color.MAGENTA,Color.CYAN,Color.YELLOW,
-            Color.GRAY,Color.DKGRAY,Color.RED,Color.BLUE,Color.GREEN,Color.MAGENTA,Color.CYAN,Color.YELLOW,
-            Color.GRAY,Color.DKGRAY,Color.RED,Color.BLUE,Color.GREEN,Color.MAGENTA,Color.CYAN,Color.YELLOW,Color.WHITE};
 
     public static class MembersViewHolder extends RecyclerView.ViewHolder {
         // each data item is just a string in this case
@@ -99,14 +94,14 @@ public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapt
 
         memberViewHolder.title.setText("   " + objectItem.getName());
         memberViewHolder.tasks.setText(String.valueOf(objectItem.getTasksCnt()));
-        memberViewHolder.color.setBackgroundColor(memColors[objectItem.getColor()]);
+        memberViewHolder.color.setBackgroundColor(objectItem.getColor());
 
         memberViewHolder.margine.setWidth(36 * objectItem.getLevel());
 
         if (app.getCurMember() == objectItem.getId()) {
-            memberViewHolder.title.setBackgroundColor(memColors[objectItem.getColor()]);
-            memberViewHolder.tasks.setBackgroundColor(memColors[objectItem.getColor()]);
-            memberViewHolder.selector.setBackgroundColor(memColors[objectItem.getColor()]);
+            memberViewHolder.title.setBackgroundColor(objectItem.getColor());
+            memberViewHolder.tasks.setBackgroundColor(objectItem.getColor());
+            memberViewHolder.selector.setBackgroundColor(objectItem.getColor());
             //memberViewHolder.setIsRecyclable(false);
         } else {
             memberViewHolder.title.setBackgroundColor(0);

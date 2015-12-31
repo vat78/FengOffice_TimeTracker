@@ -9,7 +9,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
-import android.view.LayoutInflater;
+import android.text.Layout;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -232,6 +232,10 @@ public class FOTT_MainActivity extends AppCompatActivity {
     }
 
     private void TimeslotsFragmentCaption() {
+
+        View topArea = (View)findViewById(R.id.tsTopContext);
+        FOTT_Member m = members.getMemberById(MainApp.getCurMember());
+        topArea.setBackgroundColor(m.getColor());
         TextView top_title = (TextView)findViewById(R.id.tsTopTitle);
         TextView top_desc = (TextView) findViewById(R.id.tsTopDesc);
         if (MainApp.getCurTask() > 0) {

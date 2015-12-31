@@ -82,7 +82,7 @@ public class FOTT_DBMembers extends FOTT_DBContract {
 
         res.put(COLUMN_NAME_PATH,member.getPath());
         res.put(COLUMN_NAME_LEVEL, member.getLevel());
-        res.put(COLUMN_NAME_COLOR, member.getColor());
+        res.put(COLUMN_NAME_COLOR, member.getColorIndex());
 
         res.put(COLUMN_NAME_TASKS, member.getTasksCnt());
         //res.put(COLUMN_NAME_CHANGED,member.getChanged().getTime());
@@ -93,7 +93,7 @@ public class FOTT_DBMembers extends FOTT_DBContract {
     private static FOTT_Member generateAnyMember(FOTT_App app) {
         FOTT_Member any = new FOTT_Member(0,app.getString(R.string.any_category));
         any.setPath("");
-        any.setColor(Color.TRANSPARENT);
+        any.setColorIndex(Color.TRANSPARENT);
         return any;
     }
 
@@ -125,7 +125,7 @@ public class FOTT_DBMembers extends FOTT_DBContract {
 
                 m = new FOTT_Member(id, name);
                 m.setPath(path);
-                m.setColor(color);
+                m.setColorIndex(color);
                 m.setTasksCnt(memberCursor.getInt(5));
                 int curLevel = m.getLevel();
                 if (curLevel > prev.getLevel()) {prev.setNode(1);}
@@ -174,7 +174,7 @@ public class FOTT_DBMembers extends FOTT_DBContract {
             if (!memberCursor.isAfterLast()) {
                 res.setId(memberCursor.getLong(0));
                 res.setName(memberCursor.getString(1));
-                res.setColor(memberCursor.getInt(4));
+                res.setColorIndex(memberCursor.getInt(4));
                 res.setTasksCnt(memberCursor.getInt(5));
             }
         }

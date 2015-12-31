@@ -58,9 +58,9 @@ public class FOAPI_Members {
                 el.setPath(path);
 
                 if (jo.isNull(FOAPI_Dictionary.FO_API_FIELD_TYPE)) {
-                    el.setColor(0);
+                    el.setColorIndex(0);
                 } else {
-                    el.setColor(jo.getInt(FOAPI_Dictionary.FO_API_FIELD_COLOR));
+                    el.setColorIndex(jo.getInt(FOAPI_Dictionary.FO_API_FIELD_COLOR));
                 }
             }
             catch (Exception e) {

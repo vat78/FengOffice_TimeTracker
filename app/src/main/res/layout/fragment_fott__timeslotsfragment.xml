@@ -29,7 +29,8 @@
             android:id="@+id/tsTopTitle"
             android:layout_marginLeft="16dp"
             android:layout_marginRight="16dp"
-            style="@android:style/Widget.Material.TextView" />
+            style="@android:style/Widget.Material.TextView"
+            android:textColor="#ffffff" />
         <TextView
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
@@ -38,7 +39,8 @@
             android:layout_below="@+id/tsTopTitle"
             android:layout_marginRight="16dp"
             android:layout_marginLeft="16dp"
-            style="@android:style/Widget.Material.TextView" />
+            style="@android:style/Widget.Material.TextView"
+            android:textColor="#ffffff" />
 
         </RelativeLayout>
         </android.support.v7.widget.CardView>
