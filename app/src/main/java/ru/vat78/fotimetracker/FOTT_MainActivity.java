@@ -9,7 +9,6 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
-import android.text.Layout;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -70,8 +69,8 @@ public class FOTT_MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_fott__main);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        mActionBarToolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(mActionBarToolbar);
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
@@ -79,8 +78,6 @@ public class FOTT_MainActivity extends AppCompatActivity {
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
-
-        mActionBarToolbar = (Toolbar) findViewById(R.id.toolbar);
 
         CheckLogin();
     }
@@ -178,16 +175,8 @@ public class FOTT_MainActivity extends AppCompatActivity {
         }
     }
 
-    public FOTT_MembersAdapter getMembers() {
-        return members;
-    }
-
     public FOTT_TasksAdapter getTasks() {
         return tasks;
-    }
-
-    public FOTT_TimeslotsAdapter getTimeslots() {
-        return timeslots;
     }
 
     public void setMembers(FOTT_MembersAdapter members) {
@@ -216,24 +205,16 @@ public class FOTT_MainActivity extends AppCompatActivity {
 
     public void editTimeslot(long tsId, long duration) {
         Intent pickTS = new Intent(this,FOTT_TSEditActivity.class);
-        if (tsId == 0) {
-            pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_ID, 0);
-            if (duration == 0) {
-                //ToDo: get default duration from preferences
-                duration = 15;
-            }
-            pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_DURATION, duration);
-        } else {
-            pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_ID, tsId);
-            pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_DURATION, duration);
-        }
+
+        pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_ID, tsId);
+        pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_DURATION, duration);
 
         startActivityForResult(pickTS,PICK_TSEDIT_REQUEST);
     }
 
     private void TimeslotsFragmentCaption() {
 
-        View topArea = (View)findViewById(R.id.tsTopContext);
+        View topArea = findViewById(R.id.tsTopContext);
         FOTT_Member m = members.getMemberById(MainApp.getCurMember());
         topArea.setBackgroundColor(m.getColor());
         TextView top_title = (TextView)findViewById(R.id.tsTopTitle);
@@ -244,10 +225,10 @@ public class FOTT_MainActivity extends AppCompatActivity {
             top_desc.setText(t.getDesc());
         } else {
             if (MainApp.getCurMember() > 0) {
-                top_title.setText("No tasks");
-                top_desc.setText("Timeslots for selected category");
+                top_title.setText(R.string.title_no_tasks);
+                top_desc.setText(R.string.title_category_description);
             } else {
-                top_title.setText("Please select task or category");
+                top_title.setText(R.string.title_no_active_task_and_category);
                 top_desc.setText("");
             }
         }

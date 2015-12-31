@@ -62,7 +62,7 @@ public class FOAPI_Timeslots {
         l = (long) timeslot.getStart().getTime() / FO_API_DATE_CONVERTOR;
         args[5] = "" + l;
         args[6] = FO_API_FIELD_TS_DURATION;
-        l = (long) timeslot.getDuration().getTime() / FO_API_DATE_CONVERTOR;
+        l = (long) timeslot.getDuration() / FO_API_DATE_CONVERTOR;
         args[7] = "" + l;
         args[8] = FO_API_FIELD_TS_TASK;
         args[9] = timeslot.getTaskId() == 0 ? "" : "" + timeslot.getTaskId();
@@ -126,7 +126,7 @@ public class FOAPI_Timeslots {
                 if (jo.isNull(FO_API_FIELD_TS_DURATION)) {
                     el.setDuration(FO_API_DATE_CONVERTOR);
                 } else {
-                    el.setDuration(jo.getInt(FO_API_FIELD_TS_DURATION)*FO_API_DATE_CONVERTOR);
+                    el.setDuration(jo.getLong(FO_API_FIELD_TS_DURATION)*FO_API_DATE_CONVERTOR);
                 }
                 if (jo.isNull(FO_API_FIELD_TS_TASK)){
                     el.setTaskId(0);

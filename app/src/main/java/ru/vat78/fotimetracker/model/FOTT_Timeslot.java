@@ -11,7 +11,7 @@ import java.util.Date;
 public class FOTT_Timeslot extends FOTT_Object {
 
     private Date start;
-    private Date duration;
+    private long duration;
     private long task_id;
 
     public FOTT_Timeslot(long tsId, String tsTitle){
@@ -26,7 +26,7 @@ public class FOTT_Timeslot extends FOTT_Object {
         return start;
     }
 
-    public Date getDuration() {
+    public long getDuration() {
         return duration;
     }
 
@@ -34,9 +34,20 @@ public class FOTT_Timeslot extends FOTT_Object {
         String res = "";
         SimpleDateFormat df = new SimpleDateFormat();
 
-        if (duration.getTime() >= 24 * 3600 * 1000) res += "" + Math.round(duration.getTime() / 24 / 3600 / 1000) + " d";
-        if (duration.getHours() > 0) res += " " + duration.getHours() + " h";
-        if (duration.getMinutes() > 0) res += " " + duration.getMinutes() + " m";
+        long l;
+        int i;
+
+        i = Math.round(duration / 24 / 3600 / 1000);
+        if (i>0) res += "" + i + " d";
+        l = duration - i * 24 * 3600 * 1000;
+
+        i = Math.round(l / 3600 / 1000);
+        if (i > 0) res += " " + i + " h";
+        l = l - i * 3600 * 1000;
+
+        i = Math.round(l / 60 / 1000);
+        if (i > 9) {res += " " + i + " m";}
+        else {res += " 0" + i + " m";}
 
         return res;
     }
@@ -55,7 +66,7 @@ public class FOTT_Timeslot extends FOTT_Object {
     }
 
     public void setDuration(long duration) {
-        this.duration = new Date(duration);
+        this.duration = duration;
     }
 
     public void setTaskId(long task_id) {

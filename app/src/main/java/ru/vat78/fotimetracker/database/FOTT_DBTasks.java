@@ -18,10 +18,6 @@ public class FOTT_DBTasks extends FOTT_DBContract {
     private static final String CLASS_NAME ="FOTT_DBTasks";
 
     private static final String TABLE_NAME = "tasks";
-    private static final String COLUMN_NAME_TASK_ID = "taskid";
-    private static final String COLUMN_NAME_TITLE = "name";
-    private static final String COLUMN_NAME_DESC = "description";
-    private static final String COLUMN_NAME_MEMBERS_IDS = "members_ids";
     private static final String COLUMN_NAME_STATUS = "status";
     private static final String COLUMN_NAME_STARTDATE = "startdate";
     private static final String COLUMN_NAME_DUEDATE = "duedate";
@@ -33,13 +29,10 @@ public class FOTT_DBTasks extends FOTT_DBContract {
     private static final String COLUMN_NAME_PENDINGTIME = "pendingtime";
     private static final String COLUMN_NAME_USETIMESLOTS = "usetimeslots";
 
-    private static final String COLUMN_NAME_CHANGED = "changed";
-
-
     public static final String SQL_CREATE_ENTRIES =
             CREATE_TABLE + TABLE_NAME + " (" +
-                    //BaseColumns._ID + PRIMARY_KEY + COMMA_SEP +
-                    COLUMN_NAME_TASK_ID + INTEGER_TYPE + PRIMARY_KEY + COMMA_SEP +
+                    BaseColumns._ID + INTEGER_TYPE + PRIMARY_KEY + COMMA_SEP +
+                    COLUMN_NAME_FO_ID + INTEGER_TYPE + UNIQUE_FIELD + COMMA_SEP +
                     COLUMN_NAME_TITLE + TEXT_TYPE + COMMA_SEP +
                     COLUMN_NAME_DESC + TEXT_TYPE + COMMA_SEP +
                     COLUMN_NAME_MEMBERS_IDS + TEXT_TYPE + COMMA_SEP +
@@ -91,7 +84,7 @@ public class FOTT_DBTasks extends FOTT_DBContract {
     private static ContentValues convertToDB(FOTT_Task task) {
         ContentValues res = new ContentValues();
 
-        res.put(COLUMN_NAME_TASK_ID, task.getId());
+        res.put(COLUMN_NAME_FO_ID, task.getId());
         res.put(COLUMN_NAME_TITLE, task.getName());
         res.put(COLUMN_NAME_DESC, task.getDesc());
 
@@ -120,11 +113,11 @@ public class FOTT_DBTasks extends FOTT_DBContract {
         ArrayList<FOTT_Task> tasks = new ArrayList<>();
         String memFilter = null;
         if (app.getCurMember() > 0) {
-            memFilter = " " + COLUMN_NAME_TASK_ID + " IN (" +
+            memFilter = " " + COLUMN_NAME_FO_ID + " IN (" +
                     FOTT_DBMembers_Objects.getSQLCondition(app.getCurMember(),1) + ")";
         }
         Cursor taskCursor = app.getDatabase().query(TABLE_NAME,
-                new String[]{COLUMN_NAME_TASK_ID,
+                new String[]{COLUMN_NAME_FO_ID,
                         COLUMN_NAME_TITLE,
                         COLUMN_NAME_DUEDATE},
                 memFilter,
@@ -151,9 +144,9 @@ public class FOTT_DBTasks extends FOTT_DBContract {
 
         FOTT_Task res = new FOTT_Task(0,"");
         if (id>0){
-            String filter = " " + COLUMN_NAME_TASK_ID + " = " + id;
+            String filter = " " + COLUMN_NAME_FO_ID + " = " + id;
             Cursor taskCursor = app.getDatabase().query(TABLE_NAME,
-                    new String[]{COLUMN_NAME_TASK_ID,
+                    new String[]{COLUMN_NAME_FO_ID,
                             COLUMN_NAME_TITLE,
                             COLUMN_NAME_DUEDATE,
                             COLUMN_NAME_DESC},

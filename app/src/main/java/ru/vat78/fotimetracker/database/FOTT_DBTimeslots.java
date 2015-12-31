@@ -7,7 +7,6 @@ import android.provider.BaseColumns;
 import java.util.ArrayList;
 
 import ru.vat78.fotimetracker.FOTT_App;
-import ru.vat78.fotimetracker.model.FOTT_Object;
 import ru.vat78.fotimetracker.model.FOTT_Timeslot;
 import ru.vat78.fotimetracker.views.FOTT_ErrorsHandler;
 
@@ -18,28 +17,23 @@ public class FOTT_DBTimeslots extends FOTT_DBContract {
     private static final String CLASS_NAME = "FOTT_DBTimeslots";
 
     private static final String TABLE_NAME = "timeslots";
-    private static final String COLUMN_NAME_TIMESLOT_ID = "timeslot_ID";
-    private static final String COLUMN_NAME_TITLE = "name";
-    private static final String COLUMN_NAME_DESC = "description";
     private static final String COLUMN_NAME_START = "start";
     private static final String COLUMN_NAME_DURATION = "duration";
     private static final String COLUMN_NAME_TASK_ID = "task_id";
-    private static final String COLUMN_NAME_MEMBERS_ID = "members_id";
-    private static final String COLUMN_NAME_CHANGED = "changed";
-    private static final String COLUMN_NAME_CHANGED_BY = "changed_by";
 
     public static final String SQL_CREATE_ENTRIES =
             CREATE_TABLE + TABLE_NAME + " (" +
-                    //BaseColumns._ID + INTEGER_TYPE + PRIMARY_KEY + COMMA_SEP +
-                    COLUMN_NAME_TIMESLOT_ID + INTEGER_TYPE + PRIMARY_KEY + COMMA_SEP +
+                    BaseColumns._ID + INTEGER_TYPE + PRIMARY_KEY + COMMA_SEP +
+                    COLUMN_NAME_FO_ID + INTEGER_TYPE + UNIQUE_FIELD + COMMA_SEP +
                     COLUMN_NAME_TITLE + TEXT_TYPE + COMMA_SEP +
                     COLUMN_NAME_DESC + TEXT_TYPE + COMMA_SEP +
                     COLUMN_NAME_START + NUMERIC_TYPE + COMMA_SEP +
                     COLUMN_NAME_DURATION + NUMERIC_TYPE + COMMA_SEP +
                     COLUMN_NAME_TASK_ID + INTEGER_TYPE + COMMA_SEP +
-                    COLUMN_NAME_MEMBERS_ID + TEXT_TYPE + COMMA_SEP +
+                    COLUMN_NAME_MEMBERS_IDS + TEXT_TYPE + COMMA_SEP +
                     COLUMN_NAME_CHANGED + NUMERIC_TYPE + COMMA_SEP +
-                    COLUMN_NAME_CHANGED_BY + TEXT_TYPE +  " );";
+                    COLUMN_NAME_CHANGED_BY + TEXT_TYPE + COMMA_SEP +
+                    COLUMN_NAME_DELETED + NUMERIC_TYPE + " );";
     public static final String SQL_DELETE_ENTRIES =
             DROP_TABLE + TABLE_NAME + ";";
 
@@ -53,10 +47,14 @@ public class FOTT_DBTimeslots extends FOTT_DBContract {
         try {
             if (fullSync) {
                 rebuild(app);
-            }
 
-            for (int i = 0; i < ts_list.size(); i++) {
-                insert(app,ts_list.get(i));
+                for (int i = 0; i < ts_list.size(); i++) {
+                    insert(app, ts_list.get(i));
+                }
+            } else {
+                for (int i = 0; i < ts_list.size(); i++) {
+                    insertOrUpdate(app, ts_list.get(i));
+                }
             }
         }
         catch (Error e){
@@ -64,20 +62,47 @@ public class FOTT_DBTimeslots extends FOTT_DBContract {
         }
     }
 
+    private static void insertOrUpdate(FOTT_App app, FOTT_Timeslot timeslot) {
+        ContentValues ts = convertToDB(timeslot);
+        ts.put(COLUMN_NAME_DELETED,0);
+        ts.put(BaseColumns._ID, "(SELECT " + BaseColumns._ID + " FROM " +
+                TABLE_NAME + " WHERE " + COLUMN_NAME_FO_ID + " = " + timeslot.getId());
+
+        long id = app.getDatabase().insertOrUpdate(TABLE_NAME, ts);
+
+        if (!app.getError().is_error()) {
+
+            if (timeslot.getId() == 0) {
+                //For new record make sintetyc FO ID
+                ts = new ContentValues();
+                ts.put(COLUMN_NAME_FO_ID, -id);
+                String s = BaseColumns._ID + " = " + id;
+                app.getDatabase().update(TABLE_NAME,ts,s);
+                timeslot.setId(-id);
+            }
+
+            String[] members = timeslot.getMembersArray();
+            if (members.length > 0) {
+                if (timeslot.getTaskId() == 0)
+                    FOTT_DBMembers_Objects.addObject(app, timeslot, 2);
+            }
+        }
+    }
+
     private static ContentValues convertToDB(FOTT_Timeslot ts) {
         ContentValues res = new ContentValues();
-        res.put(COLUMN_NAME_TIMESLOT_ID, ts.getId());
+        res.put(COLUMN_NAME_FO_ID, ts.getId());
         res.put(COLUMN_NAME_TITLE,ts.getName());
         res.put(COLUMN_NAME_DESC,ts.getDesc());
 
         res.put(COLUMN_NAME_START,ts.getStart().getTime());
-        res.put(COLUMN_NAME_DURATION,ts.getDuration().getTime());
+        res.put(COLUMN_NAME_DURATION,ts.getDuration());
 
         res.put(COLUMN_NAME_CHANGED,ts.getChanged().getTime());
         res.put(COLUMN_NAME_CHANGED_BY,ts.getAuthor());
 
         res.put(COLUMN_NAME_TASK_ID, ts.getTaskId());
-        res.put(COLUMN_NAME_MEMBERS_ID,ts.getMembersIds());
+        res.put(COLUMN_NAME_MEMBERS_IDS,ts.getMembersIds());
 
         return res;
     }
@@ -86,17 +111,17 @@ public class FOTT_DBTimeslots extends FOTT_DBContract {
 
         ArrayList<FOTT_Timeslot> timeslots = new ArrayList<>();
 
-        String filter = "";
+        String filter = COLUMN_NAME_DELETED + " = 0 AND ";
         if (app.getCurTask() > 0){
-            filter = " " + COLUMN_NAME_TASK_ID +
+            filter += COLUMN_NAME_TASK_ID +
                     " = " + String.valueOf(app.getCurTask());
         } else {
-            filter = " " + COLUMN_NAME_TIMESLOT_ID + " IN ( " +
+            filter += COLUMN_NAME_FO_ID + " IN ( " +
                     FOTT_DBMembers_Objects.getSQLCondition(app.getCurMember(),2) + ")";
         }
 
         Cursor tsCursor = app.getDatabase().query(TABLE_NAME,
-                new String[]{COLUMN_NAME_TIMESLOT_ID,
+                new String[]{COLUMN_NAME_FO_ID,
                         COLUMN_NAME_TITLE,
                         COLUMN_NAME_START,
                         COLUMN_NAME_DURATION,
@@ -113,7 +138,7 @@ public class FOTT_DBTimeslots extends FOTT_DBContract {
                 long id = tsCursor.getLong(0);
                 String name = tsCursor.getString(1);
                 long start = tsCursor.getLong(2);
-                int dur = tsCursor.getInt(3);
+                long dur = tsCursor.getLong(3);
                 long changed = tsCursor.getLong(4);
                 String author = tsCursor.getString(5);
                 long tid = tsCursor.getLong(6);
@@ -136,18 +161,20 @@ public class FOTT_DBTimeslots extends FOTT_DBContract {
     private static void insert (FOTT_App app, FOTT_Timeslot timeslot) {
 
         ContentValues ts = convertToDB(timeslot);
+        ts.put(COLUMN_NAME_DELETED,0);
+
         app.getDatabase().insertOrUpdate(TABLE_NAME, ts);
 
         if (!app.getError().is_error()) {
             String[] members = timeslot.getMembersArray();
             if (members.length > 0) {
                 if (timeslot.getTaskId() == 0)
-                    FOTT_DBMembers_Objects.addObject(app, (FOTT_Object) timeslot, 2);
+                    FOTT_DBMembers_Objects.addObject(app, timeslot, 2);
             }
         }
     }
 
     public static void save (FOTT_App app, FOTT_Timeslot timeslot) {
-        insert(app,timeslot);
+        insertOrUpdate(app,timeslot);
     }
 }

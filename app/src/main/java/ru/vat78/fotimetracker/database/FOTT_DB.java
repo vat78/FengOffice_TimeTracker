@@ -60,6 +60,9 @@ public class FOTT_DB {
         return database.query(table,columns,filter,null,null,null,order);
     }
 
+    public int update(String table, ContentValues values, String whereClause){
+        return database.update(table,values,whereClause,null);
+    }
 
 
 

@@ -3,6 +3,7 @@ package ru.vat78.fotimetracker.database;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.graphics.Color;
+import android.provider.BaseColumns;
 
 import java.util.ArrayList;
 
@@ -18,21 +19,18 @@ public class FOTT_DBMembers extends FOTT_DBContract {
     private static final String CLASS_NAME = "FOTT_DBMembers";
 
     private static final String TABLE_NAME = "members";
-    private static final String COLUMN_NAME_MEMBER_ID = "memberid";
-    private static final String COLUMN_NAME_NAME = "name";
     private static final String COLUMN_NAME_COLOR = "color";
     private static final String COLUMN_NAME_TYPE = "type";
     private static final String COLUMN_NAME_PATH = "path";
     private static final String COLUMN_NAME_PARENT = "parentid";
     private static final String COLUMN_NAME_LEVEL = "level";
-    private static final String COLUMN_NAME_CHANGED = "changed";
     private static final String COLUMN_NAME_TASKS = "tasks_cnt";
 
     public static final String SQL_CREATE_ENTRIES =
             CREATE_TABLE + TABLE_NAME + " (" +
-                    //BaseColumns._ID + " INTEGER PRIMARY KEY," +
-                    COLUMN_NAME_MEMBER_ID + INTEGER_TYPE + PRIMARY_KEY + COMMA_SEP +
-                    COLUMN_NAME_NAME + TEXT_TYPE + COMMA_SEP +
+                    BaseColumns._ID + INTEGER_TYPE + PRIMARY_KEY + COMMA_SEP +
+                    COLUMN_NAME_FO_ID + INTEGER_TYPE + UNIQUE_FIELD + COMMA_SEP +
+                    COLUMN_NAME_TITLE + TEXT_TYPE + COMMA_SEP +
                     COLUMN_NAME_COLOR + INTEGER_TYPE + COMMA_SEP +
                     COLUMN_NAME_TYPE + TEXT_TYPE + COMMA_SEP +
                     COLUMN_NAME_PATH + TEXT_TYPE + COMMA_SEP +
@@ -77,8 +75,8 @@ public class FOTT_DBMembers extends FOTT_DBContract {
 
     private static ContentValues convertToDB(FOTT_Member member) {
         ContentValues res = new ContentValues();
-        res.put(COLUMN_NAME_MEMBER_ID, member.getId());
-        res.put(COLUMN_NAME_NAME,member.getName());
+        res.put(COLUMN_NAME_FO_ID, member.getId());
+        res.put(COLUMN_NAME_TITLE,member.getName());
 
         res.put(COLUMN_NAME_PATH,member.getPath());
         res.put(COLUMN_NAME_LEVEL, member.getLevel());
@@ -101,13 +99,13 @@ public class FOTT_DBMembers extends FOTT_DBContract {
         ArrayList<FOTT_Member> members = new ArrayList<>();
 
         Cursor memberCursor = app.getDatabase().query(TABLE_NAME + " m",
-                new String[]{"m." + COLUMN_NAME_MEMBER_ID,
-                        "m." + COLUMN_NAME_NAME,
+                new String[]{"m." + COLUMN_NAME_FO_ID,
+                        "m." + COLUMN_NAME_TITLE,
                         "m." + COLUMN_NAME_PATH,
                         "m." + COLUMN_NAME_LEVEL,
                         "m." + COLUMN_NAME_COLOR,
                         "(" + FOTT_DBMembers_Objects.getSQLObectsCnt("m." +
-                        COLUMN_NAME_MEMBER_ID) + ") AS TaskCnt"},
+                                COLUMN_NAME_FO_ID) + ") AS TaskCnt"},
                 null,
                 COLUMN_NAME_PATH + " ASC");
 
@@ -159,10 +157,10 @@ public class FOTT_DBMembers extends FOTT_DBContract {
         FOTT_Member res = new FOTT_Member(0, "");
 
         if (id > 0) {
-            String filter = " " + COLUMN_NAME_MEMBER_ID + " = " + id;
+            String filter = " " + COLUMN_NAME_FO_ID + " = " + id;
             Cursor memberCursor = app.getDatabase().query(TABLE_NAME + " m",
-                    new String[]{"m." + COLUMN_NAME_MEMBER_ID,
-                            "m." + COLUMN_NAME_NAME,
+                    new String[]{"m." + COLUMN_NAME_FO_ID,
+                            "m." + COLUMN_NAME_TITLE,
                             "m." + COLUMN_NAME_PATH,
                             "m." + COLUMN_NAME_LEVEL,
                             "m." + COLUMN_NAME_COLOR,
