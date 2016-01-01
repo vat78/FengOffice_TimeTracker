@@ -157,7 +157,6 @@ public class FOTT_MainActivity extends AppCompatActivity {
                 if (timeslots.saveTimeslot(id,d,l,s)){
                     timeslots.load();
 
-                    FOAPI_Timeslots.saveChangedTimeslots(MainApp,timeslots.getAllTimeslots());
                     syncWithFO();
                 } else {
                     //Todo: save error

@@ -89,7 +89,7 @@ public class FOTT_TimeslotsAdapter extends RecyclerView.Adapter<FOTT_TimeslotsAd
 
     public void load() {
 
-        this.timeslots = FOTT_DBTimeslots.load(app);
+        this.timeslots = FOTT_DBTimeslots.load(app,"");
 
     }
 

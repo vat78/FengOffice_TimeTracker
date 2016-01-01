@@ -220,17 +220,6 @@ public class FOAPI_Connector {
         this.ErrorMsg = "";
     }
 
-    public ArrayList<FOTT_Member> loadMembers() {
-        return FOAPI_Members.load(app);
-    }
-
-    public ArrayList<FOTT_Task> loadTasks(Date lastSync) {
-        return lastSync == null ? FOAPI_Tasks.load(app) : FOAPI_Tasks.load(app, lastSync);
-    }
-
-    public ArrayList<FOTT_Timeslot> loadTimeslots(Date lastSync) {
-        return lastSync == null ? FOAPI_Timeslots.load(app) : FOAPI_Timeslots.load(app, lastSync);
-    }
 
     private static class MyTrustManager implements X509TrustManager
     {

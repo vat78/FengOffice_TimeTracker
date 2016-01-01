@@ -32,26 +32,19 @@ public class FOAPI_Timeslots {
         return convertResults(app,jo);
     }
 
-    public static boolean saveChangedTimeslots(FOTT_App app, ArrayList<FOTT_Timeslot> timeslots){
-
+    public static boolean save(FOTT_App app, ArrayList<FOTT_Timeslot> timeslots) {
+        if (timeslots == null) return true;
         boolean res = true;
-        Date l = app.getLastSync();
 
-        for (int i=0; i < timeslots.size(); i++) {
-            try {
-                FOTT_Timeslot ts = timeslots.get(i);
-                if (ts.getChanged().after(l)) {
-                    save(app.getWeb_service(), ts);
-                }
-            } catch (Exception e) {
-                app.getError().error_handler(FOTT_ErrorsHandler.ERROR_SAVE_ERROR,CLASS_NAME,e.getMessage());
-                res = false;
-            }
+        for (FOTT_Timeslot ts:timeslots) {
+            String[] args = convertTSForAPI(ts);
+            JSONObject jo = app.getWeb_service().executeAPI(FO_METHOD_SAVE_OBJ, FO_SERVICE_TIMESLOT, args);
+            res = res && (jo.toString() == "[\"true\"]");
         }
         return res;
     }
 
-    private static boolean save(FOAPI_Connector web_service, FOTT_Timeslot timeslot) {
+    private static String[] convertTSForAPI(FOTT_Timeslot timeslot) {
         String[] args = new String[11];
         long l = 0;
         args[0] = FO_API_FIELD_ID;
@@ -70,13 +63,10 @@ public class FOAPI_Timeslots {
             args[10] = FO_API_FIELD_MEMBERS;
             args[11] = "[";
             String[] members = timeslot.getMembersArray();
-            for (int i = 0; i<members.length; i++)
-                args[11] += "\"" + members[i] + "\",";
+            for (String member : members) args[11] += "\"" + member + "\",";
             args[11] += "]";
         }
-
-        JSONObject jo = web_service.executeAPI(FO_METHOD_SAVE_OBJ, FO_SERVICE_TIMESLOT,args);
-        return jo.toString() == "[\"true\"]";
+        return args;
     }
 
     private static ArrayList<FOTT_Timeslot> convertResults(FOTT_App app, JSONObject data){
@@ -152,6 +142,19 @@ public class FOAPI_Timeslots {
                 if (el != null)
                     if (!res.add(el)) {break;}
             }
+        }
+
+        return res;
+    }
+
+    public static boolean delete(FOTT_App app, ArrayList<FOTT_Timeslot> timeslots) {
+        boolean res = true;
+
+        for (FOTT_Timeslot ts: timeslots) {
+            //ToDo: make deleting over API
+            //String[] args = convertTaskForAPI(task);
+            //JSONObject jo = app.getWeb_service().executeAPI(FO_METHOD_SAVE_OBJ, FO_SERVICE_TASK, args);
+            //res = res && (jo.toString() != "[\"true\"]") ;
         }
 
         return res;

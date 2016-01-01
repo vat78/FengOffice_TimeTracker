@@ -184,6 +184,8 @@ public class FOTT_App extends Application {
             members = null;
 
             //Sync task
+            if (FOAPI_Tasks.delete(this,FOTT_DBTasks.getDeletedTasks(this)) && !fullSync) FOTT_DBTasks.clearDeletedTasks(this);
+            if (FOAPI_Tasks.save(this, FOTT_DBTasks.getChangedTasks(this, getLastSync())) && !fullSync) FOTT_DBTasks.clearNewTasks(this);
             ArrayList<FOTT_Task> tasks = FOAPI_Tasks.load(this, d);
             if (getError().is_error()) {
                 setSyncing(false);
@@ -197,6 +199,8 @@ public class FOTT_App extends Application {
             tasks = null;
 
             //Sync timeslots
+            if (FOAPI_Timeslots.delete(this,FOTT_DBTimeslots.getDeletedTS(this)) && !fullSync) FOTT_DBTimeslots.clearDeletedTS(this);
+            if (FOAPI_Timeslots.save(this, FOTT_DBTimeslots.getChangedTS(this, getLastSync())) && !fullSync) FOTT_DBTimeslots.clearNewTS(this);
             ArrayList<FOTT_Timeslot> timeslots = FOAPI_Timeslots.load(this, d);
             if (getError().is_error()) {
                 setSyncing(false);

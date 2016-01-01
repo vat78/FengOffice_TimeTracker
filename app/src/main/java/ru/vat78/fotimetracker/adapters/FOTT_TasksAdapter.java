@@ -105,7 +105,7 @@ public class FOTT_TasksAdapter extends RecyclerView.Adapter<FOTT_TasksAdapter.Ta
     }
 
     public void load(){
-        this.tasks = FOTT_DBTasks.load(app);
+        this.tasks = FOTT_DBTasks.load(app,"");
     }
 
     public FOTT_Task getTaskById(long id){

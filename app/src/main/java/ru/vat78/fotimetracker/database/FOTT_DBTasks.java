@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.provider.BaseColumns;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 import ru.vat78.fotimetracker.FOTT_App;
 import ru.vat78.fotimetracker.model.FOTT_Object;
@@ -46,7 +47,8 @@ public class FOTT_DBTasks extends FOTT_DBContract {
                     COLUMN_NAME_WORKEDTIME + TEXT_TYPE + COMMA_SEP +
                     COLUMN_NAME_PENDINGTIME + TEXT_TYPE + COMMA_SEP +
                     COLUMN_NAME_USETIMESLOTS + NUMERIC_TYPE + COMMA_SEP +
-                    COLUMN_NAME_CHANGED + NUMERIC_TYPE +
+                    COLUMN_NAME_CHANGED + NUMERIC_TYPE + COMMA_SEP +
+                    COLUMN_NAME_DELETED + NUMERIC_TYPE +
                     " );";
     public static final String SQL_DELETE_ENTRIES =
             DROP_TABLE + TABLE_NAME + ";";
@@ -59,15 +61,10 @@ public class FOTT_DBTasks extends FOTT_DBContract {
 
     public static void save(FOTT_App app, ArrayList<FOTT_Task> tasks_list, boolean fullSync) {
 
-        if (app.getCurTask() > 0){
-            //TODO: if has selected task
-        }
-
         try {
             if (fullSync) {
                 rebuild(app);
                 FOTT_DBMembers_Objects.rebuild(app);
-                //TODO: create emty task "Any task" ?
             }
 
 
@@ -88,11 +85,15 @@ public class FOTT_DBTasks extends FOTT_DBContract {
         res.put(COLUMN_NAME_TITLE, task.getName());
         res.put(COLUMN_NAME_DESC, task.getDesc());
 
+        res.put(COLUMN_NAME_STATUS, task.getStatus());
+
         res.put(COLUMN_NAME_DUEDATE,task.getDueDate().getTime());
 
         res.put(COLUMN_NAME_CHANGED,task.getChanged().getTime());
 
         res.put(COLUMN_NAME_MEMBERS_IDS, task.getMembersIds());
+
+        res.put(COLUMN_NAME_DELETED, task.isDeleted());
         return res;
     }
 
@@ -103,23 +104,25 @@ public class FOTT_DBTasks extends FOTT_DBContract {
         if (!app.getError().is_error()) {
             String[] members = task.getMembersArray();
             if (members.length > 0) {
-                FOTT_DBMembers_Objects.addObject(app, (FOTT_Object) task, 1);
+                FOTT_DBMembers_Objects.addObject(app, task, 1);
             }
         }
     }
 
-    public static ArrayList<FOTT_Task> load (FOTT_App app) {
+    public static ArrayList<FOTT_Task> load (FOTT_App app, String additionConditions) {
 
         ArrayList<FOTT_Task> tasks = new ArrayList<>();
-        String memFilter = null;
+        String memFilter = additionConditions;
         if (app.getCurMember() > 0) {
-            memFilter = " " + COLUMN_NAME_FO_ID + " IN (" +
+            if (!memFilter.isEmpty()) memFilter = " AND ";
+            memFilter += " " + COLUMN_NAME_FO_ID + " IN (" +
                     FOTT_DBMembers_Objects.getSQLCondition(app.getCurMember(),1) + ")";
         }
         Cursor taskCursor = app.getDatabase().query(TABLE_NAME,
                 new String[]{COLUMN_NAME_FO_ID,
                         COLUMN_NAME_TITLE,
-                        COLUMN_NAME_DUEDATE},
+                        COLUMN_NAME_DUEDATE,
+                        COLUMN_NAME_STATUS},
                 memFilter,
                 COLUMN_NAME_DUEDATE + " ASC");
 
@@ -133,6 +136,8 @@ public class FOTT_DBTasks extends FOTT_DBContract {
 
                 m = new FOTT_Task(id, name);
                 m.setDuedate(duedate);
+
+                m.setStatus(taskCursor.getInt(3));
 
                 tasks.add(m);
             } while (taskCursor.moveToNext());
@@ -149,7 +154,8 @@ public class FOTT_DBTasks extends FOTT_DBContract {
                     new String[]{COLUMN_NAME_FO_ID,
                             COLUMN_NAME_TITLE,
                             COLUMN_NAME_DUEDATE,
-                            COLUMN_NAME_DESC},
+                            COLUMN_NAME_DESC,
+                            COLUMN_NAME_STATUS},
                     filter,
                     COLUMN_NAME_DUEDATE);
             taskCursor.moveToFirst();
@@ -158,8 +164,27 @@ public class FOTT_DBTasks extends FOTT_DBContract {
                 res.setName(taskCursor.getString(1));
                 res.setDuedate(taskCursor.getLong(2));
                 res.setDesc(taskCursor.getString(3));
+                res.setStatus(taskCursor.getInt(4));
             }
         }
         return res;
+    }
+
+    public static void clearNewTasks(FOTT_App app) {
+        app.getDatabase().delete(TABLE_NAME, COLUMN_NAME_FO_ID + " < 0 ");
+    }
+
+    public static ArrayList<FOTT_Task> getChangedTasks(FOTT_App app, Date lastSync) {
+        return load(app, "(" + COLUMN_NAME_CHANGED + " > " + String.valueOf(lastSync.getTime()) +
+                " OR " + COLUMN_NAME_FO_ID + " < 0)");
+    }
+
+    public static void clearDeletedTasks(FOTT_App app) {
+        app.getDatabase().delete(TABLE_NAME, COLUMN_NAME_DELETED + " > 0");
+    }
+
+    public static ArrayList<FOTT_Task> getDeletedTasks(FOTT_App app) {
+        return load(app, COLUMN_NAME_DELETED + " > 0 AND " +
+                COLUMN_NAME_FO_ID + " > 0");
     }
 }

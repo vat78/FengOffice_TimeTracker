@@ -61,13 +61,12 @@ public class FOTT_DB {
     }
 
     public int update(String table, ContentValues values, String whereClause){
-        return database.update(table,values,whereClause,null);
+        return database.update(table, values, whereClause, null);
     }
 
 
-
-
-
-
-
+    public void delete(String table,String whereClause) {
+        if (database.delete(table,whereClause,null) == -1)
+            app.getError().error_handler(FOTT_ErrorsHandler.ERROR_LOG_MESSAGE,CLASS_NAME,"Errors while deleting tasks from database");
+    }
 }

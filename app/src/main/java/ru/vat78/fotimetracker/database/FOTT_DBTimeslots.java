@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.provider.BaseColumns;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 import ru.vat78.fotimetracker.FOTT_App;
 import ru.vat78.fotimetracker.model.FOTT_Timeslot;
@@ -94,6 +95,7 @@ public class FOTT_DBTimeslots extends FOTT_DBContract {
         res.put(COLUMN_NAME_FO_ID, ts.getId());
         res.put(COLUMN_NAME_TITLE,ts.getName());
         res.put(COLUMN_NAME_DESC,ts.getDesc());
+        res.put(COLUMN_NAME_DELETED, ts.isDeleted());
 
         res.put(COLUMN_NAME_START,ts.getStart().getTime());
         res.put(COLUMN_NAME_DURATION,ts.getDuration());
@@ -107,16 +109,17 @@ public class FOTT_DBTimeslots extends FOTT_DBContract {
         return res;
     }
 
-    public static ArrayList<FOTT_Timeslot> load(FOTT_App app) {
+    public static ArrayList<FOTT_Timeslot> load(FOTT_App app, String additionConditions) {
 
         ArrayList<FOTT_Timeslot> timeslots = new ArrayList<>();
 
-        String filter = COLUMN_NAME_DELETED + " = 0 AND ";
+        String filter = additionConditions;
+        if (filter.isEmpty()) filter = COLUMN_NAME_DELETED + " = 0";
         if (app.getCurTask() > 0){
-            filter += COLUMN_NAME_TASK_ID +
+            filter += " AND " + COLUMN_NAME_TASK_ID +
                     " = " + String.valueOf(app.getCurTask());
         } else {
-            filter += COLUMN_NAME_FO_ID + " IN ( " +
+            filter += " AND " + COLUMN_NAME_FO_ID + " IN ( " +
                     FOTT_DBMembers_Objects.getSQLCondition(app.getCurMember(),2) + ")";
         }
 
@@ -175,6 +178,24 @@ public class FOTT_DBTimeslots extends FOTT_DBContract {
     }
 
     public static void save (FOTT_App app, FOTT_Timeslot timeslot) {
-        insertOrUpdate(app,timeslot);
+        insertOrUpdate(app, timeslot);
+    }
+
+    public static void clearDeletedTS(FOTT_App app) {
+        app.getDatabase().delete(TABLE_NAME, COLUMN_NAME_DELETED + " > 0");
+    }
+
+    public static ArrayList<FOTT_Timeslot> getDeletedTS(FOTT_App app) {
+        return load(app, COLUMN_NAME_DELETED + " > 0 AND " +
+            COLUMN_NAME_FO_ID + " > 0");
+    }
+
+    public static void clearNewTS(FOTT_App app) {
+        app.getDatabase().delete(TABLE_NAME, COLUMN_NAME_FO_ID + " < 0 ");
+    }
+
+    public static ArrayList<FOTT_Timeslot> getChangedTS(FOTT_App app, Date lastSync) {
+        return load(app, "(" + COLUMN_NAME_CHANGED + " > " + String.valueOf(lastSync.getTime()) +
+            " OR " + COLUMN_NAME_FO_ID + " < 0)");
     }
 }

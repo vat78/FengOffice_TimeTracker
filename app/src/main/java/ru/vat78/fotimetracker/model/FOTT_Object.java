@@ -16,6 +16,7 @@ public class FOTT_Object {
     private String author;
     private Date changed;
     private String membersIds;
+    private boolean deleted;
 
     public FOTT_Object(){
         foid = 0;
@@ -24,6 +25,7 @@ public class FOTT_Object {
         author = "";
         changed = new Date(0);
         membersIds = "" ;
+        deleted = false;
     }
 
     public long getId() {
@@ -70,6 +72,8 @@ public class FOTT_Object {
         this.changed = changed;
     }
 
+    public void setDeleted(boolean value) {deleted = value;}
+
     public String getAuthor() {
         return author;
     }
@@ -84,4 +88,5 @@ public class FOTT_Object {
 
     public String getMemberSplitter() { return MEMBER_SPLITTER;}
 
+    public boolean isDeleted() { return deleted;}
 }

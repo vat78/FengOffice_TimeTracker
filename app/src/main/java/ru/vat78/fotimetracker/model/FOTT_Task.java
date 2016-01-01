@@ -10,11 +10,13 @@ public class FOTT_Task extends FOTT_Object {
     private Date startdate;
     private Date duedate;
     private int priority;
+    private int status;
 
     public FOTT_Task(long taskId, String taskTitle){
         super();
         setId(taskId);
         setName(taskTitle);
+        status = 0;
     }
 
     public void setStartDate(long startdate) {
@@ -36,4 +38,8 @@ public class FOTT_Task extends FOTT_Object {
     public void setDuedate(long duedate) {
         this.duedate = new Date(duedate);
     }
+
+    public void setStatus(int status) { this.status = status;}
+
+    public int getStatus() {return status;}
 }
