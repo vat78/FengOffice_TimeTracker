@@ -113,6 +113,8 @@ public class FOTT_App extends Application {
         return curTask;
     }
 
+    public long getCurTimeslot() {return curTimeslot;}
+
     public Date getLastSync() {return lastSync;}
 
     public boolean isSyncing() {return syncing;}
@@ -130,13 +132,19 @@ public class FOTT_App extends Application {
     }
 
     public void setCurMember(long curMember) {
+        //ToDo check cur task and timeslot
         this.curMember = curMember;
         preferences.set(getString(R.string.pref_stored_member), curMember);
     }
 
     public void setCurTask(long curTask) {
+        //ToDo check current timeslot
         this.curTask = curTask;
         preferences.set(getString(R.string.pref_stored_task), curTask);
+    }
+
+    public void setCurTimeslot(long time) {
+        curTimeslot = time;
     }
 
     public void setLastSync(long lastSync) {

@@ -1,6 +1,7 @@
 package ru.vat78.fotimetracker;
 
 import android.content.Intent;
+import android.os.CountDownTimer;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
@@ -14,6 +15,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import java.util.Date;
@@ -95,6 +97,15 @@ public class FOTT_MainActivity extends AppCompatActivity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
+
+        if (MainApp != null)
+        {
+            int fragment = mViewPager.getCurrentItem();
+            if (MainApp.getCurTimeslot() != 0 && fragment != 2) {
+                //ToDo add question
+                startStopTimer();
+            }
+        }
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
@@ -208,7 +219,7 @@ public class FOTT_MainActivity extends AppCompatActivity {
         pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_ID, tsId);
         pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_DURATION, duration);
 
-        startActivityForResult(pickTS,PICK_TSEDIT_REQUEST);
+        startActivityForResult(pickTS, PICK_TSEDIT_REQUEST);
     }
 
     private void TimeslotsFragmentCaption() {
@@ -232,6 +243,54 @@ public class FOTT_MainActivity extends AppCompatActivity {
             }
         }
     }
+
+    public void startStopTimer() {
+        ImageButton timer = (ImageButton) findViewById(R.id.tsTimerBtn);
+        if (MainApp.getCurTimeslot() == 0){
+            MainApp.setCurTimeslot(System.currentTimeMillis());
+            timer.setBackground(getResources().getDrawable(android.R.drawable.ic_media_pause,getTheme()));
+            oneMinuteTimer();
+        } else {
+            long dur = System.currentTimeMillis() - MainApp.getCurTimeslot();
+            timer.setBackground(getResources().getDrawable(android.R.drawable.ic_media_play, getTheme()));
+            MainApp.setCurTimeslot(0);
+            oneMinuteTimer();
+            editTimeslot(0, dur);
+        }
+    }
+
+    public void oneMinuteTimer() {
+        //ToDo: add reminder
+        if (MainApp.getCurTimeslot() != 0 ){
+            long dur = System.currentTimeMillis() - MainApp.getCurTimeslot();
+            showTimeslotDuration(dur);
+            TimeslotMinuteTimer newTimer = new TimeslotMinuteTimer();
+            newTimer.start();
+        } else {
+            TextView mTextDuration = (TextView) findViewById(R.id.tsCurDuration);
+            mTextDuration.setVisibility(View.INVISIBLE);
+        }
+
+    }
+
+    private void showTimeslotDuration(long duration) {
+        int d = Math.round(duration / 24 / 3600 / 1000);
+        long tmp = duration - d * 24 * 3600 * 1000;
+        int h = Math.round(tmp / 3600 / 1000);
+        tmp = tmp - h * 3600 * 1000;
+        int m = Math.round(tmp / 60 / 1000);
+
+        String res = "";
+        if (d > 0) res = "" + d + " d. ";
+        if (h > 0) res += "" + h + " h. ";
+        else if (d > 0) res += "0 h. ";
+        res += "" + m + " m.";
+
+        TextView mTextDuration = (TextView) findViewById(R.id.tsCurDuration);
+        mTextDuration.setText(res);
+        mTextDuration.setVisibility(View.VISIBLE);
+    }
+
     /**
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
      * one of the sections/tabs/pages.
@@ -282,6 +341,7 @@ public class FOTT_MainActivity extends AppCompatActivity {
         public void startUpdate(ViewGroup container){
             super.startUpdate(container);
             int fragment = mViewPager.getCurrentItem();
+
             if (mActionBarToolbar != null) {
                 mActionBarToolbar.setTitle(getPageTitle(fragment));
 
@@ -296,7 +356,28 @@ public class FOTT_MainActivity extends AppCompatActivity {
                 }
                 if (fragment == 2) TimeslotsFragmentCaption();
             }
+            if (MainApp != null)
+            {
+                if (MainApp.getCurTimeslot() != 0 && fragment != 2) {
+                    //ToDo add question
+                    startStopTimer();
+                }
+            }
         }
     }
 
+    private class TimeslotMinuteTimer extends CountDownTimer {
+
+        public TimeslotMinuteTimer(){
+            super(60000,1000);
+        }
+
+        public void onTick(long millisUntilFinished) {
+        }
+
+        public void onFinish() {
+            oneMinuteTimer();
+        }
+
+    }
 }

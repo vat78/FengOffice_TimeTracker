@@ -63,8 +63,16 @@ public class FOTT_TimeslotsFragment extends Fragment {
         add.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //showTimeslotAddWindow(inflater, rootView,15);
-                mainActivity.editTimeslot(0, 0);
+                if (MainApp.getCurTimeslot() != 0) mainActivity.startStopTimer();
+                else mainActivity.editTimeslot(0, 0);
+            }
+        });
+
+        ImageButton start = (ImageButton) rootView.findViewById(R.id.tsTimerBtn);
+        start.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mainActivity.startStopTimer();
             }
         });
 
