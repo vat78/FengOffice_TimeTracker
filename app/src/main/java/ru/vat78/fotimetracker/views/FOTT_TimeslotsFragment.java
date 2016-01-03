@@ -64,7 +64,7 @@ public class FOTT_TimeslotsFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (MainApp.getCurTimeslot() != 0) mainActivity.startStopTimer();
-                else mainActivity.editTimeslot(0, 0);
+                else mainActivity.editTimeslot(0, 0, 0);
             }
         });
 

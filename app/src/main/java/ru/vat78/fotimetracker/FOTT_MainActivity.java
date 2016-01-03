@@ -213,11 +213,12 @@ public class FOTT_MainActivity extends AppCompatActivity {
         syncTask.execute();
     }
 
-    public void editTimeslot(long tsId, long duration) {
+    public void editTimeslot(long tsId, long start, long duration) {
         Intent pickTS = new Intent(this,FOTT_TSEditActivity.class);
 
         pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_ID, tsId);
-        pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_DURATION, duration);
+        if (start != 0) pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_START, start);
+        if (duration !=0) pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_DURATION, duration);
 
         startActivityForResult(pickTS, PICK_TSEDIT_REQUEST);
     }
@@ -255,7 +256,7 @@ public class FOTT_MainActivity extends AppCompatActivity {
             timer.setBackground(getResources().getDrawable(android.R.drawable.ic_media_play, getTheme()));
             MainApp.setCurTimeslot(0);
             oneMinuteTimer();
-            editTimeslot(0, dur);
+            editTimeslot(0, 0, dur);
         }
     }
 
