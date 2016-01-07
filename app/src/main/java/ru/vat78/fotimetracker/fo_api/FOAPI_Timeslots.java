@@ -32,14 +32,17 @@ public class FOAPI_Timeslots {
         return convertResults(app,jo);
     }
 
-    public static boolean save(FOTT_App app, ArrayList<FOTT_Timeslot> timeslots) {
-        if (timeslots == null) return true;
-        boolean res = true;
+    public static long save(FOTT_App app, FOTT_Timeslot timeslot) {
+        long res = 0;
+        if (timeslot == null) return res;
 
-        for (FOTT_Timeslot ts:timeslots) {
-            String[] args = convertTSForAPI(ts);
-            JSONObject jo = app.getWeb_service().executeAPI(FO_METHOD_SAVE_OBJ, FO_SERVICE_TIMESLOT, args);
-            res = res && (jo.toString() == "[\"true\"]");
+        String[] args = convertTSForAPI(timeslot);
+        JSONObject jo = app.getWeb_service().executeAPI(FO_METHOD_SAVE_OBJ, FO_SERVICE_TIMESLOTS, args);
+        if (jo != null) {
+                try {
+                    res = jo.getLong(FO_API_FIELD_ID);
+                } catch (Exception e){
+                }
         }
         return res;
     }
@@ -48,7 +51,8 @@ public class FOAPI_Timeslots {
         String[] args = new String[11];
         long l = 0;
         args[0] = FO_API_FIELD_ID;
-        args[1] = "" + timeslot.getId();
+        args[1] = "";
+        if (timeslot.getId() > 0) args[1] = "" + timeslot.getId();
         args[2] = FO_API_FIELD_DESC;
         args[3] = timeslot.getDesc();
         args[4] = FO_API_FIELD_TS_DATE;
@@ -147,14 +151,15 @@ public class FOAPI_Timeslots {
         return res;
     }
 
-    public static boolean delete(FOTT_App app, ArrayList<FOTT_Timeslot> timeslots) {
-        boolean res = true;
+    public static boolean delete(FOTT_App app, FOTT_Timeslot timeslot) {
+        boolean res = false;
 
-        for (FOTT_Timeslot ts: timeslots) {
-            //ToDo: make deleting over API
-            //String[] args = convertTaskForAPI(task);
-            //JSONObject jo = app.getWeb_service().executeAPI(FO_METHOD_SAVE_OBJ, FO_SERVICE_TASK, args);
-            //res = res && (jo.toString() != "[\"true\"]") ;
+        if (timeslot.getId() > 0) {
+            JSONObject jo = app.getWeb_service().executeAPI(FO_METHOD_DELETE_OBJ, timeslot.getId());
+            try {
+                res = (jo.getString(FO_API_FIELD_RESULT) != FO_API_TRUE);
+            } catch (Exception e) {
+            }
         }
 
         return res;

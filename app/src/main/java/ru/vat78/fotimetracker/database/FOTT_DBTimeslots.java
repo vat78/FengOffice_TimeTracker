@@ -66,8 +66,12 @@ public class FOTT_DBTimeslots extends FOTT_DBContract {
     private static void insertOrUpdate(FOTT_App app, FOTT_Timeslot timeslot) {
         ContentValues ts = convertToDB(timeslot);
         ts.put(COLUMN_NAME_DELETED,0);
-        ts.put(BaseColumns._ID, "(SELECT " + BaseColumns._ID + " FROM " +
-                TABLE_NAME + " WHERE " + COLUMN_NAME_FO_ID + " = " + timeslot.getId());
+
+        if (timeslot.getId() != 0) {
+            Cursor cursor = app.getDatabase().query(TABLE_NAME, new String[]{BaseColumns._ID},
+                    COLUMN_NAME_FO_ID + " = " + timeslot.getId(),"");
+            if (cursor.moveToFirst()) ts.put(BaseColumns._ID, cursor.getLong(0));
+        }
 
         long id = app.getDatabase().insertOrUpdate(TABLE_NAME, ts);
 
@@ -114,13 +118,15 @@ public class FOTT_DBTimeslots extends FOTT_DBContract {
         ArrayList<FOTT_Timeslot> timeslots = new ArrayList<>();
 
         String filter = additionConditions;
-        if (filter.isEmpty()) filter = COLUMN_NAME_DELETED + " = 0";
-        if (app.getCurTask() > 0){
-            filter += " AND " + COLUMN_NAME_TASK_ID +
-                    " = " + String.valueOf(app.getCurTask());
-        } else {
-            filter += " AND " + COLUMN_NAME_FO_ID + " IN ( " +
-                    FOTT_DBMembers_Objects.getSQLCondition(app.getCurMember(),2) + ")";
+        //if (filter.isEmpty()) filter = COLUMN_NAME_DELETED + " = 0";
+        if (filter.isEmpty()) {
+            if (app.getCurTask() > 0) {
+                filter = " " + COLUMN_NAME_TASK_ID +
+                        " = " + String.valueOf(app.getCurTask());
+            } else {
+                filter = " " + COLUMN_NAME_FO_ID + " IN ( " +
+                        FOTT_DBMembers_Objects.getSQLCondition(app.getCurMember(), 2) + ")";
+            }
         }
 
         Cursor tsCursor = app.getDatabase().query(TABLE_NAME,
@@ -185,6 +191,10 @@ public class FOTT_DBTimeslots extends FOTT_DBContract {
         app.getDatabase().delete(TABLE_NAME, COLUMN_NAME_DELETED + " > 0");
     }
 
+    public static void deleteTS(FOTT_App app, FOTT_Timeslot timeslot){
+                app.getDatabase().delete(TABLE_NAME, COLUMN_NAME_FO_ID + " = " + timeslot.getId());
+    }
+
     public static ArrayList<FOTT_Timeslot> getDeletedTS(FOTT_App app) {
         return load(app, COLUMN_NAME_DELETED + " > 0 AND " +
             COLUMN_NAME_FO_ID + " > 0");
@@ -197,5 +207,14 @@ public class FOTT_DBTimeslots extends FOTT_DBContract {
     public static ArrayList<FOTT_Timeslot> getChangedTS(FOTT_App app, Date lastSync) {
         return load(app, "(" + COLUMN_NAME_CHANGED + " > " + String.valueOf(lastSync.getTime()) +
             " OR " + COLUMN_NAME_FO_ID + " < 0)");
+    }
+
+    public static void updateSavedTS(FOTT_App app, ArrayList<FOTT_Timeslot> timeslots){
+        //todo ???????????????????
+        for (FOTT_Timeslot ts:timeslots){
+            if (ts.getId()>0){
+                app.getDatabase().delete(TABLE_NAME, COLUMN_NAME_FO_ID + " = " + ts.getId());
+            }
+        }
     }
 }

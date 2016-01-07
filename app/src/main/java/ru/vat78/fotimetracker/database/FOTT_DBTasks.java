@@ -114,9 +114,10 @@ public class FOTT_DBTasks extends FOTT_DBContract {
         ArrayList<FOTT_Task> tasks = new ArrayList<>();
         String memFilter = additionConditions;
         if (app.getCurMember() > 0) {
-            if (!memFilter.isEmpty()) memFilter = " AND ";
-            memFilter += " " + COLUMN_NAME_FO_ID + " IN (" +
-                    FOTT_DBMembers_Objects.getSQLCondition(app.getCurMember(),1) + ")";
+            if (memFilter.isEmpty()) {
+                memFilter = " " + COLUMN_NAME_FO_ID + " IN (" +
+                        FOTT_DBMembers_Objects.getSQLCondition(app.getCurMember(), 1) + ")";
+            }
         }
         Cursor taskCursor = app.getDatabase().query(TABLE_NAME,
                 new String[]{COLUMN_NAME_FO_ID,
@@ -186,5 +187,9 @@ public class FOTT_DBTasks extends FOTT_DBContract {
     public static ArrayList<FOTT_Task> getDeletedTasks(FOTT_App app) {
         return load(app, COLUMN_NAME_DELETED + " > 0 AND " +
                 COLUMN_NAME_FO_ID + " > 0");
+    }
+
+    public static void deleteTask(FOTT_App app, FOTT_Task task) {
+        app.getDatabase().delete(TABLE_NAME, COLUMN_NAME_FO_ID + " == " + task.getId());
     }
 }

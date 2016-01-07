@@ -8,7 +8,7 @@ import android.provider.BaseColumns;
 public class FOTT_DBContract {
     public FOTT_DBContract() {}
 
-    public static final int DATABASE_VERSION = 4;
+    public static final int DATABASE_VERSION = 5;
     public static final String DATABASE_NAME = "FOTT.db";
 
     protected static final String TEXT_TYPE = " TEXT";

@@ -19,11 +19,12 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import ru.vat78.fotimetracker.adapters.FOTT_MembersAdapter;
 import ru.vat78.fotimetracker.adapters.FOTT_TasksAdapter;
 import ru.vat78.fotimetracker.adapters.FOTT_TimeslotsAdapter;
-import ru.vat78.fotimetracker.fo_api.FOAPI_Timeslots;
 import ru.vat78.fotimetracker.model.FOTT_Member;
 import ru.vat78.fotimetracker.model.FOTT_Task;
 import ru.vat78.fotimetracker.views.FOTT_MembersFragment;
@@ -63,6 +64,8 @@ public class FOTT_MainActivity extends AppCompatActivity {
     private FOTT_TasksAdapter tasks;
     private FOTT_TimeslotsAdapter timeslots;
 
+    private Timer syncTimer;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -82,6 +85,9 @@ public class FOTT_MainActivity extends AppCompatActivity {
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
         CheckLogin();
+
+        syncTimer = new Timer(true);
+        syncTimer.schedule(new SyncTimerTask(), 60000, 600000);
     }
 
     @Override
@@ -167,8 +173,6 @@ public class FOTT_MainActivity extends AppCompatActivity {
 
                 if (timeslots.saveTimeslot(id,d,l,s)){
                     timeslots.load();
-
-                    syncWithFO();
                 } else {
                     //Todo: save error
                 }
@@ -178,11 +182,13 @@ public class FOTT_MainActivity extends AppCompatActivity {
     }
 
     private void CheckLogin(){
-        FOTT_Preferences preferences = MainApp.getPreferences();
-        if (preferences.getString(getString(R.string.pref_sync_password),"").isEmpty() || MainApp.isNeedFullSync()){
+
+        if (MainApp.getPreferences().getString(getString(R.string.pref_sync_password),"").isEmpty()
+                || MainApp.isNeedFullSync()){
             Intent pickLogin = new Intent(this,FOTT_LoginActivity.class);
             startActivityForResult(pickLogin,PICK_LOGIN_REQUEST);
         }
+
     }
 
     public FOTT_TasksAdapter getTasks() {
@@ -207,10 +213,7 @@ public class FOTT_MainActivity extends AppCompatActivity {
     }
 
     public void syncWithFO(){
-        if (syncTask != null) return;
 
-        syncTask = new FOTT_SyncTask(MainApp);
-        syncTask.execute();
     }
 
     public void editTimeslot(long tsId, long start, long duration) {
@@ -374,11 +377,32 @@ public class FOTT_MainActivity extends AppCompatActivity {
         }
 
         public void onTick(long millisUntilFinished) {
+            TextView mTextDuration = (TextView) findViewById(R.id.tsCurDuration);
+            String s = mTextDuration.getText().toString();
+            if (s.endsWith("."))
+                s = s.substring(0,s.length()-1) + ":";
+            else
+                s = s.substring(0,s.length()-1) + ".";
+            mTextDuration.setText(s);
         }
 
         public void onFinish() {
             oneMinuteTimer();
         }
 
+    }
+
+    private class SyncTimerTask extends TimerTask {
+        @Override
+        public void run() {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (syncTask != null) return;
+                    syncTask = new FOTT_SyncTask(MainApp);
+                    syncTask.execute();
+                }
+            });
+        }
     }
 }

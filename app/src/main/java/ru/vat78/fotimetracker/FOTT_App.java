@@ -87,6 +87,14 @@ public class FOTT_App extends Application {
         s = preferences.getString("time_format", FOTT_TIME_FORMAT);
         timeFormat = new SimpleDateFormat(s);
         timeFormat.setTimeZone(TimeZone.getDefault());
+
+        s = preferences.getString(getString(R.string.pref_sync_url), "");
+        if (!s.isEmpty()) web_service.setFO_Url(s);
+        s = preferences.getString(getString(R.string.pref_sync_login), "");
+        if (!s.isEmpty()) web_service.setFO_User(s);
+        s = preferences.getString(getString(R.string.pref_sync_password), "");
+        if (!s.isEmpty()) web_service.setFO_Pwd(s);
+        web_service.canUseUntrustCert(preferences.getBoolean(getString(R.string.pref_sync_certs),false));
     }
 
     public FOTT_DB getDatabase() {
@@ -192,9 +200,16 @@ public class FOTT_App extends Application {
             members = null;
 
             //Sync task
-            if (FOAPI_Tasks.delete(this,FOTT_DBTasks.getDeletedTasks(this)) && !fullSync) FOTT_DBTasks.clearDeletedTasks(this);
-            if (FOAPI_Tasks.save(this, FOTT_DBTasks.getChangedTasks(this, getLastSync())) && !fullSync) FOTT_DBTasks.clearNewTasks(this);
-            ArrayList<FOTT_Task> tasks = FOAPI_Tasks.load(this, d);
+            ArrayList<FOTT_Task> tasks = FOTT_DBTasks.getDeletedTasks(this);
+            for (FOTT_Task t: tasks){
+                if (FOAPI_Tasks.delete(this,t) && !fullSync) FOTT_DBTasks.deleteTask(this, t);
+            }
+            tasks = FOTT_DBTasks.getChangedTasks(this, getLastSync());
+            for (FOTT_Task t: tasks){
+                long id = FOAPI_Tasks.save(this,t);
+                if (id !=0 && !fullSync) FOTT_DBTasks.deleteTask(this, t);
+            }
+            tasks = FOAPI_Tasks.load(this, d);
             if (getError().is_error()) {
                 setSyncing(false);
                 return false;
@@ -207,9 +222,18 @@ public class FOTT_App extends Application {
             tasks = null;
 
             //Sync timeslots
-            if (FOAPI_Timeslots.delete(this,FOTT_DBTimeslots.getDeletedTS(this)) && !fullSync) FOTT_DBTimeslots.clearDeletedTS(this);
-            if (FOAPI_Timeslots.save(this, FOTT_DBTimeslots.getChangedTS(this, getLastSync())) && !fullSync) FOTT_DBTimeslots.clearNewTS(this);
-            ArrayList<FOTT_Timeslot> timeslots = FOAPI_Timeslots.load(this, d);
+            ArrayList<FOTT_Timeslot> timeslots = FOTT_DBTimeslots.getDeletedTS(this);
+            for (FOTT_Timeslot ts: timeslots){
+                if (FOAPI_Timeslots.delete(this, ts) && !fullSync) FOTT_DBTimeslots.deleteTS(this, ts);
+            }
+
+            timeslots = FOTT_DBTimeslots.getChangedTS(this, getLastSync());
+            for (FOTT_Timeslot ts: timeslots){
+                long id = FOAPI_Timeslots.save(this, ts);
+                if (id != 0 && !fullSync) FOTT_DBTimeslots.deleteTS(this, ts);
+            }
+
+            timeslots = FOAPI_Timeslots.load(this, d);
             if (getError().is_error()) {
                 setSyncing(false);
                 return false;
@@ -227,6 +251,7 @@ public class FOTT_App extends Application {
 
         setLastSync(stamp);
         setSyncing(false);
+        setNeedFullSync(false);
         return true;
     }
 }

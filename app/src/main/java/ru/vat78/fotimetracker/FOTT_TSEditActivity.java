@@ -291,7 +291,6 @@ public class FOTT_TSEditActivity extends AppCompatActivity {
             if (i >= value) break;
             res++;
         }
-        if (i > value) res++;
         return res;
     }
 }

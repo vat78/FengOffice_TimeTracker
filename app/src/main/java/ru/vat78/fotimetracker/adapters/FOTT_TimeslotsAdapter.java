@@ -103,6 +103,7 @@ public class FOTT_TimeslotsAdapter extends RecyclerView.Adapter<FOTT_TimeslotsAd
         if (ts.getTaskId() == 0) {
             ts.setMembersIDs("" + app.getCurMember());
         }
+        ts.setChanged(System.currentTimeMillis());
         FOTT_DBTimeslots.save(app,ts);
         return (ts.getId() != 0);
     }

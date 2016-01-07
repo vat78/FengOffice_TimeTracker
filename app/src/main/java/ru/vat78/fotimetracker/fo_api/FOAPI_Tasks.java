@@ -21,7 +21,7 @@ public class FOAPI_Tasks {
     public static ArrayList<FOTT_Task> load(FOTT_App app){
         JSONObject jo = app.getWeb_service().executeAPI(FO_METHOD_LISTING, FO_SERVICE_TASKS,
                 new String[] {FO_API_ARG_STATUS, "0"});
-        return convertResults(app,jo);
+        return convertResults(app,jo,true);
     }
 
     public static ArrayList<FOTT_Task> load(FOTT_App app, Date timestamp){
@@ -32,10 +32,10 @@ public class FOAPI_Tasks {
         long l = (long) timestamp.getTime() / FO_API_DATE_CONVERTOR;
         args[3] = "" + l;
         JSONObject jo = app.getWeb_service().executeAPI(FO_METHOD_LISTING,FO_SERVICE_TASKS, args);
-        return convertResults(app,jo);
+        return convertResults(app,jo,(l==0));
     }
 
-    private static ArrayList<FOTT_Task> convertResults(FOTT_App app, JSONObject data){
+    private static ArrayList<FOTT_Task> convertResults(FOTT_App app, JSONObject data,boolean checkCurrentTask){
 
         JSONArray list = null;
         JSONObject jo;
@@ -43,7 +43,7 @@ public class FOAPI_Tasks {
         if (data == null) {return res;}
 
         long current_task = app.getCurTask();
-        boolean isIncludeCurrentTask = false;
+        boolean isIncludeCurrentTask = !checkCurrentTask;
 
         try {
             list = data.getJSONArray(FO_API_MAIN_OBJ);
@@ -157,14 +157,15 @@ public class FOAPI_Tasks {
         return el;
     }
 
-    public static boolean save(FOTT_App app, ArrayList<FOTT_Task> tasks) {
-        if (tasks == null) return  true;
-        boolean res = true;
-        for (FOTT_Task task: tasks) {
+    public static long save(FOTT_App app, FOTT_Task task) {
+        long res = 0;
+        if (task == null) return res;
             String[] args = convertTaskForAPI(task);
-            JSONObject jo = app.getWeb_service().executeAPI(FO_METHOD_SAVE_OBJ, FO_SERVICE_TASK, args);
-            res = res && (!jo.toString().equals("[\"true\"]")) ;
-        }
+            JSONObject jo = app.getWeb_service().executeAPI(FO_METHOD_SAVE_OBJ, FO_SERVICE_TASKS, args);
+        try {
+            res = jo.getLong(FO_API_FIELD_ID);
+        } catch (Exception e) {}
+
         //ToDo: check completing tasks by save operation
         return res;
     }
@@ -173,7 +174,8 @@ public class FOAPI_Tasks {
         String[] res = new String[12];
         long l;
         res[0] = FO_API_FIELD_ID;
-        res[1] = "" + task.getId();
+        res[1] = "";
+        if (task.getId() > 0) res[1] = "" + task.getId();
         res[2] = FO_API_FIELD_NAME;
         res[3] = task.getName();
         res[4] = FO_API_FIELD_DESC;
@@ -193,15 +195,20 @@ public class FOAPI_Tasks {
         return res;
     }
 
-    public static boolean delete(FOTT_App app, ArrayList<FOTT_Task> tasks) {
-        boolean res = true;
+    public static boolean delete(FOTT_App app, FOTT_Task task) {
+        boolean res = false;
 
-        for (FOTT_Task task: tasks) {
-            //ToDo: make deleting over API
-            //String[] args = convertTaskForAPI(task);
-            //JSONObject jo = app.getWeb_service().executeAPI(FO_METHOD_SAVE_OBJ, FO_SERVICE_TASK, args);
-            //res = res && (jo.toString() != "[\"true\"]") ;
-        }
+            if (task.getId() > 0) {
+                JSONObject jo = app.getWeb_service().executeAPI(FO_METHOD_DELETE_OBJ, task.getId());
+                if (jo == null) {
+                    res = false;
+                } else {
+                    try {
+                        res = (jo.getString(FO_API_FIELD_RESULT) == FO_API_TRUE);
+                    } catch (Exception e){
+                    }
+                }
+            }
 
         return res;
     }

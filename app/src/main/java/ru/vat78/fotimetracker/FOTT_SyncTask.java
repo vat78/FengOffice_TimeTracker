@@ -23,15 +23,17 @@ public class FOTT_SyncTask extends AsyncTask<Void, Void, Boolean> {
     private static final String CLASS_NAME = "FOTT_SyncTask";
 
     private FOTT_App MainApp;
+    private boolean appIsFree;
 
     public FOTT_SyncTask(FOTT_App app){
         MainApp = app;
+        appIsFree = !MainApp.isSyncing();
         MainApp.setSyncing(true);
     }
 
     @Override
     protected Boolean doInBackground(Void... params) {
-
+        if (!appIsFree) return false;
         return MainApp.dataSynchronization();
     }
 
@@ -40,6 +42,6 @@ public class FOTT_SyncTask extends AsyncTask<Void, Void, Boolean> {
         if (success) {
             MainApp.setNeedFullSync(false);
         }
-        MainApp.setSyncing(false);
+        if (appIsFree) MainApp.setSyncing(false);
     }
 }

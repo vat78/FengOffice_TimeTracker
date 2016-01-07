@@ -1,7 +1,6 @@
 package ru.vat78.fotimetracker.fo_api;
 
 
-import android.content.ContentValues;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -21,8 +20,6 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Date;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -34,9 +31,6 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import ru.vat78.fotimetracker.FOTT_App;
-import ru.vat78.fotimetracker.model.FOTT_Member;
-import ru.vat78.fotimetracker.model.FOTT_Task;
-import ru.vat78.fotimetracker.model.FOTT_Timeslot;
 
 /**
  * Created by vat on 17.11.2015.
@@ -58,6 +52,7 @@ public class FOAPI_Connector {
 
     public FOAPI_Connector(FOTT_App application){
         app = application;
+        FO_Token = "";
     }
 
     private boolean UseUntrustCA = false;
@@ -104,6 +99,7 @@ public class FOAPI_Connector {
     public String getError() {
         return this.ErrorMsg;
     }
+
 
     //This function try to login FengOffice web-application
     public boolean testConnection() {
@@ -193,8 +189,8 @@ public class FOAPI_Connector {
         if (args.length > 0){
             JSONObject jsargs = new JSONObject();
             try {
-                for (int i = 0; i < args.length; i += 2) {
-                    jsargs.put(args[i], args[i + 1]);
+                for (int i = 1; i < args.length; i += 2) {
+                    jsargs.put(args[i-1], removeWrongSymbols(args[i]));
                 }
                 argStr = jsargs.toString();
             }
@@ -213,11 +209,56 @@ public class FOAPI_Connector {
         return jo;
     }
 
+    //Execute API operation for delete object and so on
+    public JSONObject executeAPI(String method, long id) {
+        if (method.isEmpty()) {return null;}
+        if (this.FO_Token.isEmpty())
+            if (!testConnection()) {return null;}
 
+        resetError();
+
+        JSONObject jo = null;
+
+        if (!checkPlugin(FOAPI_Dictionary.FO_PLUGIN_NAME)) {return null;}
+        resetError();
+
+        String request = this.FO_URL + FOAPI_Dictionary.FO_VAPI_REQUEST_BY_ID;
+        request = request.replace(FOAPI_Dictionary.FO_API_METHOD,method);
+        request = request.replace(FOAPI_Dictionary.FO_API_OBJECT_ID,"" + id);
+        request = request.replace(FOAPI_Dictionary.FO_API_TOKEN,this.FO_Token);
+
+        jo = JSONfunctions.getJSONObjfromURL(request, this.UseUntrustCA, this.ErrorMsg);
+
+        return jo;
+    }
 
     private void resetError(){
         this.ErrorCode = 0;
         this.ErrorMsg = "";
+    }
+
+    private static String removeWrongSymbols(String str) {
+        String res = str.replace("%","%25");
+        res = res.replace(" ","%20");
+        res = res.replace("!","%21");
+        res = res.replace("\"","%22");
+        res = res.replace("#","%23");
+        res = res.replace("&","%26");
+        res = res.replace("'","%27");
+        res = res.replace("*","%2a");
+        res = res.replace("<","%3c");
+        res = res.replace("=","%3d");
+        res = res.replace(">","%3e");
+        res = res.replace("?","%3f");
+        res = res.replace("[","%5b");
+        res = res.replace("]","%5d");
+        res = res.replace("^","%5e");
+        res = res.replace("`","%60");
+        res = res.replace("{","%7b");
+        res = res.replace("|","%7c");
+        res = res.replace("}","%7d");
+
+        return res;
     }
 
 
@@ -300,6 +341,8 @@ public class FOAPI_Connector {
                 //Add global JSON object for array
                 result = "{\""+ FOAPI_Dictionary.FO_API_MAIN_OBJ+"\":" + result + "}";
             }
+            if (result.startsWith("false") || result.startsWith("true"))
+                result = "{\"" + FOAPI_Dictionary.FO_API_FIELD_RESULT+ "\":\"" + result + "\"}";
             return result;
         }
 
