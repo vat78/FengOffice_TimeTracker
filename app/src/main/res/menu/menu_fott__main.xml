@@ -4,6 +4,8 @@
     tools:context="ru.vat78.fotimetracker.FOTT_MainActivity">
     <item android:id="@+id/action_settings" android:title="@string/action_settings"
         android:orderInCategory="100" app:showAsAction="never" />
+    <item android:id="@+id/action_fullsync" android:title="@string/action_fullsync"
+        android:orderInCategory="100" app:showAsAction="never" />
     <item android:id="@+id/action_exit" android:title="@string/action_exit"
         android:orderInCategory="100" app:showAsAction="never" />
 </menu>

@@ -68,8 +68,18 @@ public class FOTT_DBTasks extends FOTT_DBContract {
             }
 
 
-            for (int i = 0; i < tasks_list.size(); i++) {
-                insert(app, tasks_list.get(i));
+            for (FOTT_Task t : tasks_list) {
+                if (t.canAddTimeslots() && t.getStatus() == 0) {
+                    insert(app, t);
+                } else {
+                    if (!fullSync) {
+                        if (t.getId() == app.getCurTask()) {
+                            t.setDeleted(true);
+                        } else {
+                            deleteTask(app,t);
+                        }
+                    }
+                }
             }
         }
         catch (Error e){
@@ -190,6 +200,6 @@ public class FOTT_DBTasks extends FOTT_DBContract {
     }
 
     public static void deleteTask(FOTT_App app, FOTT_Task task) {
-        app.getDatabase().delete(TABLE_NAME, COLUMN_NAME_FO_ID + " == " + task.getId());
+        app.getDatabase().delete(TABLE_NAME, COLUMN_NAME_FO_ID + " = " + task.getId());
     }
 }

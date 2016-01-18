@@ -25,12 +25,15 @@ public class FOAPI_Tasks {
     }
 
     public static ArrayList<FOTT_Task> load(FOTT_App app, Date timestamp){
-        String[] args = new String[4];
-        args[0]= FO_API_ARG_STATUS;
-        args[1] = "0";
-        args[2] = FO_API_ARG_LASTUPDATE;
+        String[] args = new String[2];
         long l = (long) timestamp.getTime() / FO_API_DATE_CONVERTOR;
-        args[3] = "" + l;
+        if (l != 0) {
+            args[0] = FO_API_ARG_LASTUPDATE;
+            args[1] = "" + l;
+        } else {
+            args[0]= FO_API_ARG_STATUS;
+            args[1] = "0";
+        }
         JSONObject jo = app.getWeb_service().executeAPI(FO_METHOD_LISTING,FO_SERVICE_TASKS, args);
         return convertResults(app,jo,(l==0));
     }
@@ -135,6 +138,9 @@ public class FOAPI_Tasks {
 
             if (!jsonObject.isNull(FO_API_FIELD_STATUS))
                 el.setStatus(jsonObject.getInt(FO_API_FIELD_STATUS));
+
+            if (!jsonObject.isNull(FOAPI_Dictionary.FO_API_FIELD_USETIMESLOTS))
+                el.setCanAddTimeslots(jsonObject.getString(FOAPI_Dictionary.FO_API_FIELD_USETIMESLOTS) == FO_API_TRUE);
 
                 /*
                 if (!jo.isNull(FOAPI_Dictionary.FO_API_FIELD_ASSIGNEDBY))

@@ -44,6 +44,14 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="ru.vat78.fotimetracker.FOTT_MainActivity" />
         </activity>
+        <receiver android:name=".FOTT_BroadcastReceiver"
+            android:enabled="true"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="ru.vat78.fotimetracker" />
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>

@@ -1,6 +1,11 @@
 package ru.vat78.fotimetracker;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.CountDownTimer;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -31,7 +36,7 @@ import ru.vat78.fotimetracker.views.FOTT_MembersFragment;
 import ru.vat78.fotimetracker.views.FOTT_TasksFragment;
 import ru.vat78.fotimetracker.views.FOTT_TimeslotsFragment;
 
-public class FOTT_MainActivity extends AppCompatActivity {
+public class FOTT_MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     static final int PICK_LOGIN_REQUEST = 1;
     static final int PICK_TSEDIT_REQUEST = 2;
@@ -66,11 +71,14 @@ public class FOTT_MainActivity extends AppCompatActivity {
 
     private Timer syncTimer;
 
+    private FOTT_BroadcastReceiver alarm;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         MainApp = (FOTT_App) getApplication();
+        MainApp.getPreferences().registerOnSharedPreferenceChangeListener(this);
 
         setContentView(R.layout.activity_fott__main);
 
@@ -88,6 +96,8 @@ public class FOTT_MainActivity extends AppCompatActivity {
 
         syncTimer = new Timer(true);
         syncTimer.schedule(new SyncTimerTask(), 60000, 600000);
+
+        alarm = new FOTT_BroadcastReceiver();
     }
 
     @Override
@@ -118,6 +128,10 @@ public class FOTT_MainActivity extends AppCompatActivity {
             Intent i = new Intent(this, SettingsActivity.class);
             startActivity(i);
         }
+        if (id == R.id.action_fullsync) {
+            MainApp.setNeedFullSync(true);
+        }
+
         if (id == R.id.action_exit) {
             finish();
         }
@@ -125,10 +139,27 @@ public class FOTT_MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+        switch (key){
+
+        }
+    }
+
     @Override
-    protected void onResume() {
-        super.onResume();
-        redraw();
+    protected void onRestart() {
+        super.onRestart();
+        if (MainApp.getCurTimeslot() != 0){
+            setCurrentFragment(2);
+            continueTimer();
+        } else {
+            redraw();
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent){
+        super.onNewIntent(intent);
+        String c = intent.getStringExtra(FOTT_BroadcastReceiver.BCommand);
     }
 
     private void redraw() {
@@ -212,9 +243,6 @@ public class FOTT_MainActivity extends AppCompatActivity {
         redraw();
     }
 
-    public void syncWithFO(){
-
-    }
 
     public void editTimeslot(long tsId, long start, long duration) {
         Intent pickTS = new Intent(this,FOTT_TSEditActivity.class);
@@ -248,11 +276,21 @@ public class FOTT_MainActivity extends AppCompatActivity {
         }
     }
 
+    public void continueTimer(){
+        ImageButton timer = (ImageButton) findViewById(R.id.tsTimerBtn);
+        timer.setBackground(getResources().getDrawable(android.R.drawable.ic_media_pause, getTheme()));
+        alarm.CancelAlarm(this.getApplicationContext());
+        alarm.setOnetimeTimer(this.getApplicationContext(), System.currentTimeMillis() + 3 * 60 * 1000);
+        oneMinuteTimer();
+    }
+
     public void startStopTimer() {
         ImageButton timer = (ImageButton) findViewById(R.id.tsTimerBtn);
-        if (MainApp.getCurTimeslot() == 0){
+        alarm.CancelAlarm(this.getApplicationContext());
+        if (MainApp.getCurTimeslot() == 0) {
             MainApp.setCurTimeslot(System.currentTimeMillis());
-            timer.setBackground(getResources().getDrawable(android.R.drawable.ic_media_pause,getTheme()));
+            timer.setBackground(getResources().getDrawable(android.R.drawable.ic_media_pause, getTheme()));
+            alarm.setOnetimeTimer(this.getApplicationContext(), System.currentTimeMillis() + 2 * 60 * 1000);
             oneMinuteTimer();
         } else {
             long dur = System.currentTimeMillis() - MainApp.getCurTimeslot();
@@ -360,13 +398,14 @@ public class FOTT_MainActivity extends AppCompatActivity {
                 }
                 if (fragment == 2) TimeslotsFragmentCaption();
             }
+            /*
             if (MainApp != null)
             {
                 if (MainApp.getCurTimeslot() != 0 && fragment != 2) {
                     //ToDo add question
                     startStopTimer();
                 }
-            }
+            } */
         }
     }
 
@@ -405,4 +444,36 @@ public class FOTT_MainActivity extends AppCompatActivity {
             });
         }
     }
+
+    /*
+    private class FOTT_AlarmDialogActivity extends DialogFragment {
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            // Use the Builder class for convenient dialog construction
+            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+            String message = "You are working on ";
+            if (MainApp.getCurTask() > 0){
+                message += "task ";
+            } else {
+                message += "category ";
+            }
+            long dur = System.currentTimeMillis() - MainApp.getCurMember();
+            message += MainApp.getTimeFormat().format(new Date(dur));
+            message += ". Are you wish to finish this work?";
+            builder.setMessage(message)
+                    .setPositiveButton("Finish", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            startStopTimer();
+                        }
+                    })
+                    .setNegativeButton("Continue", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            continueTimer();
+                        }
+                    });
+            // Create the AlertDialog object and return it
+            return builder.create();
+        }
+
+    } */
 }

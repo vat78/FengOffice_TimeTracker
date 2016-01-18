@@ -11,12 +11,14 @@ public class FOTT_Task extends FOTT_Object {
     private Date duedate;
     private int priority;
     private int status;
+    private boolean can_add_timeslots;
 
     public FOTT_Task(long taskId, String taskTitle){
         super();
         setId(taskId);
         setName(taskTitle);
         status = 0;
+        can_add_timeslots = true;
     }
 
     public void setStartDate(long startdate) {
@@ -42,4 +44,8 @@ public class FOTT_Task extends FOTT_Object {
     public void setStatus(int status) { this.status = status;}
 
     public int getStatus() {return status;}
+
+    public boolean canAddTimeslots() {return can_add_timeslots;}
+
+    public void setCanAddTimeslots(boolean value) {can_add_timeslots = value;}
 }

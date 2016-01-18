@@ -78,6 +78,7 @@ public class FOTT_App extends Application {
     private void load_preferences() {
         curMember = preferences.getLong(getString(R.string.pref_stored_member), 0);
         curTask = preferences.getLong(getString(R.string.pref_stored_task), 0);
+        curTimeslot = 0; //preferences.getLong(getString(R.string.pref_stored_ts), 0);
         lastSync = new Date(preferences.getLong(getString(R.string.pref_stored_last_sync),0));
 
         String s = preferences.getString("date_format", FOTT_DATE_FORMAT);
@@ -153,6 +154,7 @@ public class FOTT_App extends Application {
 
     public void setCurTimeslot(long time) {
         curTimeslot = time;
+        preferences.set(getString(R.string.pref_stored_ts), curTimeslot);
     }
 
     public void setLastSync(long lastSync) {

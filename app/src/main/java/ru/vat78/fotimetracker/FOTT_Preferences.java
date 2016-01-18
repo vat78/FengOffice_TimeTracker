@@ -1,5 +1,6 @@
 package ru.vat78.fotimetracker;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 
 /**
@@ -10,6 +11,10 @@ public class FOTT_Preferences {
 
     public FOTT_Preferences(SharedPreferences preferences) {
         this.preferences = preferences;
+    }
+
+    public void registerOnSharedPreferenceChangeListener(SharedPreferences.OnSharedPreferenceChangeListener listener){
+        preferences.registerOnSharedPreferenceChangeListener(listener);
     }
 
     public int getInt(String key, int default_value) {
