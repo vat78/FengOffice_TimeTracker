@@ -1,9 +1,5 @@
 package ru.vat78.fotimetracker;
 
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.DialogFragment;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.CountDownTimer;
@@ -92,12 +88,20 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
-        CheckLogin();
+        checkLogin();
 
-        syncTimer = new Timer(true);
-        syncTimer.schedule(new SyncTimerTask(), 60000, 600000);
+        setSyncTimer();
 
         alarm = new FOTT_BroadcastReceiver();
+    }
+
+    private void setSyncTimer() {
+        syncTimer = new Timer(true);
+        long freq = Long.valueOf(MainApp.getPreferences().getString(getString(R.string.pref_sync_frequency),"180")) ;
+        if (freq > 0) {
+            freq = freq * 60 * 1000;
+            syncTimer.schedule(new SyncTimerTask(), 60000, freq);
+        }
     }
 
     @Override
@@ -140,8 +144,16 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
     }
 
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-        switch (key){
-
+        if (key == getString(R.string.pref_sync_url) ||
+                key ==  getString(R.string.pref_sync_login) ||
+                key ==  getString(R.string.pref_sync_password) ||
+                key == getString(R.string.pref_sync_certs)){
+            MainApp.setNeedFullSync(true);
+            checkLogin();
+        }
+        if (key ==  getString(R.string.pref_sync_frequency)) {
+            if (syncTimer != null) syncTimer.cancel();
+            setSyncTimer();
         }
     }
 
@@ -212,12 +224,12 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
         }
     }
 
-    private void CheckLogin(){
+    private void checkLogin(){
 
         if (MainApp.getPreferences().getString(getString(R.string.pref_sync_password),"").isEmpty()
                 || MainApp.isNeedFullSync()){
             Intent pickLogin = new Intent(this,FOTT_LoginActivity.class);
-            startActivityForResult(pickLogin,PICK_LOGIN_REQUEST);
+            startActivityForResult(pickLogin, PICK_LOGIN_REQUEST);
         }
 
     }
@@ -443,6 +455,7 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
                 }
             });
         }
+
     }
 
     /*

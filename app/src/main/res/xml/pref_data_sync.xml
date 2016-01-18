@@ -4,7 +4,7 @@
          dismiss it. -->
     <!-- NOTE: ListPreference's summary should be set to its value by the activity code. -->
     <ListPreference
-        android:key="sync_frequency"
+        android:key="@string/pref_sync_frequency"
         android:title="@string/pref_title_sync_frequency"
         android:entries="@array/pref_sync_frequency_titles"
         android:entryValues="@array/pref_sync_frequency_values"
@@ -19,7 +19,7 @@
     <CheckBoxPreference
         android:key="@string/pref_sync_certs"
         android:title="@string/UseUntrustCA"
-        android:defaultValue="true" />
+        android:defaultValue="false" />
 
     <EditTextPreference
         android:key="@string/pref_sync_login"
@@ -27,7 +27,8 @@
 
     <EditTextPreference
         android:key="@string/pref_sync_password"
-        android:title="@string/prompt_password" />
+        android:title="@string/prompt_password"
+        android:inputType="textPassword" />
 
     <CheckBoxPreference
         android:key="@string/pref_sync_save_creds"

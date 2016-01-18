@@ -6,6 +6,7 @@
     <string name="pref_sync_login">fo_login</string>
     <string name="pref_sync_password">fo_password</string>
     <string name="pref_sync_save_creds">fo_save</string>
+    <string name="pref_sync_frequency">sync_frequency</string>
 
     <string name="pref_title_system_sync_settings">System sync settings</string>
 
