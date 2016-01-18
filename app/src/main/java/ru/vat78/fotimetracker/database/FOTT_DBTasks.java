@@ -109,6 +109,11 @@ public class FOTT_DBTasks extends FOTT_DBContract {
 
     private static void insert(FOTT_App app, FOTT_Task task){
         ContentValues data = convertToDB(task);
+        if (task.getId() != 0 ) {
+            Cursor cursor = app.getDatabase().query(TABLE_NAME, new String[]{BaseColumns._ID},
+                    COLUMN_NAME_FO_ID + " = " + task.getId(),"");
+            if (cursor.moveToFirst()) data.put(BaseColumns._ID, cursor.getLong(0));
+        }
         app.getDatabase().insertOrUpdate(TABLE_NAME, data);
 
         if (!app.getError().is_error()) {
