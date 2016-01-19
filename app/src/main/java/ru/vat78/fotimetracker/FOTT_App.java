@@ -38,6 +38,8 @@ public class FOTT_App extends Application {
     private FOTT_DB database;
     private boolean needFullSync;
 
+    private FOTT_MainActivity mainActivity;
+
     private long curMember;
     private long curTask;
     private long curTimeslot;
@@ -95,7 +97,7 @@ public class FOTT_App extends Application {
         if (!s.isEmpty()) web_service.setFO_User(s);
         s = preferences.getString(getString(R.string.pref_sync_password), "");
         if (!s.isEmpty()) web_service.setFO_Pwd(s);
-        web_service.canUseUntrustCert(preferences.getBoolean(getString(R.string.pref_sync_certs),false));
+        web_service.canUseUntrustCert(preferences.getBoolean(getString(R.string.pref_sync_certs), false));
     }
 
     public FOTT_DB getDatabase() {
@@ -140,6 +142,10 @@ public class FOTT_App extends Application {
         return timeFormat;
     }
 
+    public FOTT_MainActivity getMainActivity() {
+        return mainActivity;
+    }
+
     public void setCurMember(long curMember) {
         //ToDo check cur task and timeslot
         this.curMember = curMember;
@@ -175,6 +181,10 @@ public class FOTT_App extends Application {
         this.needFullSync = value;
     }
 
+    public void setMainActivity(FOTT_MainActivity mainActivity) {
+        this.mainActivity = mainActivity;
+    }
+
     public boolean dataSynchronization() {
 
         long stamp = System.currentTimeMillis();
@@ -185,7 +195,7 @@ public class FOTT_App extends Application {
                 return false;
             }
 
-            boolean fullSync = isNeedFullSync();
+            boolean fullSync = isNeedFullSync() || mainActivity == null;
             Date d = (fullSync ? new Date(0) : getLastSync());
 
             //Sync members
@@ -255,5 +265,9 @@ public class FOTT_App extends Application {
         setSyncing(false);
         setNeedFullSync(false);
         return true;
+    }
+
+    public void redrawMainActivity() {
+        if (mainActivity != null) mainActivity.redraw();
     }
 }

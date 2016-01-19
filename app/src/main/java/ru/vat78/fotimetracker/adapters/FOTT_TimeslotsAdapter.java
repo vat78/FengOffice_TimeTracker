@@ -14,6 +14,7 @@ import ru.vat78.fotimetracker.FOTT_App;
 import ru.vat78.fotimetracker.R;
 import ru.vat78.fotimetracker.database.FOTT_DBTimeslots;
 import ru.vat78.fotimetracker.model.FOTT_Timeslot;
+import ru.vat78.fotimetracker.views.FOTT_TimeslotsFragment;
 
 /**
  * Created by vat on 04.12.2015.
@@ -23,6 +24,7 @@ public class FOTT_TimeslotsAdapter extends RecyclerView.Adapter<FOTT_TimeslotsAd
     private ArrayList<FOTT_Timeslot> timeslots;
     private Context context;
     private FOTT_App app;
+    private FOTT_TimeslotsFragment parent;
 
     public ArrayList<FOTT_Timeslot> getAllTimeslots() {
         return timeslots;
@@ -34,6 +36,7 @@ public class FOTT_TimeslotsAdapter extends RecyclerView.Adapter<FOTT_TimeslotsAd
         public TextView tsAuthor;
         public TextView tsStart;
         public TextView tsDuration;
+        private FOTT_TimeslotsFragment parent;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -44,11 +47,11 @@ public class FOTT_TimeslotsAdapter extends RecyclerView.Adapter<FOTT_TimeslotsAd
         }
     }
 
-    public FOTT_TimeslotsAdapter(Context context, FOTT_App application) {
+    public FOTT_TimeslotsAdapter(FOTT_App application, FOTT_TimeslotsFragment parent) {
         super();
-        this.context = context;
         this.app = application;
         this.timeslots = new ArrayList<>();
+        this.parent = parent;
     }
 
     @Override
@@ -74,12 +77,19 @@ public class FOTT_TimeslotsAdapter extends RecyclerView.Adapter<FOTT_TimeslotsAd
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
 
-        FOTT_Timeslot objectItem = timeslots.get(position);
+        final FOTT_Timeslot objectItem = timeslots.get(position);
 
         holder.tsText.setText(objectItem.getName());
         holder.tsAuthor.setText(objectItem.getAuthor());
         holder.tsStart.setText(app.getDateFormat().format(objectItem.getStart()) + " " + app.getTimeFormat().format(objectItem.getStart()));
         holder.tsDuration.setText(objectItem.getDurationString());
+
+        holder.tsText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onClickTS(objectItem);
+            }
+        });
     }
 
     @Override
@@ -108,4 +118,9 @@ public class FOTT_TimeslotsAdapter extends RecyclerView.Adapter<FOTT_TimeslotsAd
         return (ts.getId() != 0);
     }
 
+    public void onClickTS(FOTT_Timeslot selection){
+        if (parent != null) {
+            parent.showTSDetails(selection);
+        }
+    }
 }

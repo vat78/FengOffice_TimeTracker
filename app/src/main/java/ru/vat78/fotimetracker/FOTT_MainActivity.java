@@ -75,6 +75,7 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
         super.onCreate(savedInstanceState);
 
         MainApp = (FOTT_App) getApplication();
+        MainApp.setMainActivity(this);
         MainApp.getPreferences().registerOnSharedPreferenceChangeListener(this);
 
         setContentView(R.layout.activity_fott__main);
@@ -165,6 +166,7 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
     @Override
     protected void onRestart() {
         super.onRestart();
+        MainApp.setMainActivity(this);
         if (MainApp.getCurTimeslot() != 0){
             setCurrentFragment(2);
             continueTimer();
@@ -174,12 +176,18 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
     }
 
     @Override
-    protected void onNewIntent(Intent intent){
-        super.onNewIntent(intent);
-        String c = intent.getStringExtra(FOTT_BroadcastReceiver.BCommand);
+    protected void onStop() {
+        MainApp.setMainActivity(null);
+        super.onStop();
     }
 
-    private void redraw() {
+    @Override
+    protected void onDestroy() {
+        MainApp.setMainActivity(null);
+        super.onDestroy();
+    }
+
+    public void redraw() {
         int fragment = mViewPager.getCurrentItem();
         switch (fragment) {
             case 0:
@@ -261,10 +269,11 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
     }
 
 
-    public void editTimeslot(long tsId, long start, long duration) {
+    public void editTimeslot(long tsId, long start, long duration, String text) {
         Intent pickTS = new Intent(this,FOTT_TSEditActivity.class);
 
         pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_ID, tsId);
+        if (!text.isEmpty()) pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_DESC, text);
         if (start != 0) pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_START, start);
         if (duration !=0) pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_DURATION, duration);
 
@@ -314,7 +323,7 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
             timer.setBackground(getResources().getDrawable(android.R.drawable.ic_media_play, getTheme()));
             MainApp.setCurTimeslot(0);
             oneMinuteTimer();
-            editTimeslot(0, 0, dur);
+            editTimeslot(0, 0, dur, "");
         }
     }
 

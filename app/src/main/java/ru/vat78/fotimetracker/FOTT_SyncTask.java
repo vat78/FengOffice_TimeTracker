@@ -41,6 +41,7 @@ public class FOTT_SyncTask extends AsyncTask<Void, Void, Boolean> {
     protected void onPostExecute(final Boolean success) {
         if (success) {
             MainApp.setNeedFullSync(false);
+            MainApp.redrawMainActivity();
         }
         if (appIsFree) MainApp.setSyncing(false);
     }

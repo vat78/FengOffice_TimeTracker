@@ -1,8 +1,10 @@
 package ru.vat78.fotimetracker.views;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
@@ -24,6 +26,7 @@ import ru.vat78.fotimetracker.R;
 import ru.vat78.fotimetracker.adapters.FOTT_TimeslotsAdapter;
 import ru.vat78.fotimetracker.model.FOTT_Member;
 import ru.vat78.fotimetracker.model.FOTT_Task;
+import ru.vat78.fotimetracker.model.FOTT_Timeslot;
 
 /**
  * Created by vat on 04.12.2015.
@@ -40,7 +43,7 @@ public class FOTT_TimeslotsFragment extends Fragment {
         mainActivity = (FOTT_MainActivity) context;
         MainApp = (FOTT_App) mainActivity.getApplication();
 
-        tsAdapter = new FOTT_TimeslotsAdapter(mainActivity,MainApp);
+        tsAdapter = new FOTT_TimeslotsAdapter(MainApp, this);
         mainActivity.setTimeslots(tsAdapter);
     }
 
@@ -64,7 +67,7 @@ public class FOTT_TimeslotsFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (MainApp.getCurTimeslot() != 0) mainActivity.startStopTimer();
-                else mainActivity.editTimeslot(0, 0, 0);
+                else mainActivity.editTimeslot(0, 0, 0, "");
             }
         });
 
@@ -77,6 +80,20 @@ public class FOTT_TimeslotsFragment extends Fragment {
         });
 
         return rootView;
+    }
+
+    public void showTSDetails(FOTT_Timeslot timeslot) {
+
+        final FOTT_Timeslot ts = timeslot;
+        AlertDialog.Builder ad = new AlertDialog.Builder(this.getContext());
+        ad.setMessage(ts.getDesc());
+        ad.setCancelable(true);
+        ad.setNeutralButton(MainApp.getString(R.string.ts_button_edit), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int arg1) {
+                mainActivity.editTimeslot(ts.getId(),ts.getStart().getTime(),ts.getDuration(), ts.getDesc());
+            }
+        });
+        ad.show();
     }
 
     @Override

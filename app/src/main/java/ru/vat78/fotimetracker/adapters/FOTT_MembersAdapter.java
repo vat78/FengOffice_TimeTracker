@@ -24,7 +24,6 @@ public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapt
 
     private List<FOTT_Member> members;
     private List<FOTT_Member> visibleMembers;
-    private Context context;
     private FOTT_App app;
     private FOTT_MembersFragment parent;
 

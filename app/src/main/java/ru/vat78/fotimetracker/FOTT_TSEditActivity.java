@@ -38,6 +38,7 @@ public class FOTT_TSEditActivity extends AppCompatActivity {
     private TextView end_date;
     private TextView end_time;
 
+    private long tsId;
     private Date start;
     private Date finish;
     long duration;
@@ -55,6 +56,12 @@ public class FOTT_TSEditActivity extends AppCompatActivity {
         setContentView(R.layout.activity_timeslot_edit);
 
         Intent intent = getIntent();
+        tsId = intent.getLongExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_ID,0);
+        String s = intent.getStringExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_DESC);
+        if (!s.isEmpty()){
+            TextView desc = (TextView) findViewById(R.id.tsAddDesc);
+            desc.setText(s);
+        }
         duration = intent.getLongExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_DURATION,15 * 60 * 1000);
         long l = intent.getLongExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_START,now - duration);
         start = new Date(l);
@@ -103,6 +110,7 @@ public class FOTT_TSEditActivity extends AppCompatActivity {
                 TextView desc = (TextView) findViewById(R.id.tsAddDesc);
 
                 Intent intent = new Intent();
+                intent.putExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_ID, tsId);
                 intent.putExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_START, start.getTime());
                 intent.putExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_DURATION, duration);
                 intent.putExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_DESC, desc.getText().toString());

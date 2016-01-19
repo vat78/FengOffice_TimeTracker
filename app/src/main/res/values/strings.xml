@@ -93,6 +93,7 @@
     <string name="title_no_tasks">No tasks</string>
     <string name="title_category_description">Timeslots for selected category</string>
     <string name="title_no_active_task_and_category">Please select task or category</string>
+    <string name="ts_button_edit">Edit</string>
 
     <string-array name="addform_minutes_values">
         <item>00</item>

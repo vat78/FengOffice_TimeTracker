@@ -21,5 +21,6 @@
     <string name="UseUntrustCA">Отключить проверку сертификатов</string>
     <string name="GlobalFOObj">fo_obj</string>
     <string name="Save_credentials">Сохранить параметры входа</string>
+    <string name="ts_button_edit">Изменить</string>
 
 </resources>
