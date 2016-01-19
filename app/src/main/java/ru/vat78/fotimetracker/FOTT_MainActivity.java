@@ -19,6 +19,7 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import java.lang.reflect.Field;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -118,9 +119,9 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
+        int fragment = mViewPager.getCurrentItem();
         if (MainApp != null)
         {
-            int fragment = mViewPager.getCurrentItem();
             if (MainApp.getCurTimeslot() != 0 && fragment != 2) {
                 //ToDo add question
                 startStopTimer();
@@ -128,6 +129,10 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
         }
 
         //noinspection SimplifiableIfStatement
+        if (id == android.R.id.home && fragment > 0) {
+            setCurrentFragment(fragment - 1);
+        }
+
         if (id == R.id.action_settings) {
             Intent i = new Intent(this, SettingsActivity.class);
             startActivity(i);
@@ -144,14 +149,14 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
     }
 
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-        if (key == getString(R.string.pref_sync_url) ||
-                key ==  getString(R.string.pref_sync_login) ||
-                key ==  getString(R.string.pref_sync_password) ||
-                key == getString(R.string.pref_sync_certs)){
+        if (key.equals(getString(R.string.pref_sync_url)) ||
+                key.equals(getString(R.string.pref_sync_login)) ||
+                key.equals(getString(R.string.pref_sync_password)) ||
+                key.equals(getString(R.string.pref_sync_certs))){
             MainApp.setNeedFullSync(true);
             checkLogin();
         }
-        if (key ==  getString(R.string.pref_sync_frequency)) {
+        if (key.equals(getString(R.string.pref_sync_frequency))) {
             if (syncTimer != null) syncTimer.cancel();
             setSyncTimer();
         }
@@ -398,6 +403,7 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
 
             if (mActionBarToolbar != null) {
                 mActionBarToolbar.setTitle(getPageTitle(fragment));
+                getSupportActionBar().setDisplayHomeAsUpEnabled(fragment > 0);
 
                 if (fragment > 0 && MainApp.getCurMember() != 0) {
                     FOTT_Member m = members.getMemberById(MainApp.getCurMember());

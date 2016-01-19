@@ -89,7 +89,7 @@ public class FOTT_DBMembers extends FOTT_DBContract {
     }
 
     private static FOTT_Member generateAnyMember(FOTT_App app) {
-        FOTT_Member any = new FOTT_Member(0,app.getString(R.string.any_category));
+        FOTT_Member any = new FOTT_Member(-1,app.getString(R.string.any_category));
         any.setPath("");
         any.setColorIndex(Color.TRANSPARENT);
         return any;
@@ -97,6 +97,7 @@ public class FOTT_DBMembers extends FOTT_DBContract {
 
     public static ArrayList<FOTT_Member> load (FOTT_App app){
         ArrayList<FOTT_Member> members = new ArrayList<>();
+        int taskCnt = 0;
 
         Cursor memberCursor = app.getDatabase().query(TABLE_NAME + " m",
                 new String[]{"m." + COLUMN_NAME_FO_ID,
@@ -110,6 +111,7 @@ public class FOTT_DBMembers extends FOTT_DBContract {
                 COLUMN_NAME_PATH + " ASC");
 
         memberCursor.moveToFirst();
+        FOTT_Member any = null;
         FOTT_Member m;
         FOTT_Member prev = new FOTT_Member(0,"");
         int shownLevel = 1;
@@ -122,10 +124,12 @@ public class FOTT_DBMembers extends FOTT_DBContract {
                 int color = memberCursor.getInt(4);
 
                 m = new FOTT_Member(id, name);
+                if (id == -1) any = m;
                 m.setPath(path);
                 m.setColorIndex(color);
                 m.setTasksCnt(memberCursor.getInt(5));
                 int curLevel = m.getLevel();
+                if (curLevel == 1) taskCnt += memberCursor.getInt(5);
                 if (curLevel > prev.getLevel()) {prev.setNode(1);}
                 m.setVisible(curLevel <= shownLevel);
                 if (curLevel < shownLevel) shownLevel = curLevel;
@@ -149,6 +153,7 @@ public class FOTT_DBMembers extends FOTT_DBContract {
                 prev = m;
             } while (memberCursor.moveToNext());
         }
+        if (any != null) any.setTasksCnt(taskCnt);
         return members;
     }
 
