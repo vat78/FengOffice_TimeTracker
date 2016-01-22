@@ -49,6 +49,7 @@ public class FOTT_MembersFragment extends Fragment {
 
         membersAdapter.load();
         mList.setAdapter(membersAdapter);
+        if (MainApp.getCurTimeslot()>0) mainActivity.setCurrentFragment(1);
         return rootView;
     }
 

@@ -48,7 +48,7 @@ public class FOTT_TasksFragment extends Fragment {
 
         tasksAdapter.load();
         mList.setAdapter(tasksAdapter);
-
+        if (MainApp.getCurTimeslot()>0) mainActivity.setCurrentFragment(2);
         return rootView;
     }
 

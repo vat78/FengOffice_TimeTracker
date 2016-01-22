@@ -79,6 +79,13 @@ public class FOTT_TimeslotsFragment extends Fragment {
             }
         });
 
+        if (MainApp.getCurTimeslot() != 0) {
+            start.setBackground(getResources().getDrawable(android.R.drawable.ic_media_pause, mainActivity.getTheme()));
+            TextView mTextDuration = (TextView) rootView.findViewById(R.id.tsCurDuration);
+            mTextDuration.setVisibility(View.VISIBLE);
+            mainActivity.continueTimer();
+        }
+
         return rootView;
     }
 

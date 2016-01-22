@@ -150,12 +150,14 @@ public class FOTT_App extends Application {
 
     public void setCurMember(long curMember) {
         //ToDo check cur task and timeslot
+        curTimeslot = 0;
         this.curMember = curMember;
         preferences.set(getString(R.string.pref_stored_member), curMember);
     }
 
     public void setCurTask(long curTask) {
         //ToDo check current timeslot
+        curTimeslot = 0;
         this.curTask = curTask;
         preferences.set(getString(R.string.pref_stored_task), curTask);
     }

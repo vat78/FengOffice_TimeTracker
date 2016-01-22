@@ -101,6 +101,7 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
         setSyncTimer();
 
         alarm = new FOTT_BroadcastReceiver();
+
     }
 
     private void setSyncTimer() {
@@ -111,9 +112,9 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
         long freq = Long.valueOf(MainApp.getPreferences().getString(getString(R.string.pref_sync_frequency),"180")) ;
         if (freq > 0) {
             freq = freq * 60 * 1000;
-            syncTimer.schedule(new SyncTimerTask(), 100, freq);
+            syncTimer.schedule(new SyncTimerTask(), 1000, freq);
         } else {
-            syncTimer.schedule(new SyncTimerTask(), 100);
+            syncTimer.schedule(new SyncTimerTask(), 1000);
         }
     }
 
@@ -180,7 +181,6 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
         MainApp.setMainActivity(this);
         if (MainApp.getCurTimeslot() != 0){
             setCurrentFragment(2);
-            continueTimer();
         } else {
             redraw();
         }
@@ -323,31 +323,35 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
     private void TimeslotsFragmentCaption() {
 
         View topArea = findViewById(R.id.tsTopContext);
-        FOTT_Member m = members.getMemberById(MainApp.getCurMember());
-        topArea.setBackgroundColor(m.getColor());
-        TextView top_title = (TextView)findViewById(R.id.tsTopTitle);
-        TextView top_desc = (TextView) findViewById(R.id.tsTopDesc);
-        if (MainApp.getCurTask() > 0) {
-            FOTT_Task t = getTasks().getTaskById(MainApp.getCurTask());
-            top_title.setText(t.getName());
-            top_desc.setText(t.getDesc());
-        } else {
-            if (MainApp.getCurMember() > 0) {
-                top_title.setText(R.string.title_no_tasks);
-                top_desc.setText(R.string.title_category_description);
+        if (topArea != null) {
+            FOTT_Member m = members.getMemberById(MainApp.getCurMember());
+            topArea.setBackgroundColor(m.getColor());
+            TextView top_title = (TextView) findViewById(R.id.tsTopTitle);
+            TextView top_desc = (TextView) findViewById(R.id.tsTopDesc);
+            if (MainApp.getCurTask() > 0) {
+                FOTT_Task t = getTasks().getTaskById(MainApp.getCurTask());
+                top_title.setText(t.getName());
+                top_desc.setText(t.getDesc());
             } else {
-                top_title.setText(R.string.title_no_active_task_and_category);
-                top_desc.setText("");
+                if (MainApp.getCurMember() > 0) {
+                    top_title.setText(R.string.title_no_tasks);
+                    top_desc.setText(R.string.title_category_description);
+                } else {
+                    top_title.setText(R.string.title_no_active_task_and_category);
+                    top_desc.setText("");
+                }
             }
         }
     }
 
     public void continueTimer(){
         ImageButton timer = (ImageButton) findViewById(R.id.tsTimerBtn);
-        timer.setBackground(getResources().getDrawable(android.R.drawable.ic_media_pause, getTheme()));
+        if (timer != null)
+            timer.setBackground(getResources().getDrawable(android.R.drawable.ic_media_pause, getTheme()));
         alarm.CancelAlarm(this.getApplicationContext());
         alarm.setOnetimeTimer(this.getApplicationContext(), System.currentTimeMillis() + 3 * 60 * 1000);
-        oneMinuteTimer();
+        TimeslotMinuteTimer newTimer = new TimeslotMinuteTimer();
+        newTimer.start();
     }
 
     public void startStopTimer() {
@@ -484,12 +488,19 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
 
         public void onTick(long millisUntilFinished) {
             TextView mTextDuration = (TextView) findViewById(R.id.tsCurDuration);
-            String s = mTextDuration.getText().toString();
-            if (s.endsWith("."))
-                s = s.substring(0,s.length()-1) + ":";
-            else
-                s = s.substring(0,s.length()-1) + ".";
-            mTextDuration.setText(s);
+            if (mTextDuration != null) {
+                String s = mTextDuration.getText().toString();
+                if (s.isEmpty()) {
+                    this.cancel();
+                    oneMinuteTimer();
+                } else {
+                    if (s.endsWith("."))
+                        s = s.substring(0, s.length() - 1) + ":";
+                    else
+                        s = s.substring(0, s.length() - 1) + ".";
+                    mTextDuration.setText(s);
+                }
+            }
         }
 
         public void onFinish() {
