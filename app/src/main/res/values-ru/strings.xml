@@ -22,5 +22,16 @@
     <string name="GlobalFOObj">fo_obj</string>
     <string name="Save_credentials">Сохранить параметры входа</string>
     <string name="ts_button_edit">Изменить</string>
+    <string name="addform_duration">Длительность</string>
+    <string name="addform_task_area">А еще вы можете:</string>
+    <string name="addform_complete_task">Задача выполнена</string>
+    <string name="addform_change_due">Перенести срок задачи:</string>
+    <string name="addform_description">Описание</string>
+    <string name="addform_hours">Часы:</string>
+    <string name="addform_minutes_short">Мин.:</string>
+    <string name="addform_start">Начато:</string>
+    <string name="addform_end">Завершено:</string>
+    <string name="addform_save">Сохр.</string>
+    <string name="addform_cancel">Отмена</string>
 
 </resources>

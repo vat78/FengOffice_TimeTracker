@@ -27,12 +27,12 @@ public class FOTT_SyncTask extends AsyncTask<Void, Void, Boolean> {
 
     public FOTT_SyncTask(FOTT_App app){
         MainApp = app;
-        appIsFree = !MainApp.isSyncing();
-        MainApp.setSyncing(true);
     }
 
     @Override
     protected Boolean doInBackground(Void... params) {
+        appIsFree = !MainApp.isSyncing();
+        MainApp.setSyncing(true);
         if (!appIsFree) return false;
         return MainApp.dataSynchronization();
     }

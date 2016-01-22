@@ -31,8 +31,9 @@ public class FOAPI_Tasks {
             args[0] = FO_API_ARG_LASTUPDATE;
             args[1] = "" + l;
         } else {
+            //Select only active tasks (not completed, not deleted, not archived and start date < now)
             args[0]= FO_API_ARG_STATUS;
-            args[1] = "0";
+            args[1] = "10";
         }
         JSONObject jo = app.getWeb_service().executeAPI(FO_METHOD_LISTING,FO_SERVICE_TASKS, args);
         return convertResults(app,jo,(l==0));
@@ -165,14 +166,23 @@ public class FOAPI_Tasks {
 
     public static long save(FOTT_App app, FOTT_Task task) {
         long res = 0;
+        JSONObject jo;
         if (task == null) return res;
             String[] args = convertTaskForAPI(task);
-            JSONObject jo = app.getWeb_service().executeAPI(FO_METHOD_SAVE_OBJ, FO_SERVICE_TASKS, args);
+            jo = app.getWeb_service().executeAPI(FO_METHOD_SAVE_OBJ, FO_SERVICE_TASKS, args);
         try {
             res = jo.getLong(FO_API_FIELD_ID);
         } catch (Exception e) {}
 
-        //ToDo: check completing tasks by save operation
+        if (res !=0 ) {
+            try {
+                if (task.getStatus() == 0) {
+                    jo = app.getWeb_service().executeAPI(FO_METHOD_COMPLETE_TASK, res, FO_ACTION_OPEN_TASK);
+                } else {
+                    jo = app.getWeb_service().executeAPI(FO_METHOD_COMPLETE_TASK, res, FO_ACTION_COMPLETE_TASK);
+                }
+            } catch (Exception e) {}
+        }
         return res;
     }
 
@@ -191,7 +201,10 @@ public class FOAPI_Tasks {
         res[7] = "" + l;
         res[8] = FO_API_FIELD_STATUS;
         res[9] = "" + task.getStatus();
-        if (!task.getMembersIds().isEmpty()) {
+        if (task.getMembersIds().isEmpty()) {
+            res[10] = "";
+            res[11] = "";
+        } else {
             res[10] = FO_API_FIELD_MEMBERS;
             res[11] = "[";
             String[] members = task.getMembersArray();

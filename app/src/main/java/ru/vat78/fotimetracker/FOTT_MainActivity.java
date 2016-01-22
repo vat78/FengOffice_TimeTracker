@@ -2,6 +2,7 @@ package ru.vat78.fotimetracker;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.CountDownTimer;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -19,7 +20,6 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import java.lang.reflect.Field;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -27,6 +27,7 @@ import java.util.TimerTask;
 import ru.vat78.fotimetracker.adapters.FOTT_MembersAdapter;
 import ru.vat78.fotimetracker.adapters.FOTT_TasksAdapter;
 import ru.vat78.fotimetracker.adapters.FOTT_TimeslotsAdapter;
+import ru.vat78.fotimetracker.database.FOTT_DBTasks;
 import ru.vat78.fotimetracker.model.FOTT_Member;
 import ru.vat78.fotimetracker.model.FOTT_Task;
 import ru.vat78.fotimetracker.views.FOTT_MembersFragment;
@@ -42,6 +43,11 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
     static final String EXTRA_MESSAGE_TS_EDIT_DURATION = "ru.vat78.fotimetracker.TSDURATION";
     static final String EXTRA_MESSAGE_TS_EDIT_START = "ru.vat78.fotimetracker.TSSTART";
     static final String EXTRA_MESSAGE_TS_EDIT_DESC = "ru.vat78.fotimetracker.TSDESC";
+    static final String EXTRA_MESSAGE_TS_EDIT_TASK_STATUS = "ru.vat78.fotimetracker.TASKSTATUS";
+    static final String EXTRA_MESSAGE_TS_EDIT_TASK_DUE = "ru.vat78.fotimetracker.TASKDUE";
+    static final String EXTRA_MESSAGE_TS_EDIT_TASK_NAME = "ru.vat78.fotimetracker.TASKNAME";
+
+    static final String SYNC_TIMER_NAME = "ru.vat78.fotimetracker.SYNCTIMER";
 
     private FOTT_SyncTask syncTask;
 
@@ -98,11 +104,16 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
     }
 
     private void setSyncTimer() {
-        syncTimer = new Timer(true);
+        if (syncTimer != null){
+            syncTimer.cancel();
+        }
+        syncTimer = new Timer(SYNC_TIMER_NAME, true);
         long freq = Long.valueOf(MainApp.getPreferences().getString(getString(R.string.pref_sync_frequency),"180")) ;
         if (freq > 0) {
             freq = freq * 60 * 1000;
-            syncTimer.schedule(new SyncTimerTask(), 60000, freq);
+            syncTimer.schedule(new SyncTimerTask(), 100, freq);
+        } else {
+            syncTimer.schedule(new SyncTimerTask(), 100);
         }
     }
 
@@ -140,6 +151,7 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
         }
         if (id == R.id.action_fullsync) {
             MainApp.setNeedFullSync(true);
+            setSyncTimer();
         }
 
         if (id == R.id.action_exit) {
@@ -158,7 +170,6 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
             checkLogin();
         }
         if (key.equals(getString(R.string.pref_sync_frequency))) {
-            if (syncTimer != null) syncTimer.cancel();
             setSyncTimer();
         }
     }
@@ -226,13 +237,36 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
                 l = data.getLongExtra(EXTRA_MESSAGE_TS_EDIT_DURATION, 0);
                 long id = data.getLongExtra(EXTRA_MESSAGE_TS_EDIT_ID,0);
                 String s = data.getStringExtra(EXTRA_MESSAGE_TS_EDIT_DESC);
+                if (MainApp.getCurTask() > 0) taskChangesHandler(data);
 
                 if (timeslots.saveTimeslot(id,d,l,s)){
-                    timeslots.load();
+                    setSyncTimer();
                 } else {
                     //Todo: save error
                 }
 
+            }
+        }
+    }
+
+
+    private void taskChangesHandler(Intent intent) {
+        boolean tclose = MainApp.getPreferences().getBoolean(getString(R.string.pref_can_close_task), false);
+        boolean tmove = MainApp.getPreferences().getBoolean(getString(R.string.pref_can_change_task), false);
+
+        if (MainApp.getCurTask() > 0)
+        {
+            FOTT_Task t = tasks.getTaskById(MainApp.getCurTask());
+            int status = intent.getIntExtra(EXTRA_MESSAGE_TS_EDIT_TASK_STATUS, t.getStatus());
+            long duedate = intent.getLongExtra(EXTRA_MESSAGE_TS_EDIT_TASK_DUE, t.getDueDate().getTime());
+            if (tclose && status != t.getStatus()) {
+                t.setStatus(status);
+                t.setChanged(System.currentTimeMillis());
+                FOTT_DBTasks.save(MainApp,t);
+            } else if (tmove && duedate != t.getDueDate().getTime()) {
+                t.setDuedate(duedate);
+                t.setChanged(System.currentTimeMillis());
+                FOTT_DBTasks.save(MainApp, t);
             }
         }
     }
@@ -273,9 +307,15 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
         Intent pickTS = new Intent(this,FOTT_TSEditActivity.class);
 
         pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_ID, tsId);
-        if (!text.isEmpty()) pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_DESC, text);
+        pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_DESC, text);
         if (start != 0) pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_START, start);
         if (duration !=0) pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_DURATION, duration);
+        if (MainApp.getCurTask() != 0){
+            FOTT_Task t = tasks.getTaskById(MainApp.getCurTask());
+            pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_TASK_NAME, t.getName());
+            pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_TASK_STATUS, t.getStatus());
+            pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_TASK_DUE, t.getDueDate().getTime());
+        }
 
         startActivityForResult(pickTS, PICK_TSEDIT_REQUEST);
     }
@@ -464,9 +504,12 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    if (syncTask != null) return;
-                    syncTask = new FOTT_SyncTask(MainApp);
-                    syncTask.execute();
+                    if (syncTask != null)
+                        if (syncTask.getStatus() != AsyncTask.Status.RUNNING && !MainApp.isSyncing()) syncTask = null;
+                    if (syncTask == null) {
+                        syncTask = new FOTT_SyncTask(MainApp);
+                        syncTask.execute();
+                    }
                 }
             });
         }

@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import ru.vat78.fotimetracker.FOTT_App;
-import ru.vat78.fotimetracker.model.FOTT_Object;
 import ru.vat78.fotimetracker.model.FOTT_Task;
 import ru.vat78.fotimetracker.views.FOTT_ErrorsHandler;
 
@@ -70,7 +69,7 @@ public class FOTT_DBTasks extends FOTT_DBContract {
 
             for (FOTT_Task t : tasks_list) {
                 if (t.canAddTimeslots() && t.getStatus() == 0) {
-                    insert(app, t);
+                    save(app, t);
                 } else {
                     if (!fullSync) {
                         if (t.getId() == app.getCurTask()) {
@@ -107,7 +106,7 @@ public class FOTT_DBTasks extends FOTT_DBContract {
         return res;
     }
 
-    private static void insert(FOTT_App app, FOTT_Task task){
+    public static void save(FOTT_App app, FOTT_Task task){
         ContentValues data = convertToDB(task);
         if (task.getId() != 0 ) {
             Cursor cursor = app.getDatabase().query(TABLE_NAME, new String[]{BaseColumns._ID},

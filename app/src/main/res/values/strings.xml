@@ -38,9 +38,12 @@
     <!-- Example General settings -->
     <string name="pref_header_general">General</string>
 
-    <string name="pref_title_social_recommendations">Enable social recommendations</string>
-    <string name="pref_description_social_recommendations">Recommendations for people to contact
-        based on your message history
+    <string name="pref_title_can_close_task">Can complete tasks</string>
+    <string name="pref_description_can_close_task">You will be able to complete tasks by creating new timeslots
+    </string>
+
+    <string name="pref_title_can_change_task">Can task\'s due date</string>
+    <string name="pref_description_can_change_task">You will be able to move task\'s due date by creating new timeslots
     </string>
 
     <string name="pref_title_display_name">Display name</string>
@@ -94,6 +97,11 @@
     <string name="title_category_description">Timeslots for selected category</string>
     <string name="title_no_active_task_and_category">Please select task or category</string>
     <string name="ts_button_edit">Edit</string>
+    <string name="addform_duration">Duration</string>
+    <string name="addform_task_area">Also you can:</string>
+    <string name="addform_complete_task">Complete the task</string>
+    <string name="addform_change_due">Change due date:</string>
+
 
     <string-array name="addform_minutes_values">
         <item>00</item>

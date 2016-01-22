@@ -9,7 +9,7 @@ public final class FOAPI_Dictionary {
     public static final String FO_API_CONNECT = "index.php?c=api&m=login&username=<login>&password=<password>";
     public static final String FO_API_CHECK_PLUGIN = "index.php?c=api&m=active_plugin&plugin=<plugin>&auth=<token>";
     public static final String FO_VAPI_REQUEST = "index.php?c=vatapi&m=<method>&srv=<service>&args=<args>&auth=<token>";
-    public static final String FO_VAPI_REQUEST_BY_ID = "index.php?c=vatapi&m=<method>&oid=<object_id>&auth=<token>";
+    public static final String FO_VAPI_REQUEST_BY_ID = "index.php?c=vatapi&m=<method>&oid=<object_id>&action=<action>&auth=<token>";
 
     public static final String FO_API_LOGIN = "<login>";
     public static final String FO_API_PASSWORD = "<password>";
@@ -19,6 +19,7 @@ public final class FOAPI_Dictionary {
     public static final String FO_API_ARGS = "<args>";
     public static final String FO_API_TOKEN = "<token>";
     public static final String FO_API_OBJECT_ID = "<object_id>";
+    public static final String FO_API_ACTION = "<action>";
 
     public static final String FO_PLUGIN_NAME = "vatapi";
 
@@ -26,6 +27,10 @@ public final class FOAPI_Dictionary {
     public static final String FO_METHOD_MEMBERS = "list_members";
     public static final String FO_METHOD_SAVE_OBJ = "save_object";
     public static final String FO_METHOD_DELETE_OBJ = "trash";
+    public static final String FO_METHOD_COMPLETE_TASK = "complete_task";
+
+    public static final String FO_ACTION_COMPLETE_TASK = "complete";
+    public static final String FO_ACTION_OPEN_TASK = "open";
 
     public static final String FO_SERVICE_TASKS = "ProjectTasks";
     public static final String FO_SERVICE_TIMESLOTS = "Timeslots";

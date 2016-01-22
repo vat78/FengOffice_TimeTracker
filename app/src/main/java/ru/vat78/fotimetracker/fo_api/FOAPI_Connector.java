@@ -225,6 +225,31 @@ public class FOAPI_Connector {
         String request = this.FO_URL + FOAPI_Dictionary.FO_VAPI_REQUEST_BY_ID;
         request = request.replace(FOAPI_Dictionary.FO_API_METHOD,method);
         request = request.replace(FOAPI_Dictionary.FO_API_OBJECT_ID,"" + id);
+        request = request.replace(FOAPI_Dictionary.FO_API_ACTION,"" + 0);
+        request = request.replace(FOAPI_Dictionary.FO_API_TOKEN,this.FO_Token);
+
+        jo = JSONfunctions.getJSONObjfromURL(request, this.UseUntrustCA, this.ErrorMsg);
+
+        return jo;
+    }
+
+    //Execute API operation for complet task and so on
+    public JSONObject executeAPI(String method, long id, String action) {
+        if (method.isEmpty()) {return null;}
+        if (this.FO_Token.isEmpty())
+            if (!testConnection()) {return null;}
+
+        resetError();
+
+        JSONObject jo = null;
+
+        if (!checkPlugin(FOAPI_Dictionary.FO_PLUGIN_NAME)) {return null;}
+        resetError();
+
+        String request = this.FO_URL + FOAPI_Dictionary.FO_VAPI_REQUEST_BY_ID;
+        request = request.replace(FOAPI_Dictionary.FO_API_METHOD,method);
+        request = request.replace(FOAPI_Dictionary.FO_API_OBJECT_ID,"" + id);
+        request = request.replace(FOAPI_Dictionary.FO_API_ACTION,action);
         request = request.replace(FOAPI_Dictionary.FO_API_TOKEN,this.FO_Token);
 
         jo = JSONfunctions.getJSONObjfromURL(request, this.UseUntrustCA, this.ErrorMsg);

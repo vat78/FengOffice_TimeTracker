@@ -12,7 +12,7 @@
 
     <header android:fragment="ru.vat78.fotimetracker.SettingsActivity$DataSyncPreferenceFragment"
         android:title="@string/pref_header_data_sync"
-
+        android:icon="@drawable/ic_sync_24dp"
         />
 
 </preference-headers>
