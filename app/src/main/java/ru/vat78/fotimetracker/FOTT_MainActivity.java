@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.CountDownTimer;
+import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
@@ -440,6 +441,12 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
         });
         ad.setCancelable(false);
         ad.show();
+        int vibration_length = 0;
+        if (MainApp.getPreferences().getBoolean(getString(R.string.pref_vibrate),false)) vibration_length = 100;
+
+        Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+        vibrator.vibrate(100);
+
     }
 
     /**
