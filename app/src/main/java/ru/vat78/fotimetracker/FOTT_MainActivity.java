@@ -1,5 +1,8 @@
 package ru.vat78.fotimetracker;
 
+import android.app.AlarmManager;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -188,7 +191,7 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
 
     @Override
     protected void onStop() {
-        MainApp.setMainActivity(null);
+        //MainApp.setMainActivity(null);
         super.onStop();
     }
 
@@ -196,6 +199,13 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
     protected void onDestroy() {
         MainApp.setMainActivity(null);
         super.onDestroy();
+    }
+
+    @Override
+    protected  void onNewIntent(Intent intent){
+        super.onNewIntent(intent);
+        String c = intent.getStringExtra(FOTT_BroadcastReceiver.BCommand);
+        if (c.equals(FOTT_BroadcastReceiver.BC_TimerAlarm)) alarmDialogShow();
     }
 
     public void redraw() {
@@ -320,7 +330,7 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
         startActivityForResult(pickTS, PICK_TSEDIT_REQUEST);
     }
 
-    private void TimeslotsFragmentCaption() {
+    private void timeslotsFragmentCaption() {
 
         View topArea = findViewById(R.id.tsTopContext);
         if (topArea != null) {
@@ -360,7 +370,7 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
         if (MainApp.getCurTimeslot() == 0) {
             MainApp.setCurTimeslot(System.currentTimeMillis());
             timer.setBackground(getResources().getDrawable(android.R.drawable.ic_media_pause, getTheme()));
-            alarm.setOnetimeTimer(this.getApplicationContext(), System.currentTimeMillis() + 2 * 60 * 1000);
+            alarm.setOnetimeTimer(this.getApplicationContext(), System.currentTimeMillis() + 1 * 60 * 1000);
             oneMinuteTimer();
         } else {
             long dur = System.currentTimeMillis() - MainApp.getCurTimeslot();
@@ -373,6 +383,7 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
 
     public void oneMinuteTimer() {
         //ToDo: add reminder
+        if (MainApp.getMainActivity() == null) return;
         if (MainApp.getCurTimeslot() != 0 ){
             long dur = System.currentTimeMillis() - MainApp.getCurTimeslot();
             showTimeslotDuration(dur);
@@ -401,6 +412,34 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
         TextView mTextDuration = (TextView) findViewById(R.id.tsCurDuration);
         mTextDuration.setText(res);
         mTextDuration.setVisibility(View.VISIBLE);
+    }
+
+    public void alarmDialogShow() {
+        if (MainApp.getCurTimeslot() == 0) return;
+
+        AlertDialog.Builder ad = new AlertDialog.Builder(this);
+        String message = "You are working";
+        if (MainApp.getCurTask() != 0 ) {
+            message += " on task '" + tasks.getTaskById(MainApp.getCurTask()).getName() + "'";
+        }
+        if (MainApp.getCurMember() != 0) {
+            message += " in category '" + members.getMemberById(MainApp.getCurMember()).getName() + "'";
+        }
+        message += ". Are you wish to stop this work?";
+        ad.setMessage(message);
+        ad.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int arg1) {
+                startStopTimer();
+            }
+        });
+        ad.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int arg1) {
+                alarm.CancelAlarm(MainApp);
+                alarm.setOnetimeTimer(MainApp, System.currentTimeMillis() + 2 * 60 * 1000);
+            }
+        });
+        ad.setCancelable(false);
+        ad.show();
     }
 
     /**
@@ -467,7 +506,7 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
                 else {
                     mActionBarToolbar.setSubtitle("");
                 }
-                if (fragment == 2) TimeslotsFragmentCaption();
+                if (fragment == 2) timeslotsFragmentCaption();
             }
             /*
             if (MainApp != null)
