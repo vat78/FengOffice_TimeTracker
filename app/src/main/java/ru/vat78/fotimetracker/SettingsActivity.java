@@ -201,6 +201,8 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // guidelines.
             bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_can_close_task)));
             bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_can_change_task)));
+            bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_date_format)));
+            bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_time_format)));
         }
 
         @Override
@@ -230,7 +232,9 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // to their values. When their values change, their summaries are
             // updated to reflect the new value, per the Android Design
             // guidelines.
-            bindPreferenceSummaryToValue(findPreference("notifications_new_message_ringtone"));
+            bindPreferenceSummaryToValue(findPreference("alerts"));
+            bindPreferenceSummaryToValue(findPreference("ringtone"));
+            bindPreferenceSummaryToValue(findPreference("vibrate"));
         }
 
         @Override
@@ -262,10 +266,10 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // guidelines.
             bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_sync_frequency)));
             bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_sync_url)));
-            //bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_sync_certs)));
+            bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_sync_certs)));
             bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_sync_login)));
             bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_sync_password)));
-            //bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_sync_save_creds)));
+            bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_sync_save_creds)));
         }
 
         @Override

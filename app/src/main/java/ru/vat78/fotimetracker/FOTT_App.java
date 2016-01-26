@@ -31,7 +31,8 @@ import ru.vat78.fotimetracker.views.FOTT_ErrorsHandler;
 public class FOTT_App extends Application {
 
     private final String FOTT_DATE_FORMAT = "dd.MM.yyyy";
-    private final String FOTT_TIME_FORMAT = "HH:mm";
+    private final String FOTT_TIME_FORMAT_24H = "HH:mm";
+    private final String FOTT_TIME_FORMAT_AMPMH = "K:mm a";
 
 
     private FOAPI_Connector web_service;
@@ -83,15 +84,9 @@ public class FOTT_App extends Application {
         curTimeslot = preferences.getLong(getString(R.string.pref_stored_ts), 0);
         lastSync = new Date(preferences.getLong(getString(R.string.pref_stored_last_sync),0));
 
-        String s = preferences.getString("date_format", FOTT_DATE_FORMAT);
-        dateFormat = new SimpleDateFormat(s);
-        dateFormat.setTimeZone(TimeZone.getDefault());
+        setDateTimeFormat();
 
-        s = preferences.getString("time_format", FOTT_TIME_FORMAT);
-        timeFormat = new SimpleDateFormat(s);
-        timeFormat.setTimeZone(TimeZone.getDefault());
-
-        s = preferences.getString(getString(R.string.pref_sync_url), "");
+        String s = preferences.getString(getString(R.string.pref_sync_url), "");
         if (!s.isEmpty()) web_service.setFO_Url(s);
         s = preferences.getString(getString(R.string.pref_sync_login), "");
         if (!s.isEmpty()) web_service.setFO_User(s);
@@ -100,6 +95,16 @@ public class FOTT_App extends Application {
         web_service.canUseUntrustCert(preferences.getBoolean(getString(R.string.pref_sync_certs), false));
 
         boolean trigger = preferences.getBoolean(getString(R.string.pref_can_change_task), false);
+    }
+
+    public void setDateTimeFormat() {
+        String s = preferences.getString(getString(R.string.pref_date_format), FOTT_DATE_FORMAT);
+        dateFormat = new SimpleDateFormat(s);
+        dateFormat.setTimeZone(TimeZone.getDefault());
+
+        if (preferences.getBoolean(getString(R.string.pref_time_format), false)) s = FOTT_TIME_FORMAT_24H; else s = FOTT_TIME_FORMAT_AMPMH;
+        timeFormat = new SimpleDateFormat(s);
+        timeFormat.setTimeZone(TimeZone.getDefault());
     }
 
     public FOTT_DB getDatabase() {

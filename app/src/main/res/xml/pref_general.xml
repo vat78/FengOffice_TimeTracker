@@ -12,6 +12,19 @@
         android:summary="@string/pref_description_can_change_task"
         android:defaultValue="true"/>
 
+    <ListPreference
+        android:key="@string/pref_date_format"
+        android:title="@string/pref_title_date_format"
+        android:entries="@array/pref_date_format_titles"
+        android:entryValues="@array/pref_date_format_values"
+        android:defaultValue="MMM dd, yyyy"
+        android:negativeButtonText="@null"
+        android:positiveButtonText="@null" />
 
+    <SwitchPreference
+        android:key="@string/pref_time_format"
+        android:title="@string/pref_title_time_format"
+        android:summary="@string/pref_description_time_format"
+        android:defaultValue="false"/>
 
 </PreferenceScreen>

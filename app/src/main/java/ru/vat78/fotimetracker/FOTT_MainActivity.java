@@ -1,13 +1,11 @@
 package ru.vat78.fotimetracker;
 
-import android.app.AlarmManager;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.CountDownTimer;
-import android.os.Vibrator;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
@@ -176,6 +174,13 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
         }
         if (key.equals(getString(R.string.pref_sync_frequency))) {
             setSyncTimer();
+        }
+        if (key.equals(getString(R.string.pref_alert_frequency))) {
+            alarm.setOnetimeTimer(MainApp);
+        }
+        if (key.equals(getString(R.string.pref_date_format)) ||
+            key.equals(getString(R.string.pref_time_format))) {
+            MainApp.setDateTimeFormat();
         }
     }
 
@@ -359,8 +364,7 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
         ImageButton timer = (ImageButton) findViewById(R.id.tsTimerBtn);
         if (timer != null)
             timer.setBackground(getResources().getDrawable(android.R.drawable.ic_media_pause, getTheme()));
-        alarm.CancelAlarm(this.getApplicationContext());
-        alarm.setOnetimeTimer(this.getApplicationContext(), System.currentTimeMillis() + 3 * 60 * 1000);
+        //alarm.setOnetimeTimer(MainApp);
         TimeslotMinuteTimer newTimer = new TimeslotMinuteTimer();
         newTimer.start();
     }
@@ -371,7 +375,7 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
         if (MainApp.getCurTimeslot() == 0) {
             MainApp.setCurTimeslot(System.currentTimeMillis());
             timer.setBackground(getResources().getDrawable(android.R.drawable.ic_media_pause, getTheme()));
-            alarm.setOnetimeTimer(this.getApplicationContext(), System.currentTimeMillis() + 1 * 60 * 1000);
+            alarm.setOnetimeTimer(MainApp);
             oneMinuteTimer();
         } else {
             long dur = System.currentTimeMillis() - MainApp.getCurTimeslot();
@@ -435,18 +439,11 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
         });
         ad.setNegativeButton("No", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int arg1) {
-                alarm.CancelAlarm(MainApp);
-                alarm.setOnetimeTimer(MainApp, System.currentTimeMillis() + 2 * 60 * 1000);
+                alarm.setOnetimeTimer(MainApp);
             }
         });
         ad.setCancelable(false);
         ad.show();
-        int vibration_length = 0;
-        if (MainApp.getPreferences().getBoolean(getString(R.string.pref_vibrate),false)) vibration_length = 100;
-
-        Vibrator vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-        vibrator.vibrate(100);
-
     }
 
     /**
@@ -573,35 +570,4 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
 
     }
 
-    /*
-    private class FOTT_AlarmDialogActivity extends DialogFragment {
-        @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState) {
-            // Use the Builder class for convenient dialog construction
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            String message = "You are working on ";
-            if (MainApp.getCurTask() > 0){
-                message += "task ";
-            } else {
-                message += "category ";
-            }
-            long dur = System.currentTimeMillis() - MainApp.getCurMember();
-            message += MainApp.getTimeFormat().format(new Date(dur));
-            message += ". Are you wish to finish this work?";
-            builder.setMessage(message)
-                    .setPositiveButton("Finish", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            startStopTimer();
-                        }
-                    })
-                    .setNegativeButton("Continue", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            continueTimer();
-                        }
-                    });
-            // Create the AlertDialog object and return it
-            return builder.create();
-        }
-
-    } */
 }

@@ -46,20 +46,6 @@
     <string name="pref_description_can_change_task">You will be able to move task\'s due date by creating new timeslots
     </string>
 
-    <string name="pref_title_display_name">Display name</string>
-    <string name="pref_default_display_name">John Smith</string>
-
-    <string name="pref_title_add_friends_to_messages">Add friends to messages</string>
-    <string-array name="pref_example_list_titles">
-        <item>Always</item>
-        <item>When possible</item>
-        <item>Never</item>
-    </string-array>
-    <string-array name="pref_example_list_values">
-        <item>1</item>
-        <item>0</item>
-        <item>-1</item>
-    </string-array>
 
     <!-- Example settings for Data & Sync -->
     <string name="pref_header_data_sync">Data &amp; sync</string>
@@ -82,7 +68,46 @@
         <item>-1</item>
     </string-array>
 
+    <string-array name="pref_alert_frequency_titles">
+        <item>15 minutes</item>
+        <item>30 minutes</item>
+        <item>45 minutes</item>
+        <item>1 hour</item>
+        <item>1.5 hours</item>
+        <item>2 hours</item>
+        <item>4 hours</item>
+        <item>Never</item>
+    </string-array>
+    <string-array name="pref_alert_frequency_values">
+        <item>15</item>
+        <item>30</item>
+        <item>45</item>
+        <item>60</item>
+        <item>90</item>
+        <item>120</item>
+        <item>240</item>
+        <item>1</item>
+    </string-array>
 
+    <string name="pref_title_date_format">Date format</string>
+    <string name="pref_title_time_format">Time format</string>
+    <string name="pref_description_time_format">Use 24H format?</string>
+    <string-array name="pref_date_format_titles">
+        <item>31/12/2015</item>
+        <item>12/31/2015</item>
+        <item>2015/12/31</item>
+        <item>31.12.3015</item>
+        <item>31 dec 2015</item>
+        <item>Dec 31, 2015</item>
+    </string-array>
+    <string-array name="pref_date_format_values">
+        <item>dd/MM/yyyy</item>
+        <item>MM/dd/yyyy</item>
+        <item>yyyy/MM/dd</item>
+        <item>dd.MM.yyyy</item>
+        <item>dd MMM yyyy</item>
+        <item>MMM dd, yyyy</item>
+    </string-array>
 
     <string name="addform_description">Description</string>
     <string name="addform_hours">Hours:</string>
