@@ -122,7 +122,7 @@ public class FOTT_TSEditActivity extends Activity {
                 result.putExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_START, start.getTime());
                 result.putExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_DURATION, duration);
                 result.putExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_DESC, desc.getText().toString());
-                if (tclose || tmove) gotoTaskChanges();
+                if ((tclose || tmove) && taskName != null) gotoTaskChanges();
                 else {
                     setResult(RESULT_OK, result);
                     finish();
