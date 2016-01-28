@@ -33,5 +33,6 @@
     <string name="addform_end">Завершено:</string>
     <string name="addform_save">Сохр.</string>
     <string name="addform_cancel">Отмена</string>
+    <string name="nonetwork_message">Проверьте подключение к интернету</string>
 
 </resources>

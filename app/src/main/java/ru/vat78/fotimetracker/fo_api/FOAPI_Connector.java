@@ -53,13 +53,14 @@ public class FOAPI_Connector {
     public FOAPI_Connector(FOTT_App application){
         app = application;
         FO_Token = "";
+        FO_Pwd = "";
     }
 
     private boolean UseUntrustCA = false;
 
     public boolean setFO_Url(String foUrl) {
         foUrl = foUrl.trim();
-        if (foUrl.length() <1){ return false;}
+        if (foUrl.length() <3){ return false;}
 
         if (!foUrl.startsWith("http://") && !foUrl.startsWith("https://")) {
             foUrl = "https://" + foUrl;
@@ -100,6 +101,9 @@ public class FOAPI_Connector {
         return this.ErrorMsg;
     }
 
+    public void setError(String error) {
+        this.ErrorMsg = error;
+    }
 
     //This function try to login FengOffice web-application
     public boolean testConnection() {
@@ -117,7 +121,8 @@ public class FOAPI_Connector {
 
         // Download JSON data from URL
         JSONObject jo = null;
-        jo = JSONfunctions.getJSONObjfromURL(request, this.UseUntrustCA, this.ErrorMsg);
+        jo = JSONfunctions.getJSONObjfromURL(request, this.UseUntrustCA);
+        this.ErrorMsg = JSONfunctions.getError();
 
         if (jo == null) {return false;}
 
@@ -141,7 +146,7 @@ public class FOAPI_Connector {
         request = request.replace(FOAPI_Dictionary.FO_API_TOKEN,FO_Token);
 
         JSONObject jo = null;
-        jo = JSONfunctions.getJSONObjfromURL(request, this.UseUntrustCA, this.ErrorMsg);
+        jo = JSONfunctions.getJSONObjfromURL(request, this.UseUntrustCA);
         if (jo == null) {return false;}
 
         try {
@@ -168,7 +173,7 @@ public class FOAPI_Connector {
         request = request.replace(FOAPI_Dictionary.FO_API_TOKEN, this.FO_Token);
 
         JSONObject jo = null;
-        jo = JSONfunctions.getJSONObjfromURL(request, this.UseUntrustCA, this.ErrorMsg);
+        jo = JSONfunctions.getJSONObjfromURL(request, this.UseUntrustCA);
 
         return jo;
     }
@@ -204,7 +209,7 @@ public class FOAPI_Connector {
         request = request.replace(FOAPI_Dictionary.FO_API_ARGS,argStr);
         request = request.replace(FOAPI_Dictionary.FO_API_TOKEN,this.FO_Token);
 
-        jo = JSONfunctions.getJSONObjfromURL(request, this.UseUntrustCA, this.ErrorMsg);
+        jo = JSONfunctions.getJSONObjfromURL(request, this.UseUntrustCA);
 
         return jo;
     }
@@ -228,7 +233,7 @@ public class FOAPI_Connector {
         request = request.replace(FOAPI_Dictionary.FO_API_ACTION,"" + 0);
         request = request.replace(FOAPI_Dictionary.FO_API_TOKEN,this.FO_Token);
 
-        jo = JSONfunctions.getJSONObjfromURL(request, this.UseUntrustCA, this.ErrorMsg);
+        jo = JSONfunctions.getJSONObjfromURL(request, this.UseUntrustCA);
 
         return jo;
     }
@@ -252,7 +257,7 @@ public class FOAPI_Connector {
         request = request.replace(FOAPI_Dictionary.FO_API_ACTION,action);
         request = request.replace(FOAPI_Dictionary.FO_API_TOKEN,this.FO_Token);
 
-        jo = JSONfunctions.getJSONObjfromURL(request, this.UseUntrustCA, this.ErrorMsg);
+        jo = JSONfunctions.getJSONObjfromURL(request, this.UseUntrustCA);
 
         return jo;
     }
@@ -322,6 +327,8 @@ public class FOAPI_Connector {
     private static class JSONfunctions {
 
         private static String error="";
+
+        public static String getError() {return error;}
 
         private static void resetError(){
             error = "";
@@ -398,36 +405,36 @@ public class FOAPI_Connector {
         }
 
 
-        public static JSONObject getJSONObjfromURL(String url, boolean untrustCA, String ErrorMsg) {
+        public static JSONObject getJSONObjfromURL(String url, boolean untrustCA) {
 
             resetError();
             JSONObject jObj = null;
             String data = getStringFromURL(url, untrustCA);
             FindErrorInData(data);
-            if (!error.isEmpty()) {ErrorMsg = error; return null;}
+            if (!error.isEmpty()) {return null;}
 
             try {
 
                 jObj = new JSONObject(data);
 
             } catch (JSONException e) {
-                ErrorMsg = "Error parsing data";
+                error = "Error parsing data";
                 Log.e("log_tag", "Error parsing data " + e.toString());
             }
 
             return jObj;
         }
 
-        public static JSONArray getJSONArrfromURL(String url, boolean untrustCA, String ErrorMsg) {
+        public static JSONArray getJSONArrfromURL(String url, boolean untrustCA) {
 
             JSONArray jArr = null;
-            JSONObject jObj = getJSONObjfromURL(url, untrustCA, ErrorMsg);
-            if (!ErrorMsg.isEmpty()) {return null;}
+            JSONObject jObj = getJSONObjfromURL(url, untrustCA);
+            if (!error.isEmpty()) {return null;}
 
             try {
                 jArr = jObj.getJSONArray("fo_obj");
             } catch (JSONException e) {
-                ErrorMsg = "Error parsing data";
+                error = "Error parsing data";
                 Log.e("log_tag", "Error parsing data " + e.toString());
             }
 

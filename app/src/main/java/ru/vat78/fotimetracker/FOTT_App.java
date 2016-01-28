@@ -73,7 +73,7 @@ public class FOTT_App extends Application {
         preferences.set(getString(R.string.pref_db_version), database.getDb_version());
 
         //Create error handler
-        error = new FOTT_ErrorsHandler();
+        error = new FOTT_ErrorsHandler(this);
 
         load_preferences();
     }
@@ -197,6 +197,7 @@ public class FOTT_App extends Application {
     public boolean dataSynchronization() {
 
         long stamp = System.currentTimeMillis();
+        error.reset_error();
         try {
 
             if (!getWeb_service().testConnection()) {

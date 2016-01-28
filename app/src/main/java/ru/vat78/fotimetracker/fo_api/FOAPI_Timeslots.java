@@ -29,6 +29,8 @@ public class FOAPI_Timeslots {
         long l = (long) timestamp.getTime() / FO_API_DATE_CONVERTOR;
         args[1] = "" + l;
         JSONObject jo = app.getWeb_service().executeAPI(FO_METHOD_LISTING, FO_SERVICE_TIMESLOTS, args);
+        if (!app.getWeb_service().getError().isEmpty())
+            app.getError().error_handler(FOTT_ErrorsHandler.ERROR_SAVE_ERROR, CLASS_NAME, app.getWeb_service().getError());
         return convertResults(app,jo);
     }
 

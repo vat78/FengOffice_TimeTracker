@@ -36,6 +36,8 @@ public class FOAPI_Tasks {
             args[1] = "10";
         }
         JSONObject jo = app.getWeb_service().executeAPI(FO_METHOD_LISTING,FO_SERVICE_TASKS, args);
+        if (!app.getWeb_service().getError().isEmpty())
+            app.getError().error_handler(FOTT_ErrorsHandler.ERROR_SAVE_ERROR, CLASS_NAME, app.getWeb_service().getError());
         return convertResults(app,jo,(l==0));
     }
 

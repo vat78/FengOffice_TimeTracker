@@ -18,6 +18,8 @@ public class FOAPI_Members {
     public static ArrayList<FOTT_Member> load(FOTT_App app){
 
         JSONObject jo = app.getWeb_service().executeAPI(FOAPI_Dictionary.FO_METHOD_MEMBERS, FOAPI_Dictionary.FO_MEMBERS_WORKSPACE);
+        if (!app.getWeb_service().getError().isEmpty())
+            app.getError().error_handler(FOTT_ErrorsHandler.ERROR_SAVE_ERROR, CLASS_NAME, app.getWeb_service().getError());
         return convertResults(app,jo);
     }
 

@@ -170,8 +170,13 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
                 key.equals(getString(R.string.pref_sync_password)) ||
                 key.equals(getString(R.string.pref_sync_certs))){
             MainApp.setNeedFullSync(true);
-            checkLogin();
+            //checkLogin();
         }
+        if (key.equals(getString(R.string.pref_sync_save_creds))){
+            if (!MainApp.getPreferences().getBoolean(key,false))
+                MainApp.getPreferences().set(getString(R.string.pref_sync_password),"");
+        }
+
         if (key.equals(getString(R.string.pref_sync_frequency))) {
             setSyncTimer();
         }
@@ -193,6 +198,7 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
         } else {
             redraw();
         }
+        if (MainApp.isNeedFullSync()) checkLogin();
     }
 
     @Override
@@ -205,6 +211,17 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
     protected void onDestroy() {
         MainApp.setMainActivity(null);
         super.onDestroy();
+    }
+
+    @Override
+    public void onBackPressed() {
+        int fragment = mViewPager.getCurrentItem();
+        if (fragment > 0) {
+            setCurrentFragment(fragment - 1);
+        } else {
+            super.onBackPressed();
+        }
+
     }
 
     @Override

@@ -128,6 +128,7 @@
     <string name="addform_task_area">Also you can:</string>
     <string name="addform_complete_task">Complete the task</string>
     <string name="addform_change_due">Change due date:</string>
+    <string name="nonetwork_message">Check you network connection</string>
 
 
     <string-array name="addform_minutes_values">
