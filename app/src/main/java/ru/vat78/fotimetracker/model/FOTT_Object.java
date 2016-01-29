@@ -1,6 +1,5 @@
 package ru.vat78.fotimetracker.model;
 
-import java.util.ArrayList;
 import java.util.Date;
 
 /**

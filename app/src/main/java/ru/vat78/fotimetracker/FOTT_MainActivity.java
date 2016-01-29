@@ -32,6 +32,7 @@ import ru.vat78.fotimetracker.adapters.FOTT_TimeslotsAdapter;
 import ru.vat78.fotimetracker.database.FOTT_DBTasks;
 import ru.vat78.fotimetracker.model.FOTT_Member;
 import ru.vat78.fotimetracker.model.FOTT_Task;
+import ru.vat78.fotimetracker.views.FOTT_ErrorsHandler;
 import ru.vat78.fotimetracker.views.FOTT_MembersFragment;
 import ru.vat78.fotimetracker.views.FOTT_TasksFragment;
 import ru.vat78.fotimetracker.views.FOTT_TimeslotsFragment;
@@ -153,7 +154,7 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
             startActivity(i);
         }
         if (id == R.id.action_fullsync) {
-            MainApp.setNeedFullSync(true);
+            if (MainApp != null) MainApp.setNeedFullSync(true);
             setSyncTimer();
         }
 
@@ -275,7 +276,7 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
                 if (timeslots.saveTimeslot(id,d,l,s)){
                     setSyncTimer();
                 } else {
-                    //Todo: save error
+                    MainApp.getError().error_handler(FOTT_ErrorsHandler.ERROR_SHOW_MESSAGE,"",getString(R.string.error_save_record));
                 }
 
             }

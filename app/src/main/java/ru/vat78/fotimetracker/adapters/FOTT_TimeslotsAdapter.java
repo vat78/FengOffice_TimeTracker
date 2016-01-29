@@ -1,6 +1,5 @@
 package ru.vat78.fotimetracker.adapters;
 
-import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,7 +21,6 @@ import ru.vat78.fotimetracker.views.FOTT_TimeslotsFragment;
 public class FOTT_TimeslotsAdapter extends RecyclerView.Adapter<FOTT_TimeslotsAdapter.ViewHolder> {
 
     private ArrayList<FOTT_Timeslot> timeslots;
-    private Context context;
     private FOTT_App app;
     private FOTT_TimeslotsFragment parent;
 
@@ -36,7 +34,6 @@ public class FOTT_TimeslotsAdapter extends RecyclerView.Adapter<FOTT_TimeslotsAd
         public TextView tsAuthor;
         public TextView tsStart;
         public TextView tsDuration;
-        private FOTT_TimeslotsFragment parent;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -69,8 +66,7 @@ public class FOTT_TimeslotsAdapter extends RecyclerView.Adapter<FOTT_TimeslotsAd
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.timeslot_list_item, parent, false);
 
-        ViewHolder vh = new ViewHolder(v);
-        return vh;
+        return new ViewHolder(v);
     }
 
 
@@ -81,7 +77,8 @@ public class FOTT_TimeslotsAdapter extends RecyclerView.Adapter<FOTT_TimeslotsAd
 
         holder.tsText.setText(objectItem.getName());
         holder.tsAuthor.setText(objectItem.getAuthor());
-        holder.tsStart.setText(app.getDateFormat().format(objectItem.getStart()) + " " + app.getTimeFormat().format(objectItem.getStart()));
+        String s = app.getDateFormat().format(objectItem.getStart()) + " " + app.getTimeFormat().format(objectItem.getStart());
+        holder.tsStart.setText(s);
         holder.tsDuration.setText(objectItem.getDurationString());
 
         holder.tsText.setOnClickListener(new View.OnClickListener() {

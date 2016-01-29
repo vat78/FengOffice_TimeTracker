@@ -30,11 +30,11 @@ public class FOTT_DBMembers_Objects extends FOTT_DBContract {
         long obj_id = object.getId();
 
         if (members.length > 0 && obj_id != 0){
-            for (int i=0 ; i< members.length; i++){
+            for (String member : members) {
                 ContentValues data = new ContentValues();
-                data.put(COLUMN_OBJECT_ID,obj_id);
-                data.put(COLUMN_MEMBER_ID,members[i]);
-                data.put(COLUMN_OBJECT_TYPE,object_type);
+                data.put(COLUMN_OBJECT_ID, obj_id);
+                data.put(COLUMN_MEMBER_ID, member);
+                data.put(COLUMN_OBJECT_TYPE, object_type);
                 app.getDatabase().insertOrUpdate(TABLE_NAME, data);
             }
         }

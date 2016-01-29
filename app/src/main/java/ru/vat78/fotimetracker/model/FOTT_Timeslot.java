@@ -1,8 +1,6 @@
 package ru.vat78.fotimetracker.model;
 
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 
 /**
@@ -32,7 +30,6 @@ public class FOTT_Timeslot extends FOTT_Object {
 
     public String getDurationString() {
         String res = "";
-        SimpleDateFormat df = new SimpleDateFormat();
 
         long l;
         int i;

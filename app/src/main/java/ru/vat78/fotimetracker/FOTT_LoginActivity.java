@@ -28,7 +28,6 @@ import android.widget.TextView;
 import ru.vat78.fotimetracker.fo_api.FOAPI_Connector;
 import ru.vat78.fotimetracker.views.FOTT_ErrorsHandler;
 
-//import static android.Manifest.permission.READ_CONTACTS;
 
 /**
  * A login screen that offers login via login/password.

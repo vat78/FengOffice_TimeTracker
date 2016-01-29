@@ -93,8 +93,6 @@ public class FOTT_App extends Application {
         s = preferences.getString(getString(R.string.pref_sync_password), "");
         if (!s.isEmpty()) web_service.setFO_Pwd(s);
         web_service.canUseUntrustCert(preferences.getBoolean(getString(R.string.pref_sync_certs), false));
-
-        boolean trigger = preferences.getBoolean(getString(R.string.pref_can_change_task), false);
     }
 
     public void setDateTimeFormat() {
@@ -156,6 +154,7 @@ public class FOTT_App extends Application {
     public void setCurMember(long curMember) {
         //ToDo check cur task and timeslot
         curTimeslot = 0;
+        curTask = 0;
         this.curMember = curMember;
         preferences.set(getString(R.string.pref_stored_member), curMember);
     }

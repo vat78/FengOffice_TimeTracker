@@ -232,9 +232,9 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             // to their values. When their values change, their summaries are
             // updated to reflect the new value, per the Android Design
             // guidelines.
-            bindPreferenceSummaryToValue(findPreference("alerts"));
-            bindPreferenceSummaryToValue(findPreference("ringtone"));
-            bindPreferenceSummaryToValue(findPreference("vibrate"));
+            bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_alert_frequency)));
+            bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_ringtone)));
+            bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_vibrate)));
         }
 
         @Override

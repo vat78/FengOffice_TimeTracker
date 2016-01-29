@@ -3,16 +3,9 @@ package ru.vat78.fotimetracker.database;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Color;
-
-import java.util.ArrayList;
 
 import ru.vat78.fotimetracker.FOTT_App;
 import ru.vat78.fotimetracker.R;
-import ru.vat78.fotimetracker.fo_api.FOAPI_Members;
-import ru.vat78.fotimetracker.fo_api.FOAPI_Tasks;
-import ru.vat78.fotimetracker.fo_api.FOAPI_Timeslots;
-import ru.vat78.fotimetracker.model.FOTT_Timeslot;
 import ru.vat78.fotimetracker.views.FOTT_ErrorsHandler;
 
 /**

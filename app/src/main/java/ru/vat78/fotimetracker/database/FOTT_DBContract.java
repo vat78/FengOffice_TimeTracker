@@ -1,7 +1,5 @@
 package ru.vat78.fotimetracker.database;
 
-import android.provider.BaseColumns;
-
 /**
  * DataBase structure
  */

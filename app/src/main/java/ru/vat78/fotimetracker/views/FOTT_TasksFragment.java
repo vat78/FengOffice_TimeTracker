@@ -1,6 +1,5 @@
 package ru.vat78.fotimetracker.views;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -9,13 +8,12 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ListView;
 
 import ru.vat78.fotimetracker.FOTT_App;
 import ru.vat78.fotimetracker.FOTT_MainActivity;
 import ru.vat78.fotimetracker.R;
 import ru.vat78.fotimetracker.adapters.FOTT_TasksAdapter;
+import ru.vat78.fotimetracker.model.FOTT_Task;
 
 /**
  * Created by vat on 02.12.2015.
@@ -53,8 +51,8 @@ public class FOTT_TasksFragment extends Fragment {
     }
 
 
-    public void onItemClicked(int position) {
-        MainApp.setCurTask(tasksAdapter.getTaskId(position));
+    public void onItemClicked(FOTT_Task task) {
+        MainApp.setCurTask(task.getId());
         mainActivity.setCurrentFragment(2);
     }
 

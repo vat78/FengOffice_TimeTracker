@@ -1,6 +1,5 @@
 package ru.vat78.fotimetracker.adapters;
 
-import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,14 +22,12 @@ import ru.vat78.fotimetracker.views.FOTT_TasksFragment;
 public class FOTT_TasksAdapter extends RecyclerView.Adapter<FOTT_TasksAdapter.TasksViewHolder> {
 
     private List<FOTT_Task> tasks;
-    private Context context;
     private FOTT_App app;
 
     private FOTT_TasksFragment parent;
 
 
-    public static class TasksViewHolder extends RecyclerView.ViewHolder
-            implements View.OnClickListener {
+    public static class TasksViewHolder extends RecyclerView.ViewHolder {
         // each data item is just a string in this case
         public TextView title;
         public TextView duedate;
@@ -42,18 +39,7 @@ public class FOTT_TasksAdapter extends RecyclerView.Adapter<FOTT_TasksAdapter.Ta
             title = (TextView)itemView.findViewById(R.id.textTaskTitle);
             duedate = (TextView)itemView.findViewById(R.id.textDueDate);
             this.parent = parent;
-
-            itemView.setOnClickListener(this);
         }
-
-        @Override
-        public void onClick(View v) {
-            if (parent != null) {
-                parent.onItemClicked(getPosition());
-            }
-
-        }
-
     }
 
     public FOTT_TasksAdapter(FOTT_App application, FOTT_TasksFragment parent) {
@@ -77,14 +63,13 @@ public class FOTT_TasksAdapter extends RecyclerView.Adapter<FOTT_TasksAdapter.Ta
     @Override
     public TasksViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
         View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.task_list_item, viewGroup, false);
-        TasksViewHolder vh = new TasksViewHolder(v, parent);
-        return vh;
+        return new TasksViewHolder(v, parent);
     }
 
     @Override
     public void onBindViewHolder(TasksViewHolder taskViewHolder, int i) {
 
-        FOTT_Task objectItem = tasks.get(i);
+        final FOTT_Task objectItem = tasks.get(i);
 
         taskViewHolder.title.setText(objectItem.getName());
         Date d = objectItem.getDueDate();
@@ -93,6 +78,12 @@ public class FOTT_TasksAdapter extends RecyclerView.Adapter<FOTT_TasksAdapter.Ta
         taskViewHolder.title.setSelected(app.getCurTask() == objectItem.getId());
         taskViewHolder.duedate.setSelected(app.getCurTask() == objectItem.getId());
 
+        taskViewHolder.title.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onClickTask(objectItem);
+            }
+        });
     }
 
     @Override
@@ -112,4 +103,9 @@ public class FOTT_TasksAdapter extends RecyclerView.Adapter<FOTT_TasksAdapter.Ta
         return FOTT_DBTasks.getTaskById(app, id);
     }
 
+    public void onClickTask(FOTT_Task selection){
+        if (parent != null) {
+            parent.onItemClicked(selection);
+        }
+    }
 }

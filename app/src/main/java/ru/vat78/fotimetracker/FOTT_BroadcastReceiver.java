@@ -1,20 +1,15 @@
 package ru.vat78.fotimetracker;
 
-import android.app.ActivityManager;
+
 import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.v4.app.NotificationManagerCompat;
 
-import java.util.List;
-
-import ru.vat78.fotimetracker.database.FOTT_DBMembers;
-import ru.vat78.fotimetracker.database.FOTT_DBTasks;
 
 /**
  * Created by vat on 12.01.2016.
@@ -77,7 +72,7 @@ public class FOTT_BroadcastReceiver extends BroadcastReceiver {
     private void notification(FOTT_App app, Intent intent){
 
         if (app.getCurTimeslot() == 0) return;
-        String message = "Work alert";
+        String message = app.getString(R.string.alert_title);
 
         Intent notificationIntent;
         if (app.getMainActivity() == null) {
@@ -96,8 +91,8 @@ public class FOTT_BroadcastReceiver extends BroadcastReceiver {
         Notification.Builder builder = new Notification.Builder(app);
 
         builder.setContentIntent(contentIntent)
-                .setTicker("Work alert")
-                .setContentTitle("Work alert")
+                .setTicker(app.getString(R.string.alert_title))
+                .setContentTitle(app.getString(R.string.alert_title))
                 .setContentText(message);
 
         Notification notification = builder.build();

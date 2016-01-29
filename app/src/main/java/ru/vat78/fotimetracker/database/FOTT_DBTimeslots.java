@@ -66,6 +66,7 @@ public class FOTT_DBTimeslots extends FOTT_DBContract {
     private static void insertOrUpdate(FOTT_App app, FOTT_Timeslot timeslot) {
         ContentValues ts = convertToDB(timeslot);
         ts.put(COLUMN_NAME_DELETED,0);
+        app.getError().reset_error();
 
         if (timeslot.getId() != 0) {
             Cursor cursor = app.getDatabase().query(TABLE_NAME, new String[]{BaseColumns._ID},

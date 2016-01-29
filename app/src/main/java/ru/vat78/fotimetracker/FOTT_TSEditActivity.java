@@ -198,16 +198,14 @@ public class FOTT_TSEditActivity extends Activity {
                 vTaskMoveDesc.setVisibility(View.GONE);
             }
 
-        } else {
-            vTaskEdit.setVisibility(View.GONE);
-        }
+        } else vTaskEdit.setVisibility(View.GONE);
 
     }
 
     private void gotoTaskChanges() {
         int new_tclose = taskComplete;
         long new_tdue = taskDue;
-        CheckBox vTaskClose = (CheckBox) findViewById(R.id.tsAddTaskComplete);
+        CheckBox vTaskClose;
         TextView vTaskDue = (TextView) findViewById(R.id.tsAddTaskDue);
 
         if (tclose) {
@@ -222,13 +220,13 @@ public class FOTT_TSEditActivity extends Activity {
 
         String message = "";
         if (new_tclose != taskComplete) {
-            message = "Are you sure you want to ";
-            if (new_tclose == 0) message += " resume "; else message += " finish ";
-            message += "task '" + taskName + "'?";
+            message = getString(R.string.addform_close_question);
+            if (new_tclose == 0) message += getString(R.string.addform_resume); else message += getString(R.string.addform_finish);
+            message += getString(R.string.addform_task) + taskName + getString(R.string.addform_qestion);
 
         } else if (new_tdue != taskDue) {
-            message = "Move the due date to " + app.getDateFormat().format(new Date(new_tdue));
-            message += " for task '" + taskName + "'?";
+            message = getString(R.string.addform_move_date) + app.getDateFormat().format(new Date(new_tdue));
+            message += getString(R.string.addform_for_task) + taskName + getString(R.string.addform_qestion);
         }
         showTaskDialog(message);
     }
@@ -292,7 +290,7 @@ public class FOTT_TSEditActivity extends Activity {
         long l;
         if (duration >= 24 * 3600 * 1000) {
             int d = Math.round(duration / 24 / 3600 / 1000);
-            days.setText("Days: " + d);
+            days.setText(getString(R.string.addform_days) + d);
             l = duration - d * 24 * 3600 * 1000;
         } else {
             days.setText("");
@@ -303,7 +301,7 @@ public class FOTT_TSEditActivity extends Activity {
         l = l - h * 3600 * 1000;
         int m = Math.round(l / 60 / 1000);
 
-        hours.setSelection(findPositionInSpinner(0,h));;
+        hours.setSelection(findPositionInSpinner(0,h));
         minutes.setSelection(findPositionInSpinner(1,m));
 
         start_date.setText(app.getDateFormat().format(start));
@@ -370,7 +368,7 @@ public class FOTT_TSEditActivity extends Activity {
 
     private int findPositionInSpinner(int type, int value) {
         int res = 0;
-        int i = 0;
+        int i;
         if (value ==0) return res;
 
         String[] data;
@@ -393,12 +391,12 @@ public class FOTT_TSEditActivity extends Activity {
         } else {
             AlertDialog.Builder ad = new AlertDialog.Builder(this);
             ad.setMessage(question);
-            ad.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            ad.setPositiveButton(R.string.addform_yes, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int arg1) {
                     dialogResultHandler(1);
                 }
             });
-            ad.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            ad.setNegativeButton(R.string.addform_no, new DialogInterface.OnClickListener() {
                 public void onClick(DialogInterface dialog, int arg1) {
                     dialogResultHandler(0);
                 }
@@ -415,7 +413,7 @@ public class FOTT_TSEditActivity extends Activity {
         if (res != 0) {
             //ToDo: repeating code from gotoTaskChanges()
 
-            CheckBox vTaskClose = (CheckBox) findViewById(R.id.tsAddTaskComplete);
+            CheckBox vTaskClose;
             TextView vTaskDue = (TextView) findViewById(R.id.tsAddTaskDue);
 
             if (tclose) {

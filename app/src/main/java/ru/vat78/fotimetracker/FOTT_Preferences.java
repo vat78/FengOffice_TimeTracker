@@ -1,6 +1,5 @@
 package ru.vat78.fotimetracker;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 
 /**
