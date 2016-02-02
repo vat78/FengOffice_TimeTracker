@@ -20,6 +20,8 @@ import android.widget.TimePicker;
 import java.text.ParsePosition;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.SimpleTimeZone;
+import java.util.TimeZone;
 
 /**
  * Created by vat on 14.12.2015.
@@ -204,6 +206,9 @@ public class FOTT_TSEditActivity extends Activity {
 
     private void gotoTaskChanges() {
         int new_tclose = taskComplete;
+        Calendar cl = Calendar.getInstance();
+        cl.setTimeInMillis(taskDue);
+        long tzone = (long) cl.getTimeZone().getOffset(taskDue);
         long new_tdue = taskDue;
         CheckBox vTaskClose;
         TextView vTaskDue = (TextView) findViewById(R.id.tsAddTaskDue);
@@ -215,6 +220,7 @@ public class FOTT_TSEditActivity extends Activity {
         if (tmove){
             ParsePosition pos = new ParsePosition(0);
             Date new_date = app.getDateFormat().parse(vTaskDue.getText().toString(), pos);
+            //tzone = new_date.getTimezoneOffset();
             new_tdue = new_date.getTime();
         }
 
@@ -224,7 +230,7 @@ public class FOTT_TSEditActivity extends Activity {
             if (new_tclose == 0) message += getString(R.string.addform_resume); else message += getString(R.string.addform_finish);
             message += getString(R.string.addform_task) + taskName + getString(R.string.addform_qestion);
 
-        } else if (new_tdue != taskDue) {
+        } else if (new_tdue != taskDue && new_tdue != (taskDue - tzone)) {
             message = getString(R.string.addform_move_date) + app.getDateFormat().format(new Date(new_tdue));
             message += getString(R.string.addform_for_task) + taskName + getString(R.string.addform_qestion);
         }

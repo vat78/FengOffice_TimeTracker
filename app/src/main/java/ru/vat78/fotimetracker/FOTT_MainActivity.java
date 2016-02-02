@@ -229,6 +229,7 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
     protected  void onNewIntent(Intent intent){
         super.onNewIntent(intent);
         String c = intent.getStringExtra(FOTT_BroadcastReceiver.BCommand);
+        if (c==null) return;
         if (c.equals(FOTT_BroadcastReceiver.BC_TimerAlarm)) alarmDialogShow();
     }
 
