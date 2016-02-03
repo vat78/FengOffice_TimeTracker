@@ -126,7 +126,11 @@ public class SettingsActivity extends AppCompatPreferenceActivity {
             } else {
                 // For all other preferences, set the summary to the value's
                 // simple string representation.
-                preference.setSummary(stringValue);
+                if (preference.getKey().equals(preference.getContext().getString(R.string.pref_sync_password)))
+                    preference.setSummary("*******");
+                else
+                    preference.setSummary(stringValue);
+
             }
             return true;
         }
