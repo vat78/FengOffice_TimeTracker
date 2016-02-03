@@ -46,8 +46,8 @@ public class FOAPI_Connector {
     private String ErrorMsg="";
 
     private String FO_User;
-    private static String FO_Pwd;
-    private static String FO_URL;
+    private String FO_Pwd;
+    private String FO_URL;
     private String FO_Token;
 
     public FOAPI_Connector(FOTT_App application){
@@ -120,7 +120,7 @@ public class FOAPI_Connector {
         request = request.replace(FOAPI_Dictionary.FO_API_PASSWORD,this.FO_Pwd);
 
         // Download JSON data from URL
-        JSONObject jo = null;
+        JSONObject jo;
         jo = JSONfunctions.getJSONObjfromURL(request, this.UseUntrustCA);
         this.ErrorMsg = JSONfunctions.getError();
 
@@ -145,7 +145,7 @@ public class FOAPI_Connector {
         request = request.replace(FOAPI_Dictionary.FO_API_PLUGIN,plugin_name);
         request = request.replace(FOAPI_Dictionary.FO_API_TOKEN,FO_Token);
 
-        JSONObject jo = null;
+        JSONObject jo;
         jo = JSONfunctions.getJSONObjfromURL(request, this.UseUntrustCA);
         if (jo == null) {return false;}
 
@@ -172,7 +172,7 @@ public class FOAPI_Connector {
         request = request.replace(FOAPI_Dictionary.FO_API_SERVICE,service);
         request = request.replace(FOAPI_Dictionary.FO_API_TOKEN, this.FO_Token);
 
-        JSONObject jo = null;
+        JSONObject jo;
         jo = JSONfunctions.getJSONObjfromURL(request, this.UseUntrustCA);
 
         return jo;
@@ -186,7 +186,7 @@ public class FOAPI_Connector {
 
         resetError();
 
-        JSONObject jo = null;
+        JSONObject jo;
 
         if (!checkPlugin(FOAPI_Dictionary.FO_PLUGIN_NAME)) {return null;}
         resetError();
@@ -224,7 +224,7 @@ public class FOAPI_Connector {
 
         resetError();
 
-        JSONObject jo = null;
+        JSONObject jo;
 
         if (!checkPlugin(FOAPI_Dictionary.FO_PLUGIN_NAME)) {return null;}
         resetError();
@@ -248,7 +248,7 @@ public class FOAPI_Connector {
 
         resetError();
 
-        JSONObject jo = null;
+        JSONObject jo;
 
         if (!checkPlugin(FOAPI_Dictionary.FO_PLUGIN_NAME)) {return null;}
         resetError();
@@ -338,7 +338,7 @@ public class FOAPI_Connector {
 
         private static String getStringFromURL(String url, boolean untrustCA) {
 
-            InputStream is = null;
+            InputStream is;
             String result = "";
 
             // Download JSON data from URL
@@ -359,7 +359,7 @@ public class FOAPI_Connector {
             try {
                 BufferedReader reader = new BufferedReader(new InputStreamReader(is));
                 StringBuilder sb = new StringBuilder();
-                String line = null;
+                String line;
                 while ((line = reader.readLine()) != null) {
                     sb.append(line + "\n");
                 }

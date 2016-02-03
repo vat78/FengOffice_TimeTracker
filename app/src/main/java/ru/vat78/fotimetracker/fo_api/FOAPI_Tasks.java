@@ -121,7 +121,7 @@ public class FOAPI_Tasks {
             String tmp = FO_API_FALSE;
             if (!jsonObject.isNull(FO_API_FIELD_STARTDATE))
                 tmp = jsonObject.getString(FO_API_FIELD_STARTDATE);
-            if (tmp == FO_API_FALSE) {
+            if (tmp.equalsIgnoreCase(FO_API_FALSE)) {
                 el.setStartDate(0);
             } else {
                 el.setStartDate(jsonObject.getLong(FO_API_FIELD_STARTDATE) * FO_API_DATE_CONVERTOR);
@@ -130,7 +130,7 @@ public class FOAPI_Tasks {
             tmp = FO_API_FALSE;
             if (!jsonObject.isNull(FO_API_FIELD_DUEDATE))
                 tmp = jsonObject.getString(FO_API_FIELD_DUEDATE);
-            if (tmp == FO_API_FALSE) {
+            if (tmp.equalsIgnoreCase(FO_API_FALSE)) {
                 el.setDueDate(0);
             } else {
                 el.setDueDate(jsonObject.getLong(FO_API_FIELD_DUEDATE) * FO_API_DATE_CONVERTOR);
@@ -143,7 +143,7 @@ public class FOAPI_Tasks {
                 el.setStatus(jsonObject.getInt(FO_API_FIELD_STATUS));
 
             if (!jsonObject.isNull(FOAPI_Dictionary.FO_API_FIELD_USETIMESLOTS))
-                el.setCanAddTimeslots(jsonObject.getString(FOAPI_Dictionary.FO_API_FIELD_USETIMESLOTS) == FO_API_TRUE);
+                el.setCanAddTimeslots(jsonObject.getString(FOAPI_Dictionary.FO_API_FIELD_USETIMESLOTS).equalsIgnoreCase(FO_API_TRUE));
 
                 /*
                 if (!jo.isNull(FOAPI_Dictionary.FO_API_FIELD_ASSIGNEDBY))
@@ -225,7 +225,7 @@ public class FOAPI_Tasks {
                     res = false;
                 } else {
                     try {
-                        res = (jo.getString(FO_API_FIELD_RESULT) == FO_API_TRUE);
+                        res = (jo.getString(FO_API_FIELD_RESULT).equals(FO_API_TRUE));
                     } catch (Exception e){
                     }
                 }

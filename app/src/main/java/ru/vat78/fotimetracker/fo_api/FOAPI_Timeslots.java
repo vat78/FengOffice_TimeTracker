@@ -51,7 +51,7 @@ public class FOAPI_Timeslots {
 
     private static String[] convertTSForAPI(FOTT_Timeslot timeslot) {
         String[] args = new String[12];
-        long l = 0;
+        long l;
         args[0] = FO_API_FIELD_ID;
         args[1] = "";
         if (timeslot.getId() > 0) args[1] = "" + timeslot.getId();
@@ -113,7 +113,7 @@ public class FOAPI_Timeslots {
                 tmp = FO_API_FALSE;
                 if (!jo.isNull(FO_API_FIELD_TS_DATE))
                     tmp = jo.getString(FO_API_FIELD_TS_DATE);
-                if (tmp == FO_API_FALSE) {
+                if (tmp.equalsIgnoreCase(FO_API_FALSE)) {
                     el.setStart(0);
                 } else {
                     el.setStart(jo.getLong(FO_API_FIELD_TS_DATE)*FO_API_DATE_CONVERTOR);
@@ -159,7 +159,7 @@ public class FOAPI_Timeslots {
         if (timeslot.getId() > 0) {
             JSONObject jo = app.getWeb_service().executeAPI(FO_METHOD_DELETE_OBJ, timeslot.getId());
             try {
-                res = (jo.getString(FO_API_FIELD_RESULT) != FO_API_TRUE);
+                res = (!jo.getString(FO_API_FIELD_RESULT).equalsIgnoreCase(FO_API_TRUE));
             } catch (Exception e) {
             }
         }
