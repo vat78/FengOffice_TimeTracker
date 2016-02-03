@@ -139,8 +139,7 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
         if (MainApp != null)
         {
             if (MainApp.getCurTimeslot() != 0 && fragment != 2) {
-                //ToDo add question
-                startStopTimer();
+                cancelTimerDialog();
             }
         }
 
@@ -333,7 +332,7 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
     }
 
     public void setCurrentFragment(int fragment) {
-        mViewPager.setCurrentItem(fragment,true);
+        mViewPager.setCurrentItem(fragment, true);
         redraw();
     }
 
@@ -406,7 +405,6 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
     }
 
     public void oneMinuteTimer() {
-        //ToDo: add reminder
         if (MainApp.getMainActivity() == null) return;
         if (MainApp.getCurTimeslot() != 0 ){
             long dur = System.currentTimeMillis() - MainApp.getCurTimeslot();
@@ -442,23 +440,43 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
         if (MainApp.getCurTimeslot() == 0) return;
 
         AlertDialog.Builder ad = new AlertDialog.Builder(this);
-        String message = "You are working";
+        String message = getString(R.string.alert_working);
         if (MainApp.getCurTask() != 0 ) {
-            message += " on task '" + tasks.getTaskById(MainApp.getCurTask()).getName() + "'";
+            message += getString(R.string.alert_on_task) + tasks.getTaskById(MainApp.getCurTask()).getName() + "'";
         }
         if (MainApp.getCurMember() != 0) {
-            message += " in category '" + members.getMemberById(MainApp.getCurMember()).getName() + "'";
+            message += getString(R.string.alert_in_category) + members.getMemberById(MainApp.getCurMember()).getName() + "'";
         }
-        message += ". Are you wish to stop this work?";
+        message += getString(R.string.alert_stop_it);
         ad.setMessage(message);
-        ad.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+        ad.setPositiveButton(R.string.alert_yes, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int arg1) {
                 startStopTimer();
             }
         });
-        ad.setNegativeButton("No", new DialogInterface.OnClickListener() {
+        ad.setNegativeButton(R.string.alert_no, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int arg1) {
                 alarm.setOnetimeTimer(MainApp);
+            }
+        });
+        ad.setCancelable(false);
+        ad.show();
+    }
+
+    private void cancelTimerDialog(){
+        if (MainApp.getCurTimeslot() == 0) return;
+
+        AlertDialog.Builder ad = new AlertDialog.Builder(this);
+        String message = getString(R.string.alert_stop_timer);
+        ad.setMessage(message);
+        ad.setPositiveButton(R.string.alert_yes, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int arg1) {
+                startStopTimer();
+            }
+        });
+        ad.setNegativeButton(R.string.alert_no, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int arg1) {
+                setCurrentFragment(2);
             }
         });
         ad.setCancelable(false);
@@ -470,6 +488,8 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
      * one of the sections/tabs/pages.
      */
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
+
+        private int previousFragment = 0;
 
         public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
@@ -515,6 +535,13 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
         public void startUpdate(ViewGroup container){
             super.startUpdate(container);
             int fragment = mViewPager.getCurrentItem();
+            if (fragment == previousFragment) return;
+            if (MainApp != null && previousFragment == 2) {
+                if (MainApp.getCurTimeslot() != 0 && fragment != 2) {
+                    cancelTimerDialog();
+                }
+            }
+            previousFragment = fragment;
 
             if (mActionBarToolbar != null) {
                 mActionBarToolbar.setTitle(getPageTitle(fragment));
@@ -531,14 +558,6 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
                 }
                 if (fragment == 2) timeslotsFragmentCaption();
             }
-            /*
-            if (MainApp != null)
-            {
-                if (MainApp.getCurTimeslot() != 0 && fragment != 2) {
-                    //ToDo add question
-                    startStopTimer();
-                }
-            } */
         }
     }
 

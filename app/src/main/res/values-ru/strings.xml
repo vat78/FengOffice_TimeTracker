@@ -100,4 +100,11 @@
     <string name="pref_title_ringtone">Звук сигнала</string>
     <string name="pref_title_alert_frequency">Частота оповещений</string>
     <string name="pref_title_system_sync_settings">Настройки синхронизации</string>
+    <string name="alert_working">Вы работаете</string>
+    <string name="alert_on_task">" над задачей '"</string>
+    <string name="alert_in_category">" в категории '"</string>
+    <string name="alert_stop_it">. Завершить работу?</string>
+    <string name="alert_yes">Да</string>
+    <string name="alert_no">Нет</string>
+    <string name="alert_stop_timer">You have run timer. This action will stop it. Are you agree?</string>
 </resources>

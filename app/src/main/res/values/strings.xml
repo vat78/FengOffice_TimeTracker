@@ -140,6 +140,13 @@
     <string name="addform_yes">Yes</string>
     <string name="addform_no">No</string>
     <string name="alert_title">Work alert</string>
+    <string name="alert_working">You are working</string>
+    <string name="alert_on_task">" on task '"</string>
+    <string name="alert_in_category">" in category '"</string>
+    <string name="alert_stop_it">. Are you wish to stop this work?</string>
+    <string name="alert_yes">Yes</string>
+    <string name="alert_no">No</string>
+    <string name="alert_stop_timer">You have run timer. This action will stop it. Are you agree?</string>
 
 
     <string-array name="addform_minutes_values">
