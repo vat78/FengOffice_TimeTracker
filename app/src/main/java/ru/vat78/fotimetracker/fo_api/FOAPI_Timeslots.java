@@ -50,7 +50,7 @@ public class FOAPI_Timeslots {
     }
 
     private static String[] convertTSForAPI(FOTT_Timeslot timeslot) {
-        String[] args = new String[11];
+        String[] args = new String[12];
         long l = 0;
         args[0] = FO_API_FIELD_ID;
         args[1] = "";
@@ -70,7 +70,7 @@ public class FOAPI_Timeslots {
             args[11] = "[";
             String[] members = timeslot.getMembersArray();
             for (String member : members) args[11] += "\"" + member + "\",";
-            args[11] += "]";
+            args[11] += "\"\"]";
         }
         return args;
     }

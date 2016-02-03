@@ -198,6 +198,8 @@ public class FOAPI_Connector {
                     jsargs.put(args[i-1], removeWrongSymbols(args[i]));
                 }
                 argStr = jsargs.toString();
+                argStr = argStr.replaceAll("\"%5b","%5b");
+                argStr = argStr.replaceAll("%5d\"","%5d");
             }
             catch (Exception e) {
                 Log.e("log_tag", "Error parsing data " + e.toString());

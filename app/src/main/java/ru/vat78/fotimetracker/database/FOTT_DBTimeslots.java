@@ -79,7 +79,7 @@ public class FOTT_DBTimeslots extends FOTT_DBContract {
         if (!app.getError().is_error()) {
 
             if (timeslot.getId() == 0) {
-                //For new record make sintetyc FO ID
+                //For new record make synthetic FO ID
                 ts = new ContentValues();
                 ts.put(COLUMN_NAME_FO_ID, -id);
                 String s = BaseColumns._ID + " = " + id;
@@ -138,7 +138,8 @@ public class FOTT_DBTimeslots extends FOTT_DBContract {
                         COLUMN_NAME_CHANGED,
                         COLUMN_NAME_CHANGED_BY,
                         COLUMN_NAME_TASK_ID,
-                        COLUMN_NAME_DESC},
+                        COLUMN_NAME_DESC,
+                        COLUMN_NAME_MEMBERS_IDS},
                 filter, COLUMN_NAME_START + " DESC");
 
         tsCursor.moveToFirst();
@@ -160,6 +161,7 @@ public class FOTT_DBTimeslots extends FOTT_DBContract {
                 el.setAuthor(author);
                 el.setTaskId(tid);
                 el.setDesc(tsCursor.getString(7));
+                el.setMembersIDs(tsCursor.getString(8));
 
                 timeslots.add(el);
             } while (tsCursor.moveToNext());
