@@ -195,7 +195,7 @@ public class FOAPI_Connector {
             JSONObject jsargs = new JSONObject();
             try {
                 for (int i = 1; i < args.length; i += 2) {
-                    jsargs.put(args[i-1], removeWrongSymbols(args[i]));
+                    if (args[i] != null) jsargs.put(args[i-1], removeWrongSymbols(args[i]));
                 }
                 argStr = jsargs.toString();
                 argStr = argStr.replaceAll("\"%5b","%5b");

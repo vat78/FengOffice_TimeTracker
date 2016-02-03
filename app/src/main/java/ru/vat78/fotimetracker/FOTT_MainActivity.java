@@ -14,6 +14,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.text.Html;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -365,7 +366,8 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
             if (MainApp.getCurTask() > 0) {
                 FOTT_Task t = getTasks().getTaskById(MainApp.getCurTask());
                 top_title.setText(t.getName());
-                top_desc.setText(t.getDesc());
+                String s = Html.fromHtml(t.getDesc()).toString();
+                top_desc.setText(s);
             } else {
                 if (MainApp.getCurMember() > 0) {
                     top_title.setText(R.string.title_no_tasks);

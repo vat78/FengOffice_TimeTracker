@@ -1,5 +1,6 @@
 package ru.vat78.fotimetracker.adapters;
 
+import android.graphics.Paint;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -77,6 +78,10 @@ public class FOTT_TasksAdapter extends RecyclerView.Adapter<FOTT_TasksAdapter.Ta
 
         taskViewHolder.title.setSelected(app.getCurTask() == objectItem.getId());
         taskViewHolder.duedate.setSelected(app.getCurTask() == objectItem.getId());
+
+        if (objectItem.isDeleted() || objectItem.getStatus() == 1){
+            taskViewHolder.title.setPaintFlags(taskViewHolder.title.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
+        }
 
         taskViewHolder.title.setOnClickListener(new View.OnClickListener() {
             @Override
