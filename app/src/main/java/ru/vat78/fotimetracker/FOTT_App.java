@@ -154,7 +154,7 @@ public class FOTT_App extends Application {
     public void setCurMember(long curMember) {
         //ToDo check cur task and timeslot
         curTimeslot = 0;
-        curTask = 0;
+        setCurTask(0);
         this.curMember = curMember;
         preferences.set(getString(R.string.pref_stored_member), curMember);
     }
@@ -277,6 +277,23 @@ public class FOTT_App extends Application {
     }
 
     public void redrawMainActivity() {
-        if (mainActivity != null) mainActivity.redraw();
+        int shift = 0;
+        if (curMember != 0)
+            if (!FOTT_DBMembers.isExistInDB(this, curMember)) {
+                setCurMember(0);
+                shift = 1;
+            }
+        if (curTask != 0)
+            if (!FOTT_DBTasks.isExistInDB(this, curTask)) {
+                setCurTask(0);
+                shift = 2;
+            }
+
+        if (mainActivity != null) {
+            if (shift == 0)
+                mainActivity.redraw();
+            else
+                mainActivity.setCurrentFragment(shift - 1);
+        }
     }
 }

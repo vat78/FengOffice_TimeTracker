@@ -206,4 +206,9 @@ public class FOTT_DBTasks extends FOTT_DBContract {
     public static void deleteTask(FOTT_App app, FOTT_Task task) {
         app.getDatabase().delete(TABLE_NAME, COLUMN_NAME_FO_ID + " = " + task.getId());
     }
+
+    public static boolean isExistInDB(FOTT_App app, long taskID) {
+        FOTT_Task res = getTaskById(app,taskID);
+        return (res.getId() == taskID);
+    }
 }

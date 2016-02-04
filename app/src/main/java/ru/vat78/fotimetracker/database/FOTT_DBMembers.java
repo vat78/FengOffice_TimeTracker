@@ -183,4 +183,9 @@ public class FOTT_DBMembers extends FOTT_DBContract {
         }
         return res;
     }
+
+    public static boolean isExistInDB(FOTT_App app, long memberID) {
+        FOTT_Member res = getMemberById(app, memberID);
+        return (res.getId() == memberID);
+    }
 }

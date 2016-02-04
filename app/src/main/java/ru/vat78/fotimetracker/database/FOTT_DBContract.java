@@ -27,4 +27,5 @@ public class FOTT_DBContract {
     protected static final String COLUMN_NAME_CHANGED = "changed";
     protected static final String COLUMN_NAME_CHANGED_BY = "changed_by";
     protected static final String COLUMN_NAME_DELETED = "deleted";
+
 }
