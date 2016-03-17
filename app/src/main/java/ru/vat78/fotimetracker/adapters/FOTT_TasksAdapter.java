@@ -13,7 +13,7 @@ import java.util.List;
 
 import ru.vat78.fotimetracker.FOTT_App;
 import ru.vat78.fotimetracker.R;
-import ru.vat78.fotimetracker.database.FOTT_DBTasks;
+import ru.vat78.fotimetracker.connectors.database.FOTT_DBTasks;
 import ru.vat78.fotimetracker.model.FOTT_Task;
 import ru.vat78.fotimetracker.views.FOTT_TasksFragment;
 
@@ -76,10 +76,10 @@ public class FOTT_TasksAdapter extends RecyclerView.Adapter<FOTT_TasksAdapter.Ta
         Date d = objectItem.getDueDate();
         taskViewHolder.duedate.setText(app.getDateFormat().format(d));
 
-        taskViewHolder.title.setSelected(app.getCurTask() == objectItem.getId());
-        taskViewHolder.duedate.setSelected(app.getCurTask() == objectItem.getId());
+        taskViewHolder.title.setSelected(app.getCurTask() == objectItem.getWebId());
+        taskViewHolder.duedate.setSelected(app.getCurTask() == objectItem.getWebId());
 
-        if (objectItem.isDeleted() || objectItem.getStatus() == 1){
+        if (objectItem.isDeleted() || objectItem.getStatus() == FOTT_Task.TaskStatus.COMPLETED){
             taskViewHolder.title.setPaintFlags(taskViewHolder.title.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
         }
 
@@ -97,7 +97,7 @@ public class FOTT_TasksAdapter extends RecyclerView.Adapter<FOTT_TasksAdapter.Ta
     }
 
     public long getTaskId(int position){
-        return tasks.get(position).getId();
+        return tasks.get(position).getWebId();
     }
 
     public void load(){

@@ -52,7 +52,7 @@ public class FOTT_MembersFragment extends Fragment {
     }
 
     public void onMemberSelect(FOTT_Member selection) {
-        MainApp.setCurMember(selection.getId());
+        MainApp.setCurMember(selection.getWebId());
         MainApp.setCurTask(0);
         membersAdapter.notifyDataSetChanged();
         mainActivity.setCurrentFragment(1);

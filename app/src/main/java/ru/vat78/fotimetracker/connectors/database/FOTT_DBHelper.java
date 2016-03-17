@@ -1,4 +1,4 @@
-package ru.vat78.fotimetracker.database;
+package ru.vat78.fotimetracker.connectors.database;
 
 
 
@@ -8,7 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import ru.vat78.fotimetracker.FOTT_App;
 
-import static ru.vat78.fotimetracker.database.FOTT_DBContract.*;
+import static ru.vat78.fotimetracker.connectors.database.FOTT_DBContract.*;
 
 /**
  * Created by vat on 25.11.2015.

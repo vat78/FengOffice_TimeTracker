@@ -52,7 +52,7 @@ public class FOTT_TasksFragment extends Fragment {
 
 
     public void onItemClicked(FOTT_Task task) {
-        MainApp.setCurTask(task.getId());
+        MainApp.setCurTask(task.getWebId());
         mainActivity.setCurrentFragment(2);
     }
 

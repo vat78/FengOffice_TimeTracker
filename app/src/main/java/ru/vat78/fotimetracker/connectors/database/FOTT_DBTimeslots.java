@@ -1,14 +1,16 @@
-package ru.vat78.fotimetracker.database;
+package ru.vat78.fotimetracker.connectors.database;
 
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.provider.BaseColumns;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 
 import ru.vat78.fotimetracker.FOTT_App;
 import ru.vat78.fotimetracker.model.FOTT_Timeslot;
+import ru.vat78.fotimetracker.model.FOTT_TimeslotBuilder;
 import ru.vat78.fotimetracker.views.FOTT_ErrorsHandler;
 
 /**
@@ -68,9 +70,9 @@ public class FOTT_DBTimeslots extends FOTT_DBContract {
         ts.put(COLUMN_NAME_DELETED,0);
         app.getError().reset_error();
 
-        if (timeslot.getId() != 0) {
+        if (timeslot.getWebId() != 0) {
             Cursor cursor = app.getDatabase().query(TABLE_NAME, new String[]{BaseColumns._ID},
-                    COLUMN_NAME_FO_ID + " = " + timeslot.getId(),"");
+                    COLUMN_NAME_FO_ID + " = " + timeslot.getWebId(),"");
             if (cursor.moveToFirst()) ts.put(BaseColumns._ID, cursor.getLong(0));
         }
 
@@ -78,16 +80,17 @@ public class FOTT_DBTimeslots extends FOTT_DBContract {
 
         if (!app.getError().is_error()) {
 
-            if (timeslot.getId() == 0) {
+            if (timeslot.getWebId() == 0) {
                 //For new record make synthetic FO ID
                 ts = new ContentValues();
                 ts.put(COLUMN_NAME_FO_ID, -id);
                 String s = BaseColumns._ID + " = " + id;
                 app.getDatabase().update(TABLE_NAME,ts,s);
-                timeslot.setId(-id);
+                //ToDo: probleb here
+                //timeslot.setId(-id);
             }
 
-            String[] members = timeslot.getMembersArray();
+            String[] members = timeslot.getMembersWebIds();
             if (members.length > 0) {
                 if (timeslot.getTaskId() == 0)
                     FOTT_DBMembers_Objects.addObject(app, timeslot, 2);
@@ -97,7 +100,7 @@ public class FOTT_DBTimeslots extends FOTT_DBContract {
 
     private static ContentValues convertToDB(FOTT_Timeslot ts) {
         ContentValues res = new ContentValues();
-        res.put(COLUMN_NAME_FO_ID, ts.getId());
+        res.put(COLUMN_NAME_FO_ID, ts.getWebId());
         res.put(COLUMN_NAME_TITLE,ts.getName());
         res.put(COLUMN_NAME_DESC,ts.getDesc());
         res.put(COLUMN_NAME_DELETED, ts.isDeleted());
@@ -109,7 +112,7 @@ public class FOTT_DBTimeslots extends FOTT_DBContract {
         res.put(COLUMN_NAME_CHANGED_BY,ts.getAuthor());
 
         res.put(COLUMN_NAME_TASK_ID, ts.getTaskId());
-        res.put(COLUMN_NAME_MEMBERS_IDS,ts.getMembersIds());
+        res.put(COLUMN_NAME_MEMBERS_IDS, Arrays.toString(ts.getMembersWebIds()));
 
         return res;
     }
@@ -143,7 +146,7 @@ public class FOTT_DBTimeslots extends FOTT_DBContract {
                 filter, COLUMN_NAME_START + " DESC");
 
         tsCursor.moveToFirst();
-        FOTT_Timeslot el;
+        FOTT_TimeslotBuilder el;
         if (!tsCursor.isAfterLast()){
             do {
                 long id = tsCursor.getLong(0);
@@ -154,16 +157,18 @@ public class FOTT_DBTimeslots extends FOTT_DBContract {
                 String author = tsCursor.getString(5);
                 long tid = tsCursor.getLong(6);
 
-                el = new FOTT_Timeslot(id, name);
+                el = new FOTT_TimeslotBuilder();
+                el.setWebID(id);
+                el.setName(name);
                 el.setStart(start);
                 el.setDuration(dur);
                 el.setChanged(changed);
                 el.setAuthor(author);
-                el.setTaskId(tid);
+                el.setTaskWebId(tid);
                 el.setDesc(tsCursor.getString(7));
-                el.setMembersIDs(tsCursor.getString(8));
+                el.setMembersWebIds(arrayFromString(tsCursor.getString(8)));
 
-                timeslots.add(el);
+                timeslots.add(el.buildObject());
             } while (tsCursor.moveToNext());
         }
 
@@ -178,7 +183,7 @@ public class FOTT_DBTimeslots extends FOTT_DBContract {
         app.getDatabase().insertOrUpdate(TABLE_NAME, ts);
 
         if (!app.getError().is_error()) {
-            String[] members = timeslot.getMembersArray();
+            String[] members = timeslot.getMembersWebIds();
             if (members.length > 0) {
                 if (timeslot.getTaskId() == 0)
                     FOTT_DBMembers_Objects.addObject(app, timeslot, 2);
@@ -195,7 +200,7 @@ public class FOTT_DBTimeslots extends FOTT_DBContract {
     }
 
     public static void deleteTS(FOTT_App app, FOTT_Timeslot timeslot){
-                app.getDatabase().delete(TABLE_NAME, COLUMN_NAME_FO_ID + " = " + timeslot.getId());
+                app.getDatabase().delete(TABLE_NAME, COLUMN_NAME_FO_ID + " = " + timeslot.getWebId());
     }
 
     public static ArrayList<FOTT_Timeslot> getDeletedTS(FOTT_App app) {
@@ -215,8 +220,8 @@ public class FOTT_DBTimeslots extends FOTT_DBContract {
     public static void updateSavedTS(FOTT_App app, ArrayList<FOTT_Timeslot> timeslots){
         //todo ???????????????????
         for (FOTT_Timeslot ts:timeslots){
-            if (ts.getId()>0){
-                app.getDatabase().delete(TABLE_NAME, COLUMN_NAME_FO_ID + " = " + ts.getId());
+            if (ts.getWebId()>0){
+                app.getDatabase().delete(TABLE_NAME, COLUMN_NAME_FO_ID + " = " + ts.getWebId());
             }
         }
     }

@@ -1,4 +1,6 @@
-package ru.vat78.fotimetracker.fo_api;
+package ru.vat78.fotimetracker.connectors.fo_api;
+
+import android.graphics.Color;
 
 /**
  * Dictionary for works with FengOffice API
@@ -73,10 +75,23 @@ public final class FOAPI_Dictionary {
     public static final String FO_API_ARG_STATUS = "status";
     public static final String FO_API_ARG_LASTUPDATE = "lupdate";
 
+    public static final String FO_API_TASK_STATUS_ACTIVE = "10";
+
     public static final String FO_API_TRUE = "true";
     public static final String FO_API_FALSE = "false";
 
     public static final String FO_API_MAIN_OBJ = "fo_obj";
 
     public static final long FO_API_DATE_CONVERTOR = 1000;
+
+    public static final String FO_API_MEMBER_SPLITTER = "/";
+
+    public static final int memColors[] = {Color.GRAY,Color.argb(255,90,105,134),Color.argb(255,32,108,225),
+            Color.BLUE,Color.argb(255,82,41,163),Color.argb(255,133,79,97),Color.RED,
+            Color.argb(255,236,112,0),Color.argb(255,179,109,0),Color.argb(255,171,139,0),
+            Color.argb(255,99,99,48),Color.argb(255,100,153,44),Color.GREEN,Color.argb(255,177,184,200),
+            Color.argb(255,202,220,249),Color.argb(255,197,198,245),Color.argb(255,237,231,251),
+            Color.argb(255,253,242,248),Color.argb(255,245,198,198),Color.argb(255,255,246,237),
+            Color.argb(255,239,215,179),Color.argb(255,235,224,179),Color.argb(255,227,227,200),
+            Color.argb(255,224,236,210),Color.argb(255,203,223,210)};
 }

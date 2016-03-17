@@ -1,4 +1,4 @@
-package ru.vat78.fotimetracker.database;
+package ru.vat78.fotimetracker.connectors.database;
 
 import android.content.ContentValues;
 
@@ -26,8 +26,8 @@ public class FOTT_DBMembers_Objects extends FOTT_DBContract {
 
     public static void addObject(FOTT_App app, FOTT_Object object, int object_type) {
 
-        String[] members = object.getMembersArray();
-        long obj_id = object.getId();
+        String[] members = object.getMembersWebIds();
+        long obj_id = object.getWebId();
 
         if (members.length > 0 && obj_id != 0){
             for (String member : members) {

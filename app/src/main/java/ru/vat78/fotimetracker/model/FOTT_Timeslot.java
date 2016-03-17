@@ -1,6 +1,5 @@
 package ru.vat78.fotimetracker.model;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -8,16 +7,15 @@ import java.util.Date;
  */
 public class FOTT_Timeslot extends FOTT_Object {
 
-    private Date start;
-    private long duration;
-    private long task_id;
+    final private Date start;
+    final private long duration;
+    final private long taskWebId;
 
-    public FOTT_Timeslot(long tsId, String tsTitle){
-        super();
-        setId(tsId);
-        setName(tsTitle.length() > 250 ? tsTitle.substring(0, 250) : tsTitle);
-        setDesc(tsTitle);
-        setTaskId(0);
+    public FOTT_Timeslot(FOTT_TimeslotBuilder builder){
+        super(builder);
+        this.start = builder.start;
+        this.duration = builder.duration;
+        this.taskWebId = builder.taskWebId;
     }
 
     public Date getStart() {
@@ -28,7 +26,17 @@ public class FOTT_Timeslot extends FOTT_Object {
         return duration;
     }
 
-    public String getDurationString() {
+    public String getDurationAsString() {
+        return convertMiilisecToString(duration);
+    }
+
+    public long getTaskId() {
+        return taskWebId;
+    }
+
+    //ToDo: does it need here?
+    private String convertMiilisecToString(long time) {
+
         String res = "";
 
         long l;
@@ -47,27 +55,6 @@ public class FOTT_Timeslot extends FOTT_Object {
         else {res += " 0" + i + " m";}
 
         return res;
-    }
-
-    public long getTaskId() {
-        return task_id;
-    }
-
-
-    public void setStart(long start) {
-        this.start = new Date(start);
-    }
-
-    public void setStart(Date start) {
-        this.start = start;
-    }
-
-    public void setDuration(long duration) {
-        this.duration = duration;
-    }
-
-    public void setTaskId(long task_id) {
-        this.task_id = task_id;
     }
 
 }

@@ -12,7 +12,7 @@ import java.util.List;
 
 import ru.vat78.fotimetracker.FOTT_App;
 import ru.vat78.fotimetracker.R;
-import ru.vat78.fotimetracker.database.FOTT_DBMembers;
+import ru.vat78.fotimetracker.connectors.database.FOTT_DBMembers;
 import ru.vat78.fotimetracker.model.FOTT_Member;
 import ru.vat78.fotimetracker.views.FOTT_MembersFragment;
 
@@ -21,8 +21,8 @@ import ru.vat78.fotimetracker.views.FOTT_MembersFragment;
  */
 public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapter.MembersViewHolder> {
 
-    private List<FOTT_Member> members;
-    private List<FOTT_Member> visibleMembers;
+    private List<FOTT_DrawingMember> members;
+    private List<FOTT_DrawingMember> visibleMembers;
     private FOTT_App app;
     private FOTT_MembersFragment parent;
 
@@ -70,21 +70,21 @@ public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapt
 
     @Override
     public void onBindViewHolder(MembersViewHolder memberViewHolder, int i) {
-        final FOTT_Member objectItem;
+        final FOTT_DrawingMember objectItem;
 
         objectItem = visibleMembers.get(i);
 
-        String s = "   " + objectItem.getName();
+        String s = "   " + objectItem.getMember().getName();
         memberViewHolder.title.setText(s);
-        memberViewHolder.tasks.setText(String.valueOf(objectItem.getTasksCnt()));
-        memberViewHolder.color.setBackgroundColor(objectItem.getColor());
+        //memberViewHolder.tasks.setText(String.valueOf(objectItem.getTasksCnt()));
+        memberViewHolder.color.setBackgroundColor(objectItem.getMember().getColor());
 
-        memberViewHolder.margine.setWidth(36 * objectItem.getLevel());
+        memberViewHolder.margine.setWidth(36 * objectItem.getMember().getMembersWebIds().length);
 
-        if (app.getCurMember() == objectItem.getId()) {
-            memberViewHolder.title.setBackgroundColor(objectItem.getColor());
-            memberViewHolder.tasks.setBackgroundColor(objectItem.getColor());
-            memberViewHolder.selector.setBackgroundColor(objectItem.getColor());
+        if (app.getCurMember() == objectItem.getMember().getWebId()) {
+            memberViewHolder.title.setBackgroundColor(objectItem.getMember().getColor());
+            memberViewHolder.tasks.setBackgroundColor(objectItem.getMember().getColor());
+            memberViewHolder.selector.setBackgroundColor(objectItem.getMember().getColor());
             //memberViewHolder.setIsRecyclable(false);
         } else {
             memberViewHolder.title.setBackgroundColor(0);
@@ -124,13 +124,13 @@ public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapt
         super.onAttachedToRecyclerView(recyclerView);
     }
 
-    public void onClickMember(FOTT_Member selection){
+    public void onClickMember(FOTT_DrawingMember selection){
         if (parent != null) {
-            parent.onMemberSelect(selection);
+            parent.onMemberSelect(selection.getMember());
         }
     }
 
-    public void onClickSelector(FOTT_Member selection){
+    public void onClickSelector(FOTT_DrawingMember selection){
         //???
         int position = visibleMembers.indexOf(selection);
         switch (selection.getNode()) {
@@ -150,7 +150,7 @@ public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapt
     }
 
     public long getMemberId(int position){
-        return visibleMembers.get(position).getId();
+        return visibleMembers.get(position).getMember().getWebId();
     }
 
     public FOTT_Member getMemberById(long id){
@@ -159,19 +159,19 @@ public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapt
 
     private void rebuildFilteredList(){
         visibleMembers = new ArrayList<>();
-        for (FOTT_Member el: members){
+        for (FOTT_DrawingMember el: members){
             if (el.isVisible()) visibleMembers.add(el);
         }
     }
 
     public void expandBranch(int position){
-        int curLevel = visibleMembers.get(position).getLevel();
+        int curLevel = visibleMembers.get(position).getMember().getLevel();
         int curMem = members.indexOf(visibleMembers.get(position));
         int newItems = 0;
         for (int i = curMem+1; i < members.size(); i++) {
-            FOTT_Member el = members.get(i);
-            if (el.getLevel() <= curLevel) break;
-            if (el.getLevel() == curLevel+1) {
+            FOTT_DrawingMember el = members.get(i);
+            if (el.getMember().getLevel() <= curLevel) break;
+            if (el.getMember().getLevel() == curLevel+1) {
                 el.setVisible(true);
                 newItems++;
             }
@@ -182,12 +182,12 @@ public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapt
         notifyItemRangeInserted(position+1,newItems);
     }
     public void closeBranch(int position){
-        int curLevel = visibleMembers.get(position).getLevel();
+        int curLevel = visibleMembers.get(position).getMember().getLevel();
         int curMem = members.indexOf(visibleMembers.get(position));
         int delItems = 0;
         for (int i = curMem+1; i < members.size(); i++) {
-            FOTT_Member el = members.get(i);
-            if (el.getLevel() <= curLevel) break;
+            FOTT_DrawingMember el = members.get(i);
+            if (el.getMember().getLevel() <= curLevel) break;
             if (el.isVisible()){
                 el.setVisible(false);
                 delItems++;

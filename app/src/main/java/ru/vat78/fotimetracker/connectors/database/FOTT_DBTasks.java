@@ -1,14 +1,16 @@
-package ru.vat78.fotimetracker.database;
+package ru.vat78.fotimetracker.connectors.database;
 
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.provider.BaseColumns;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 
 import ru.vat78.fotimetracker.FOTT_App;
 import ru.vat78.fotimetracker.model.FOTT_Task;
+import ru.vat78.fotimetracker.model.FOTT_TaskBuilder;
 import ru.vat78.fotimetracker.views.FOTT_ErrorsHandler;
 
 /**
@@ -68,12 +70,12 @@ public class FOTT_DBTasks extends FOTT_DBContract {
 
 
             for (FOTT_Task t : tasks_list) {
-                if (t.canAddTimeslots() && t.getStatus() == 0) {
+                if (t.canAddTimeslots() && t.getStatus() == FOTT_Task.TaskStatus.ACTIVE) {
                     save(app, t);
                 } else {
                     if (!fullSync) {
-                        if (t.getId() == app.getCurTask()) {
-                            t.setDeleted(true);
+                        if (t.getWebId() == app.getCurTask()) {
+                            app.setCurTask(0);
                         } else {
                             deleteTask(app,t);
                         }
@@ -90,17 +92,17 @@ public class FOTT_DBTasks extends FOTT_DBContract {
     private static ContentValues convertToDB(FOTT_Task task) {
         ContentValues res = new ContentValues();
 
-        res.put(COLUMN_NAME_FO_ID, task.getId());
+        res.put(COLUMN_NAME_FO_ID, task.getWebId());
         res.put(COLUMN_NAME_TITLE, task.getName());
         res.put(COLUMN_NAME_DESC, task.getDesc());
 
-        res.put(COLUMN_NAME_STATUS, task.getStatus());
+        res.put(COLUMN_NAME_STATUS, getCodeForStatus(task.getStatus()));
 
         res.put(COLUMN_NAME_DUEDATE,task.getDueDate().getTime());
 
         res.put(COLUMN_NAME_CHANGED,task.getChanged().getTime());
 
-        res.put(COLUMN_NAME_MEMBERS_IDS, task.getMembersIds());
+        res.put(COLUMN_NAME_MEMBERS_IDS, arrayToString(task.getMembersWebIds()));
 
         res.put(COLUMN_NAME_DELETED, task.isDeleted());
         return res;
@@ -108,15 +110,15 @@ public class FOTT_DBTasks extends FOTT_DBContract {
 
     public static void save(FOTT_App app, FOTT_Task task){
         ContentValues data = convertToDB(task);
-        if (task.getId() != 0 ) {
+        if (task.getWebId() != 0 ) {
             Cursor cursor = app.getDatabase().query(TABLE_NAME, new String[]{BaseColumns._ID},
-                    COLUMN_NAME_FO_ID + " = " + task.getId(),"");
+                    COLUMN_NAME_FO_ID + " = " + task.getWebId(),"");
             if (cursor.moveToFirst()) data.put(BaseColumns._ID, cursor.getLong(0));
         }
         app.getDatabase().insertOrUpdate(TABLE_NAME, data);
 
         if (!app.getError().is_error()) {
-            String[] members = task.getMembersArray();
+            String[] members = task.getMembersWebIds();
             if (members.length > 0) {
                 FOTT_DBMembers_Objects.addObject(app, task, 1);
             }
@@ -142,19 +144,19 @@ public class FOTT_DBTasks extends FOTT_DBContract {
                 COLUMN_NAME_DUEDATE + " ASC");
 
         taskCursor.moveToFirst();
-        FOTT_Task m;
+        FOTT_TaskBuilder m;
         if (!taskCursor.isAfterLast()) {
             do {
                 long id = taskCursor.getLong(0);
                 String name = taskCursor.getString(1);
                 long duedate = taskCursor.getLong(2);
 
-                m = new FOTT_Task(id, name);
-                m.setDuedate(duedate);
-
-                m.setStatus(taskCursor.getInt(3));
-
-                tasks.add(m);
+                m = new FOTT_TaskBuilder();
+                m.setWebID(id);
+                m.setName(name);
+                m.setDueDate(duedate);
+                m.setStatus(getStatusByCode(taskCursor.getInt(3)));
+                tasks.add(m.buildObject());
             } while (taskCursor.moveToNext());
         }
         return tasks;
@@ -162,7 +164,7 @@ public class FOTT_DBTasks extends FOTT_DBContract {
 
     public static FOTT_Task getTaskById(FOTT_App app, long id){
 
-        FOTT_Task res = new FOTT_Task(0,"");
+        FOTT_TaskBuilder res = new FOTT_TaskBuilder();
         if (id>0){
             String filter = " " + COLUMN_NAME_FO_ID + " = " + id;
             Cursor taskCursor = app.getDatabase().query(TABLE_NAME,
@@ -175,14 +177,14 @@ public class FOTT_DBTasks extends FOTT_DBContract {
                     COLUMN_NAME_DUEDATE);
             taskCursor.moveToFirst();
             if (!taskCursor.isAfterLast()){
-                res.setId(taskCursor.getLong(0));
+                res.setWebID(taskCursor.getLong(0));
                 res.setName(taskCursor.getString(1));
-                res.setDuedate(taskCursor.getLong(2));
+                res.setDueDate(taskCursor.getLong(2));
                 res.setDesc(taskCursor.getString(3));
-                res.setStatus(taskCursor.getInt(4));
+                res.setStatus(getStatusByCode(taskCursor.getInt(4)));
             }
         }
-        return res;
+        return res.buildObject();
     }
 
     public static void clearNewTasks(FOTT_App app) {
@@ -204,11 +206,34 @@ public class FOTT_DBTasks extends FOTT_DBContract {
     }
 
     public static void deleteTask(FOTT_App app, FOTT_Task task) {
-        app.getDatabase().delete(TABLE_NAME, COLUMN_NAME_FO_ID + " = " + task.getId());
+        app.getDatabase().delete(TABLE_NAME, COLUMN_NAME_FO_ID + " = " + task.getWebId());
     }
 
     public static boolean isExistInDB(FOTT_App app, long taskID) {
         FOTT_Task res = getTaskById(app,taskID);
-        return (res.getId() == taskID);
+        return (res.getWebId() == taskID);
+    }
+
+    private static int getCodeForStatus(FOTT_Task.TaskStatus status) {
+        int res=0;
+
+        switch (status) {
+            case ACTIVE:
+                res = 0;
+                break;
+            case COMPLETED:
+                res = 1;
+                break;
+        }
+        return res;
+    }
+
+    private static FOTT_Task.TaskStatus getStatusByCode(int statusCode) {
+        switch (statusCode) {
+            case 0:
+                return FOTT_Task.TaskStatus.ACTIVE;
+            default:
+                return FOTT_Task.TaskStatus.COMPLETED;
+        }
     }
 }

@@ -1,4 +1,4 @@
-package ru.vat78.fotimetracker.database;
+package ru.vat78.fotimetracker.connectors.database;
 
 import android.content.ContentValues;
 import android.database.Cursor;

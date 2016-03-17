@@ -1,4 +1,4 @@
-package ru.vat78.fotimetracker.fo_api;
+package ru.vat78.fotimetracker.connectors.fo_api;
 
 
 import android.text.TextUtils;
@@ -20,6 +20,8 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -179,7 +181,7 @@ public class FOAPI_Connector {
     }
 
     //Execute API operation with arguments
-    public JSONObject executeAPI(String method, String service, String args[]){
+    public JSONObject executeAPI(String method, String service, HashMap<String, String> args){
         if (method.isEmpty()) {return null;}
         if (this.FO_Token.isEmpty())
             if (!testConnection()) {return null;}
@@ -191,12 +193,12 @@ public class FOAPI_Connector {
         if (!checkPlugin(FOAPI_Dictionary.FO_PLUGIN_NAME)) {return null;}
         resetError();
         String argStr = "{}";
-        if (args.length > 0){
+        if (args.size() > 0){
             JSONObject jsargs = new JSONObject();
             try {
-                for (int i = 1; i < args.length; i += 2) {
-                    if (args[i] != null) jsargs.put(args[i-1], removeWrongSymbols(args[i]));
-                }
+                for (Map.Entry<String, String> entry : args.entrySet())
+                    if (!entry.getKey().isEmpty()) jsargs.put(entry.getKey(), removeWrongSymbols(entry.getValue()));
+
                 argStr = jsargs.toString();
                 argStr = argStr.replaceAll("\"%5b","%5b");
                 argStr = argStr.replaceAll("%5d\"","%5d");

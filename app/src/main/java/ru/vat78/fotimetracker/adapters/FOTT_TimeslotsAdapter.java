@@ -11,8 +11,9 @@ import java.util.Date;
 
 import ru.vat78.fotimetracker.FOTT_App;
 import ru.vat78.fotimetracker.R;
-import ru.vat78.fotimetracker.database.FOTT_DBTimeslots;
+import ru.vat78.fotimetracker.connectors.database.FOTT_DBTimeslots;
 import ru.vat78.fotimetracker.model.FOTT_Timeslot;
+import ru.vat78.fotimetracker.model.FOTT_TimeslotBuilder;
 import ru.vat78.fotimetracker.views.FOTT_TimeslotsFragment;
 
 /**
@@ -79,7 +80,7 @@ public class FOTT_TimeslotsAdapter extends RecyclerView.Adapter<FOTT_TimeslotsAd
         holder.tsAuthor.setText(objectItem.getAuthor());
         String s = app.getDateFormat().format(objectItem.getStart()) + " " + app.getTimeFormat().format(objectItem.getStart());
         holder.tsStart.setText(s);
-        holder.tsDuration.setText(objectItem.getDurationString());
+        holder.tsDuration.setText(objectItem.getDurationAsString());
 
         holder.tsText.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -103,15 +104,18 @@ public class FOTT_TimeslotsAdapter extends RecyclerView.Adapter<FOTT_TimeslotsAd
     public boolean saveTimeslot(long id, Date start, long duration, String text){
         if (start == null || duration == 0) return false;
 
-        FOTT_Timeslot ts = new FOTT_Timeslot(id,text);
+        FOTT_TimeslotBuilder ts = new FOTT_TimeslotBuilder();
+        ts.setWebID(id);
+        ts.setName(text);
+        ts.setDesc(text);
         ts.setStart(start);
         ts.setDuration(duration);
-        ts.setTaskId(app.getCurTask());
-        ts.setMembersIDs("" + app.getCurMember());
+        ts.setTaskWebId(app.getCurTask());
+        ts.setMembersWebIds(new String[] {"" + app.getCurMember()});
 
         ts.setChanged(System.currentTimeMillis());
-        FOTT_DBTimeslots.save(app,ts);
-        return (ts.getId() != 0);
+        FOTT_DBTimeslots.save(app,ts.buildObject());
+        return (true);
     }
 
     public void onClickTS(FOTT_Timeslot selection){

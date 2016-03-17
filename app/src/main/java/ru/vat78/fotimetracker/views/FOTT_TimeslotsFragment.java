@@ -89,7 +89,7 @@ public class FOTT_TimeslotsFragment extends Fragment {
         ad.setCancelable(true);
         ad.setNeutralButton(MainApp.getString(R.string.ts_button_edit), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int arg1) {
-                mainActivity.editTimeslot(ts.getId(),ts.getStart().getTime(),ts.getDuration(), ts.getDesc());
+                mainActivity.editTimeslot(ts.getWebId(),ts.getStart().getTime(),ts.getDuration(), ts.getDesc());
             }
         });
         ad.show();

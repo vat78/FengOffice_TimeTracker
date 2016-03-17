@@ -30,9 +30,10 @@ import java.util.TimerTask;
 import ru.vat78.fotimetracker.adapters.FOTT_MembersAdapter;
 import ru.vat78.fotimetracker.adapters.FOTT_TasksAdapter;
 import ru.vat78.fotimetracker.adapters.FOTT_TimeslotsAdapter;
-import ru.vat78.fotimetracker.database.FOTT_DBTasks;
+import ru.vat78.fotimetracker.connectors.database.FOTT_DBTasks;
 import ru.vat78.fotimetracker.model.FOTT_Member;
 import ru.vat78.fotimetracker.model.FOTT_Task;
+import ru.vat78.fotimetracker.model.FOTT_TaskBuilder;
 import ru.vat78.fotimetracker.views.FOTT_ErrorsHandler;
 import ru.vat78.fotimetracker.views.FOTT_MembersFragment;
 import ru.vat78.fotimetracker.views.FOTT_TasksFragment;
@@ -292,16 +293,18 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
         if (MainApp.getCurTask() > 0)
         {
             FOTT_Task t = tasks.getTaskById(MainApp.getCurTask());
-            int status = intent.getIntExtra(EXTRA_MESSAGE_TS_EDIT_TASK_STATUS, t.getStatus());
+            FOTT_Task.TaskStatus status = (FOTT_Task.TaskStatus) intent.getSerializableExtra(EXTRA_MESSAGE_TS_EDIT_TASK_STATUS);
+            if (status == null) status = t.getStatus();
             long duedate = intent.getLongExtra(EXTRA_MESSAGE_TS_EDIT_TASK_DUE, t.getDueDate().getTime());
+            FOTT_TaskBuilder newTask = new FOTT_TaskBuilder(t);
             if (tclose && status != t.getStatus()) {
-                t.setStatus(status);
-                t.setChanged(System.currentTimeMillis());
-                FOTT_DBTasks.save(MainApp,t);
+                newTask.setStatus(status);
+                newTask.setChanged(System.currentTimeMillis());
+                FOTT_DBTasks.save(MainApp,newTask.buildObject());
             } else if (tmove && duedate != t.getDueDate().getTime()) {
-                t.setDuedate(duedate);
-                t.setChanged(System.currentTimeMillis());
-                FOTT_DBTasks.save(MainApp, t);
+                newTask.setDueDate(duedate);
+                newTask.setChanged(System.currentTimeMillis());
+                FOTT_DBTasks.save(MainApp, newTask.buildObject());
             }
         }
     }

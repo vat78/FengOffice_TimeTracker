@@ -1,4 +1,4 @@
-package ru.vat78.fotimetracker.database;
+package ru.vat78.fotimetracker.connectors.database;
 
 import android.content.ContentValues;
 import android.database.Cursor;
@@ -9,7 +9,9 @@ import java.util.ArrayList;
 
 import ru.vat78.fotimetracker.FOTT_App;
 import ru.vat78.fotimetracker.R;
+import ru.vat78.fotimetracker.adapters.FOTT_DrawingMember;
 import ru.vat78.fotimetracker.model.FOTT_Member;
+import ru.vat78.fotimetracker.model.FOTT_MemberBuilder;
 import ru.vat78.fotimetracker.views.FOTT_ErrorsHandler;
 
 /**
@@ -59,7 +61,7 @@ public class FOTT_DBMembers extends FOTT_DBContract {
             members.add(generateAnyMember(app));
 
             for (int i = 0; i < members.size(); i++) {
-                if (members.get(i).getId() != 0) insert(app, members.get(i));
+                if (members.get(i).getWebId() != 0) insert(app, members.get(i));
             }
         }
         catch (Error e){
@@ -75,28 +77,30 @@ public class FOTT_DBMembers extends FOTT_DBContract {
 
     private static ContentValues convertToDB(FOTT_Member member) {
         ContentValues res = new ContentValues();
-        res.put(COLUMN_NAME_FO_ID, member.getId());
+        res.put(COLUMN_NAME_FO_ID, member.getWebId());
         res.put(COLUMN_NAME_TITLE,member.getName());
 
         res.put(COLUMN_NAME_PATH,member.getPath());
         res.put(COLUMN_NAME_LEVEL, member.getLevel());
-        res.put(COLUMN_NAME_COLOR, member.getColorIndex());
+        res.put(COLUMN_NAME_COLOR, member.getColor());
 
-        res.put(COLUMN_NAME_TASKS, member.getTasksCnt());
+        res.put(COLUMN_NAME_TASKS, 0); // member.getTasksCnt());
         //res.put(COLUMN_NAME_CHANGED,member.getChanged().getTime());
 
         return res;
     }
 
     private static FOTT_Member generateAnyMember(FOTT_App app) {
-        FOTT_Member any = new FOTT_Member(-1,app.getString(R.string.any_category));
+        FOTT_MemberBuilder any = new FOTT_MemberBuilder();
+        any.setWebID(-1);
+        any.setName(app.getString(R.string.any_category));
         any.setPath("");
-        any.setColorIndex(Color.TRANSPARENT);
-        return any;
+        any.setColor(Color.TRANSPARENT);
+        return any.buildObject();
     }
 
-    public static ArrayList<FOTT_Member> load (FOTT_App app){
-        ArrayList<FOTT_Member> members = new ArrayList<>();
+    public static ArrayList<FOTT_DrawingMember> load (FOTT_App app){
+        ArrayList<FOTT_DrawingMember> members = new ArrayList<>();
         int taskCnt = 0;
 
         Cursor memberCursor = app.getDatabase().query(TABLE_NAME + " m",
@@ -111,9 +115,10 @@ public class FOTT_DBMembers extends FOTT_DBContract {
                 COLUMN_NAME_PATH + " ASC");
 
         memberCursor.moveToFirst();
-        FOTT_Member any = null;
-        FOTT_Member m;
-        FOTT_Member prev = new FOTT_Member(0,"");
+        FOTT_MemberBuilder any = null;
+        FOTT_MemberBuilder m;
+        FOTT_DrawingMember cur = new FOTT_DrawingMember(null);
+        FOTT_DrawingMember prev = new FOTT_DrawingMember(null);
         int shownLevel = 1;
 
         if (!memberCursor.isAfterLast()){
@@ -123,43 +128,47 @@ public class FOTT_DBMembers extends FOTT_DBContract {
                 String path = memberCursor.getString(2);
                 int color = memberCursor.getInt(4);
 
-                m = new FOTT_Member(id, name);
+                m = new FOTT_MemberBuilder();
+                m.setWebID(id);
+                m.setName(name);
                 if (id == -1) any = m;
                 m.setPath(path);
-                m.setColorIndex(color);
-                m.setTasksCnt(memberCursor.getInt(5));
-                int curLevel = m.getLevel();
+                m.setColor(color);
+                cur = new FOTT_DrawingMember(m.buildObject());
+                //m.setTasksCnt(memberCursor.getInt(5));
+                int curLevel = cur.getMember().getMembersWebIds().length;
                 if (curLevel == 1) taskCnt += memberCursor.getInt(5);
-                if (curLevel > prev.getLevel()) {prev.setNode(1);}
-                m.setVisible(curLevel <= shownLevel);
+                if (curLevel > prev.getMember().getMembersWebIds().length) {prev.setNode(1);}
+                cur.setVisible(curLevel <= shownLevel);
                 if (curLevel < shownLevel) shownLevel = curLevel;
 
                 if (id == app.getCurMember()){
                     //Make visible branch with selected member
                     shownLevel = curLevel;
-                    m.setVisible(true);
+                    cur.setVisible(true);
                     for (int i = members.size() - 1; i>=0 && shownLevel > 1;i--) {
-                        FOTT_Member el = members.get(i);
-                        el.setVisible(el.getLevel() <= shownLevel);
-                        if (el.getLevel() <shownLevel) {
+                        FOTT_DrawingMember el = members.get(i);
+                        el.setVisible(el.getMember().getMembersWebIds().length <= shownLevel);
+                        if (el.getMember().getMembersWebIds().length <shownLevel) {
                             el.setNode(2);
-                            shownLevel = el.getLevel();
+                            shownLevel = el.getMember().getMembersWebIds().length;
                         }
                     }
                     shownLevel = curLevel;
                 }
-                members.add(m);
+                members.add(cur);
 
-                prev = m;
+                prev = cur;
             } while (memberCursor.moveToNext());
         }
-        if (any != null) any.setTasksCnt(taskCnt);
+        //if (any != null) any.setTasksCnt(taskCnt);
         return members;
     }
 
     public static FOTT_Member getMemberById(FOTT_App app, long id) {
 
-        FOTT_Member res = new FOTT_Member(0, "");
+        FOTT_MemberBuilder res = new FOTT_MemberBuilder();
+
 
         if (id > 0) {
             String filter = " " + COLUMN_NAME_FO_ID + " = " + id;
@@ -175,17 +184,17 @@ public class FOTT_DBMembers extends FOTT_DBContract {
                     COLUMN_NAME_PATH);
             memberCursor.moveToFirst();
             if (!memberCursor.isAfterLast()) {
-                res.setId(memberCursor.getLong(0));
+                res.setWebID(memberCursor.getLong(0));
                 res.setName(memberCursor.getString(1));
-                res.setColorIndex(memberCursor.getInt(4));
-                res.setTasksCnt(memberCursor.getInt(5));
+                res.setColor(memberCursor.getInt(4));
+                //res.setTasksCnt(memberCursor.getInt(5));
             }
         }
-        return res;
+        return res.buildObject();
     }
 
     public static boolean isExistInDB(FOTT_App app, long memberID) {
         FOTT_Member res = getMemberById(app, memberID);
-        return (res.getId() == memberID);
+        return (res.getWebId() == memberID);
     }
 }

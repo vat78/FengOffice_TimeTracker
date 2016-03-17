@@ -3,49 +3,43 @@ package ru.vat78.fotimetracker.model;
 import java.util.Date;
 
 /**
+ * Task object
  * Created by vat on 27.11.2015.
  */
 public class FOTT_Task extends FOTT_Object {
 
-    private Date startdate;
-    private Date duedate;
-    private int priority;
-    private int status;
-    private boolean can_add_timeslots;
+    public static enum TaskStatus {
+        ACTIVE, COMPLETED
+    }
+    final private Date startDate;
+    final private Date dueDate;
+    final private int priority;
+    final private TaskStatus status;
+    final private boolean canAddTimeslots;
 
-    public FOTT_Task(long taskId, String taskTitle){
-        super();
-        setId(taskId);
-        setName(taskTitle);
-        status = 0;
-        can_add_timeslots = true;
+    public FOTT_Task(FOTT_TaskBuilder builder){
+        super(builder);
+        this.startDate = builder.startDate;
+        this.dueDate = builder.dueDate;
+        this.priority = builder.priority;
+        this.status = builder.status;
+        this.canAddTimeslots = builder.canAddTimeslots;
     }
 
-    public void setStartDate(long startdate) {
-        this.startdate = new Date (startdate);
-    }
-
-    public void setDueDate(long duedate) {
-        this.duedate = new Date (duedate);
-    }
-
-    public void setPriority(int priority) {
-        this.priority = priority;
-    }
 
     public Date getDueDate(){
-        return duedate;
+        return dueDate;
     }
 
-    public void setDuedate(long duedate) {
-        this.duedate = new Date(duedate);
+    public FOTT_Task.TaskStatus getStatus() {return status;}
+
+    public Date getStartDate() {
+        return startDate;
     }
 
-    public void setStatus(int status) { this.status = status;}
+    public int getPriority() {
+        return priority;
+    }
 
-    public int getStatus() {return status;}
-
-    public boolean canAddTimeslots() {return can_add_timeslots;}
-
-    public void setCanAddTimeslots(boolean value) {can_add_timeslots = value;}
+    public boolean canAddTimeslots() {return canAddTimeslots;}
 }

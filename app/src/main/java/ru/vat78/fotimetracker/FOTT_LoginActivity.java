@@ -25,7 +25,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import ru.vat78.fotimetracker.fo_api.FOAPI_Connector;
+import ru.vat78.fotimetracker.connectors.fo_api.FOAPI_Connector;
 import ru.vat78.fotimetracker.views.FOTT_ErrorsHandler;
 
 
