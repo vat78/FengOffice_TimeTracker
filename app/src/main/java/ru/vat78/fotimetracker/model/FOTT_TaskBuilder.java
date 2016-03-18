@@ -24,32 +24,39 @@ public class FOTT_TaskBuilder extends FOTT_ObjectBuilder {
         this.canAddTimeslots = template.canAddTimeslots();
     }
 
-    public void setStartDate(Date startDate) {
+    public FOTT_TaskBuilder setStartDate(Date startDate) {
         this.startDate = startDate;
+        return this;
     }
 
-    public void setStartDate(long startdate) {
+    public FOTT_TaskBuilder setStartDate(long startdate) {
         this.startDate = new Date (startdate);
+        return this;
     }
 
-    public void setDueDate(Date dueDate) {
+    public FOTT_TaskBuilder setDueDate(Date dueDate) {
         this.dueDate = dueDate;
+        return this;
     }
 
-    public void setDueDate(long duedate) {
+    public FOTT_TaskBuilder setDueDate(long duedate) {
         this.dueDate = new Date (duedate);
+        return this;
     }
 
-    public void setPriority(int priority) {
+    public FOTT_TaskBuilder setPriority(int priority) {
         this.priority = priority;
+        return this;
     }
 
-    public void setStatus(FOTT_Task.TaskStatus status) {
+    public FOTT_TaskBuilder setStatus(FOTT_Task.TaskStatus status) {
         this.status = status;
+        return this;
     }
 
-    public void setCanAddTimeslots(boolean canAddTimeslots) {
+    public FOTT_TaskBuilder setCanAddTimeslots(boolean canAddTimeslots) {
         this.canAddTimeslots = canAddTimeslots;
+        return this;
     }
 
     public FOTT_Task buildObject(){

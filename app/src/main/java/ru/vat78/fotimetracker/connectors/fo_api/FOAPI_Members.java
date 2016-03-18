@@ -57,7 +57,7 @@ public class FOAPI_Members implements FOTT_ObjectsConnector {
     }
 
     @Override
-    public void saveObjects(ArrayList<? extends FOTT_Object> savingObjects) throws FOAPI_Exceptions { }
+    public boolean saveObjects(ArrayList<? extends FOTT_Object> savingObjects) throws FOAPI_Exceptions { return false; }
 
     @Override
     public long saveObject(FOTT_Object savingObject) throws FOAPI_Exceptions {
@@ -65,13 +65,13 @@ public class FOAPI_Members implements FOTT_ObjectsConnector {
     }
 
     @Override
-    public void saveChangedObjects(ArrayList<? extends FOTT_Object> savingObjects, Date milestone) throws FOAPI_Exceptions {}
+    public boolean saveChangedObjects(ArrayList<? extends FOTT_Object> savingObjects, Date milestone) throws FOAPI_Exceptions { return false; }
 
     @Override
-    public void deleteObjects(ArrayList<? extends FOTT_Object> deletingObjects) throws FOAPI_Exceptions {}
+    public boolean deleteObjects(ArrayList<? extends FOTT_Object> deletingObjects) throws FOAPI_Exceptions { return false; }
 
     @Override
-    public void deleteObject(FOTT_Object deletingObject) throws FOAPI_Exceptions {  }
+    public boolean deleteObject(FOTT_Object deletingObject) throws FOAPI_Exceptions { return false; }
 
 
 

@@ -52,8 +52,6 @@ public class FOAPI_Timeslots implements FOTT_ObjectsConnector {
         args.put(FO_API_ARG_LASTUPDATE, "" + l);
 
         JSONObject jo = webService.executeAPI(FO_METHOD_LISTING, FO_SERVICE_TIMESLOTS, args);
-        //if (!app.getWeb_service().getError().isEmpty())
-        //    app.getError().error_handler(FOTT_ErrorsHandler.ERROR_SAVE_ERROR, CLASS_NAME, app.getWeb_service().getError());
         return convertResults(jo);
     }
 
@@ -63,7 +61,7 @@ public class FOAPI_Timeslots implements FOTT_ObjectsConnector {
     }
 
     @Override
-    public void saveObjects(ArrayList<? extends FOTT_Object> savingObjects) throws FOAPI_Exceptions { }
+    public boolean saveObjects(ArrayList<? extends FOTT_Object> savingObjects) throws FOAPI_Exceptions { return false; }
 
     @Override
     public long saveObject(FOTT_Object savingObject) throws FOAPI_Exceptions {
@@ -83,29 +81,27 @@ public class FOAPI_Timeslots implements FOTT_ObjectsConnector {
     }
 
     @Override
-    public void saveChangedObjects(ArrayList<? extends FOTT_Object> savingObjects, Date milestone) throws FOAPI_Exceptions {}
+    public boolean saveChangedObjects(ArrayList<? extends FOTT_Object> savingObjects, Date milestone) throws FOAPI_Exceptions { return false; }
 
     @Override
-    public void deleteObjects(ArrayList<? extends FOTT_Object> deletingObjects) throws FOAPI_Exceptions {}
+    public boolean deleteObjects(ArrayList<? extends FOTT_Object> deletingObjects) throws FOAPI_Exceptions { return false; }
 
     @Override
-    public void deleteObject(FOTT_Object deletingObject) throws FOAPI_Exceptions {
+    public boolean deleteObject(FOTT_Object deletingObject) throws FOAPI_Exceptions {
 
-        boolean success;
+        boolean success = false;
         FOTT_Timeslot timeslot = (FOTT_Timeslot) deletingObject;
 
         if (timeslot.getWebId() > 0) {
             JSONObject jo = webService.executeAPI(FOAPI_Dictionary.FO_METHOD_DELETE_OBJ, timeslot.getWebId());
 
             try {
-                success = (jo.getString(FOAPI_Dictionary.FO_API_FIELD_RESULT).equals(FOAPI_Dictionary.FO_API_TRUE));
+                success = (jo.getString(FOAPI_Dictionary.FO_API_FIELD_RESULT).startsWith(FOAPI_Dictionary.FO_API_TRUE));
             } catch (Exception e){
                 success = false;
             }
-
-            if (!success) throw new FOAPI_Exceptions(CLASS_NAME + FOAPI_Exceptions.OBJECT_DELETING_ERROR,
-                    FOAPI_Exceptions.ExeptionLevels.LOG);
         }
+        return success;
     }
 
 
