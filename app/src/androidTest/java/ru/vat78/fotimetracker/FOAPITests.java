@@ -1,7 +1,12 @@
 package ru.vat78.fotimetracker;
 
 import android.app.Application;
+import android.os.StrictMode;
+import android.test.AndroidTestCase;
 import android.test.ApplicationTestCase;
+import android.test.LoaderTestCase;
+
+import junit.framework.TestCase;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -18,7 +23,7 @@ import ru.vat78.fotimetracker.model.FOTT_Timeslot;
 import ru.vat78.fotimetracker.model.FOTT_TimeslotBuilder;
 
 
-public class FOAPITests extends ApplicationTestCase<Application> {
+public class FOAPITests extends TestCase {
 
     private static long beginOfYear;
     private static long endOfYear;
@@ -29,23 +34,28 @@ public class FOAPITests extends ApplicationTestCase<Application> {
     private static FOTT_Task testTask;
     private static FOTT_Timeslot testTS;
 
-    public FOAPITests() {
-        super(Application.class);
-
-        webService = SecretCredentials.getWebService(app);
+    public FOAPITests()  {
+        super();
+        enableStrictMode();
     }
 
     @Override
     public void setUp()throws Exception {
         super.setUp();
-        //createApplication();
-        //app = (FOTT_App) getApplication();
 
         setupDates();
 
         createTestTask();
         createTestTimeslot();
+
+        //enableStrictMode();
+
+        webService = FOAPI_Connector.getInstance(SecretCredentials.getUrl(),
+                SecretCredentials.getUser(),
+                SecretCredentials.getPwd(),
+                false);
     }
+
 
     public void testMemberLoad()throws Exception {
 
@@ -65,6 +75,7 @@ public class FOAPITests extends ApplicationTestCase<Application> {
     }
 
     public void testSaveLoadChangeDeleteTask() throws Exception {
+
         FOAPI_Tasks apiTasks = FOAPI_Tasks.getInstance(webService);
         FOTT_TaskBuilder t = new FOTT_TaskBuilder(testTask);
 
@@ -141,6 +152,13 @@ public class FOAPITests extends ApplicationTestCase<Application> {
         apiTasks.deleteObject(new FOTT_TaskBuilder(testTask).setWebID(taskId).buildObject());
     }
 
+    private void enableStrictMode()
+    {
+        StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+
+        StrictMode.setThreadPolicy(policy);
+    }
+
     private void setupDates(){
         Calendar now = Calendar.getInstance();
         now.setTimeInMillis(System.currentTimeMillis());
@@ -175,4 +193,6 @@ public class FOAPITests extends ApplicationTestCase<Application> {
 
         testTS = ts.buildObject();
     }
+
+
 }

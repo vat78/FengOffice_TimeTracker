@@ -123,7 +123,7 @@ public class FOAPI_Tasks implements FOTT_ObjectsConnector {
         try {
             list = data.getJSONArray(FOAPI_Dictionary.FO_API_MAIN_OBJ);
         } catch (JSONException e) {
-            throw new FOAPI_Exceptions(CLASS_NAME + FOAPI_Exceptions.JSON_ARRAY_MISMATCH, FOTT_Exceptions.ExeptionLevels.WARNING);
+            throw new FOAPI_Exceptions(CLASS_NAME + "/n" + data, FOAPI_Exceptions.ECodes.JSON_ARRAY_MISMATCH, FOTT_Exceptions.ExeptionLevels.WARNING);
         }
         if (list != null) {
 

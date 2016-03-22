@@ -141,7 +141,7 @@ public class FOAPI_Timeslots implements FOTT_ObjectsConnector {
         try {
             list = data.getJSONArray(FO_API_MAIN_OBJ);
         } catch (JSONException e) {
-            throw new FOAPI_Exceptions(CLASS_NAME + FOAPI_Exceptions.JSON_ARRAY_MISMATCH, FOAPI_Exceptions.ExeptionLevels.WARNING);
+            throw new FOAPI_Exceptions(CLASS_NAME + "/n" + data, FOAPI_Exceptions.ECodes.JSON_ARRAY_MISMATCH, FOAPI_Exceptions.ExeptionLevels.WARNING);
         }
 
         if (list != null) {

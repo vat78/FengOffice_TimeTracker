@@ -1,25 +1,12 @@
 package ru.vat78.fotimetracker.connectors.fo_api;
 
 
+import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.net.URLConnection;
-import java.security.KeyStore;
+import java.io.IOException;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManagerFactory;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,508 +14,347 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONArray;
 
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-
-import ru.vat78.fotimetracker.FOTT_App;
+import ru.vat78.fotimetracker.connectors.WebStream;
+import ru.vat78.fotimetracker.controllers.FOTT_Exceptions;
 
 /**
  * Created by vat on 17.11.2015.
  *
  * Use for interact with FengOffice web-application
- * TODO error handler
+ * FengOffice web site - http://www.fengoffice.com/web/
+ *
+ * Requires special plug-in: vatAPI
+ * Addition information see at: http://forum.fengoffice.com/index.php?topic=20827.0
+ *
  */
 
 public class FOAPI_Connector {
 
-    private FOTT_App app;
-    private int ErrorCode=0;
-    private String ErrorMsg="";
+    private static FOAPI_Connector _instance = null;
+    private final WebStream web;
 
-    private String FO_User;
-    private String FO_Pwd;
-    private String FO_URL;
-    private String FO_Token;
+    private final String urlOfServer;
+    private final boolean onlyTrustedSSL;
+    private final String token;
 
-    public FOAPI_Connector(FOTT_App application){
-        app = application;
-        FO_Token = "";
-        FO_Pwd = "";
+    private FOAPI_Connector(String url, String user, String password, boolean onlyTrustedSSL) throws FOAPI_Exceptions {
+
+        web = WebStream.getInstance();
+        this.onlyTrustedSSL = onlyTrustedSSL;
+        this.urlOfServer = buildUrlWithCheck(url);
+        if (this.onlyTrustedSSL) checkSSLCertificate();
+        checkFengOfficeInstallation();
+        this.token = checkFengOfficeCredentials(user, password);
+        checkVatAPIPlugin();
     }
 
-    private boolean UseUntrustCA = false;
-
-    public boolean setFO_Url(String foUrl) {
-        foUrl = foUrl.trim();
-        if (foUrl.length() <3){ return false;}
-
-        if (!foUrl.startsWith("http://") && !foUrl.startsWith("https://")) {
-            foUrl = "https://" + foUrl;
-        }
-
-        if (!foUrl.endsWith("/")) {foUrl += "/";}
-        this.FO_URL = foUrl;
-        return true;
+    public static synchronized FOAPI_Connector getInstance(String url, String user, String password, boolean onlyTrustedSSL) throws FOAPI_Exceptions {
+        if (_instance == null)
+            _instance = new FOAPI_Connector(url, user, password, onlyTrustedSSL);
+        return _instance;
     }
 
-    public String getFO_Url() {
-        return FO_URL;
+    public boolean isNetworkAvailable(Context context) {
+        return web.isNetworkAvailable(context);
     }
-
-    public boolean setFO_User(String FO_User) {
-        this.FO_User = FO_User;
-        return true;
-    }
-
-    public String getFO_User() {
-        return this.FO_User;
-    }
-
-    public boolean setFO_Pwd(String FO_Pwd) {
-        this.FO_Pwd = FO_Pwd;
-        return true;
-    }
-
-    public String getFO_Pwd() {
-        return this.FO_Pwd;
-    }
-
-    public void canUseUntrustCert(boolean flag) {
-        this.UseUntrustCA = flag;
-    }
-
-    public String getError() {
-        return this.ErrorMsg;
-    }
-
-    public void setError(String error) {
-        this.ErrorMsg = error;
-    }
-
-    //This function try to login FengOffice web-application
-    public boolean testConnection() {
-        if (TextUtils.isEmpty(this.FO_URL) || TextUtils.isEmpty(this.FO_User)) {
-            return false;
-        }
-
-        this.FO_Token = "";
-        resetError();
-
-        //Try to login
-        String request = this.FO_URL + FOAPI_Dictionary.FO_API_CONNECT;
-        request = request.replace(FOAPI_Dictionary.FO_API_LOGIN,this.FO_User);
-        request = request.replace(FOAPI_Dictionary.FO_API_PASSWORD,this.FO_Pwd);
-
-        // Download JSON data from URL
-        JSONObject jo;
-        jo = JSONfunctions.getJSONObjfromURL(request, this.UseUntrustCA);
-        this.ErrorMsg = JSONfunctions.getError();
-
-        if (jo == null) {return false;}
-
-        try {
-            this.FO_Token = jo.getString(FOAPI_Dictionary.FO_API_FIELD_TOKEN);
-        } catch (Exception e) {
-            this.ErrorMsg = e.getMessage();
-        }
-        return (!this.FO_Token.isEmpty());
-    }
-
-    //Checks plugin status
-    public boolean checkPlugin(String plugin_name){
-
-        if (this.FO_Token.isEmpty() || plugin_name.isEmpty()) {return false;}
-        Integer res = 0;
-        resetError();
-
-        String request = this.FO_URL + FOAPI_Dictionary.FO_API_CHECK_PLUGIN;
-        request = request.replace(FOAPI_Dictionary.FO_API_PLUGIN,plugin_name);
-        request = request.replace(FOAPI_Dictionary.FO_API_TOKEN,FO_Token);
-
-        JSONObject jo;
-        jo = JSONfunctions.getJSONObjfromURL(request, this.UseUntrustCA);
-        if (jo == null) {return false;}
-
-        try {
-            res = jo.getInt(FOAPI_Dictionary.FO_API_FIELD_PLUGIN_STATE);
-        } catch (Exception e) {
-            this.ErrorMsg = e.getMessage();
-        }
-        return (res > 0);
-    }
-
 
     //Execute API operation without arguments
-    public JSONObject executeAPI(String method, String service){
-        if (method.isEmpty()) {return null;}
-        if (this.FO_Token.isEmpty())
-            if (!testConnection()) {return null;}
+    public JSONObject executeAPI(String method, String service) throws FOAPI_Exceptions {
 
-        resetError();
-        if (!checkPlugin(FOAPI_Dictionary.FO_PLUGIN_NAME)) {return null;}
-        resetError();
-        String request = this.FO_URL + FOAPI_Dictionary.FO_VAPI_REQUEST;
-        request = request.replace(FOAPI_Dictionary.FO_API_METHOD,method);
-        request = request.replace(FOAPI_Dictionary.FO_API_SERVICE,service);
-        request = request.replace(FOAPI_Dictionary.FO_API_TOKEN, this.FO_Token);
+        if (TextUtils.isEmpty(method) || TextUtils.isEmpty(service)) {
+            return null;
+        }
+        if (TextUtils.isEmpty(this.token))
+            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.CREDENTIAL_ERROR, FOTT_Exceptions.ExeptionLevels.CRITICAL);
 
-        JSONObject jo;
-        jo = JSONfunctions.getJSONObjfromURL(request, this.UseUntrustCA);
+        checkVatAPIPlugin();
 
+        String request = this.urlOfServer + FOAPI_Dictionary.FO_VAPI_REQUEST;
+        request = request.replace(FOAPI_Dictionary.FO_API_METHOD, method);
+        request = request.replace(FOAPI_Dictionary.FO_API_SERVICE, service);
+        request = request.replace(FOAPI_Dictionary.FO_API_TOKEN, this.token);
+
+        JSONObject jo = getJSONObjfromURL(request);
         return jo;
     }
 
     //Execute API operation with arguments
-    public JSONObject executeAPI(String method, String service, HashMap<String, String> args){
-        if (method.isEmpty()) {return null;}
-        if (this.FO_Token.isEmpty())
-            if (!testConnection()) {return null;}
+    public JSONObject executeAPI(String method, String service, HashMap<String, String> args) throws FOAPI_Exceptions {
 
-        resetError();
+        if (TextUtils.isEmpty(method) || TextUtils.isEmpty(service)) {
+            return null;
+        }
+        if (TextUtils.isEmpty(this.token))
+            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.CREDENTIAL_ERROR, FOTT_Exceptions.ExeptionLevels.CRITICAL);
 
-        JSONObject jo;
+        checkVatAPIPlugin();
 
-        if (!checkPlugin(FOAPI_Dictionary.FO_PLUGIN_NAME)) {return null;}
-        resetError();
         String argStr = "{}";
-        if (args.size() > 0){
+        if (args.size() > 0) {
             JSONObject jsargs = new JSONObject();
             try {
                 for (Map.Entry<String, String> entry : args.entrySet())
-                    if (!entry.getKey().isEmpty()) jsargs.put(entry.getKey(), removeWrongSymbols(entry.getValue()));
+                    if (!entry.getKey().isEmpty())
+                        jsargs.put(entry.getKey(), removeWrongSymbols(entry.getValue()));
 
                 argStr = jsargs.toString();
-                argStr = argStr.replaceAll("\"%5b","%5b");
-                argStr = argStr.replaceAll("%5d\"","%5d");
-            }
-            catch (Exception e) {
+                argStr = argStr.replaceAll("\"%5b", "%5b");
+                argStr = argStr.replaceAll("%5d\"", "%5d");
+            } catch (Exception e) {
                 Log.e("log_tag", "Error parsing data " + e.toString());
             }
         }
-        String request = this.FO_URL + FOAPI_Dictionary.FO_VAPI_REQUEST;
-        request = request.replace(FOAPI_Dictionary.FO_API_METHOD,method);
-        request = request.replace(FOAPI_Dictionary.FO_API_SERVICE,service);
-        request = request.replace(FOAPI_Dictionary.FO_API_ARGS,argStr);
-        request = request.replace(FOAPI_Dictionary.FO_API_TOKEN,this.FO_Token);
 
-        jo = JSONfunctions.getJSONObjfromURL(request, this.UseUntrustCA);
+        String request = this.urlOfServer + FOAPI_Dictionary.FO_VAPI_REQUEST;
+        request = request.replace(FOAPI_Dictionary.FO_API_METHOD, method);
+        request = request.replace(FOAPI_Dictionary.FO_API_SERVICE, service);
+        request = request.replace(FOAPI_Dictionary.FO_API_ARGS, argStr);
+        request = request.replace(FOAPI_Dictionary.FO_API_TOKEN, this.token);
 
+        JSONObject jo = getJSONObjfromURL(request);
         return jo;
     }
 
     //Execute API operation for delete object and so on
-    public JSONObject executeAPI(String method, long id) {
-        if (method.isEmpty()) {return null;}
-        if (this.FO_Token.isEmpty())
-            if (!testConnection()) {return null;}
+    public JSONObject executeAPI(String method, long id) throws FOAPI_Exceptions {
 
-        resetError();
+        if (TextUtils.isEmpty(method)) {
+            return null;
+        }
+        if (TextUtils.isEmpty(this.token))
+            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.CREDENTIAL_ERROR, FOTT_Exceptions.ExeptionLevels.CRITICAL);
 
-        JSONObject jo;
+        checkVatAPIPlugin();
 
-        if (!checkPlugin(FOAPI_Dictionary.FO_PLUGIN_NAME)) {return null;}
-        resetError();
+        String request = this.urlOfServer + FOAPI_Dictionary.FO_VAPI_REQUEST_BY_ID;
+        request = request.replace(FOAPI_Dictionary.FO_API_METHOD, method);
+        request = request.replace(FOAPI_Dictionary.FO_API_OBJECT_ID, "" + id);
+        request = request.replace(FOAPI_Dictionary.FO_API_ACTION, "" + 0);
+        request = request.replace(FOAPI_Dictionary.FO_API_TOKEN, this.token);
 
-        String request = this.FO_URL + FOAPI_Dictionary.FO_VAPI_REQUEST_BY_ID;
-        request = request.replace(FOAPI_Dictionary.FO_API_METHOD,method);
-        request = request.replace(FOAPI_Dictionary.FO_API_OBJECT_ID,"" + id);
-        request = request.replace(FOAPI_Dictionary.FO_API_ACTION,"" + 0);
-        request = request.replace(FOAPI_Dictionary.FO_API_TOKEN,this.FO_Token);
-
-        jo = JSONfunctions.getJSONObjfromURL(request, this.UseUntrustCA);
-
+        JSONObject jo = getJSONObjfromURL(request);
         return jo;
     }
 
     //Execute API operation for complet task and so on
-    public JSONObject executeAPI(String method, long id, String action) {
-        if (method.isEmpty()) {return null;}
-        if (this.FO_Token.isEmpty())
-            if (!testConnection()) {return null;}
+    public JSONObject executeAPI(String method, long id, String action) throws FOAPI_Exceptions {
 
-        resetError();
+        if (TextUtils.isEmpty(method) || TextUtils.isEmpty(action)) {
+            return null;
+        }
+        if (TextUtils.isEmpty(this.token))
+            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.CREDENTIAL_ERROR, FOTT_Exceptions.ExeptionLevels.CRITICAL);
 
-        JSONObject jo;
+        checkVatAPIPlugin();
 
-        if (!checkPlugin(FOAPI_Dictionary.FO_PLUGIN_NAME)) {return null;}
-        resetError();
+        String request = this.urlOfServer + FOAPI_Dictionary.FO_VAPI_REQUEST_BY_ID;
+        request = request.replace(FOAPI_Dictionary.FO_API_METHOD, method);
+        request = request.replace(FOAPI_Dictionary.FO_API_OBJECT_ID, "" + id);
+        request = request.replace(FOAPI_Dictionary.FO_API_ACTION, action);
+        request = request.replace(FOAPI_Dictionary.FO_API_TOKEN, this.token);
 
-        String request = this.FO_URL + FOAPI_Dictionary.FO_VAPI_REQUEST_BY_ID;
-        request = request.replace(FOAPI_Dictionary.FO_API_METHOD,method);
-        request = request.replace(FOAPI_Dictionary.FO_API_OBJECT_ID,"" + id);
-        request = request.replace(FOAPI_Dictionary.FO_API_ACTION,action);
-        request = request.replace(FOAPI_Dictionary.FO_API_TOKEN,this.FO_Token);
-
-        jo = JSONfunctions.getJSONObjfromURL(request, this.UseUntrustCA);
-
+        JSONObject jo = getJSONObjfromURL(request);
         return jo;
     }
 
-    private void resetError(){
-        this.ErrorCode = 0;
-        this.ErrorMsg = "";
+
+    private String buildUrlWithCheck(String url) throws FOAPI_Exceptions {
+
+        if (TextUtils.isEmpty(url))
+            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.WRONG_URL, FOTT_Exceptions.ExeptionLevels.CRITICAL);
+
+        if (!url.endsWith("/")) {
+            url += "/";
+        }
+
+        if (!url.substring(0, 4).toLowerCase().equals("http")) {
+            url = determineProtocol(url);
+        } else {
+            try {
+                web.getDataFromURL(url, false);
+            } catch (IOException e) {
+                throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.WRONG_URL, FOTT_Exceptions.ExeptionLevels.CRITICAL);
+            }
+        }
+
+        return url;
+    }
+
+    private String determineProtocol(String url) throws FOAPI_Exceptions {
+
+        String result = "http://";
+        try {
+            web.getDataFromURL(result + url, false);
+        } catch (IOException e) {
+            result = "";
+        }
+
+        if (result.isEmpty()) {
+            result = "https://";
+            try {
+                web.getDataFromURL(result + url, false);
+            } catch (IOException e) {
+                throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.WRONG_URL, FOTT_Exceptions.ExeptionLevels.CRITICAL);
+            }
+        }
+
+        return result;
+    }
+
+    private void checkSSLCertificate() throws FOAPI_Exceptions {
+        try {
+            web.getDataFromURL(urlOfServer, onlyTrustedSSL);
+        } catch (IOException e) {
+            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.CERTIFICATE_ERROR, FOTT_Exceptions.ExeptionLevels.CRITICAL);
+        }
+    }
+
+    private void checkFengOfficeInstallation() throws FOAPI_Exceptions {
+        try {
+            web.getDataFromURL(this.urlOfServer + FOAPI_Dictionary.FO_API_CHECK_FO, this.onlyTrustedSSL);
+        } catch (IOException e) {
+            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.NO_FENGOFFICE, FOTT_Exceptions.ExeptionLevels.CRITICAL);
+        }
+    }
+
+    private void checkVatAPIPlugin() throws FOAPI_Exceptions {
+
+        if (this.token.isEmpty()) {
+            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.CREDENTIAL_ERROR, FOTT_Exceptions.ExeptionLevels.CRITICAL);
+        }
+
+        String request = this.urlOfServer + FOAPI_Dictionary.FO_API_CHECK_PLUGIN;
+        request = request.replace(FOAPI_Dictionary.FO_API_PLUGIN, FOAPI_Dictionary.FO_PLUGIN_NAME);
+        request = request.replace(FOAPI_Dictionary.FO_API_TOKEN, token);
+
+        JSONObject jo = getJSONObjfromURL(request);
+        if (jo == null) {
+            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.NO_VATAPI_PLUGIN, FOTT_Exceptions.ExeptionLevels.CRITICAL);
+        }
+
+        int pluginState;
+        try {
+            pluginState = jo.getInt(FOAPI_Dictionary.FO_API_FIELD_PLUGIN_STATE);
+        } catch (Exception e) {
+            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.NO_VATAPI_PLUGIN, FOTT_Exceptions.ExeptionLevels.CRITICAL);
+        }
+
+        if (pluginState == 0)
+            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.VATAPI_PLUGIN_INACTIVE, FOTT_Exceptions.ExeptionLevels.CRITICAL);
+    }
+
+    private String checkFengOfficeCredentials(String user, String password) throws FOAPI_Exceptions {
+
+        if (TextUtils.isEmpty(user)) {
+            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.CREDENTIAL_ERROR, FOTT_Exceptions.ExeptionLevels.CRITICAL);
+        }
+
+        String request = this.urlOfServer + FOAPI_Dictionary.FO_API_CONNECT;
+        request = request.replace(FOAPI_Dictionary.FO_API_LOGIN, user);
+        request = request.replace(FOAPI_Dictionary.FO_API_PASSWORD, password);
+
+        JSONObject jo = getJSONObjfromURL(request);
+
+        if (jo == null) {
+            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.CREDENTIAL_ERROR, FOTT_Exceptions.ExeptionLevels.CRITICAL);
+        }
+
+        String result;
+        try {
+            result = jo.getString(FOAPI_Dictionary.FO_API_FIELD_TOKEN);
+        } catch (JSONException e) {
+            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.JSON_OBJECT_MISMATCH, FOTT_Exceptions.ExeptionLevels.CRITICAL);
+        }
+        return result;
+
     }
 
     private static String removeWrongSymbols(String str) {
-        String res = str.replace("%","%25");
-        res = res.replace(" ","%20");
-        res = res.replace("!","%21");
-        res = res.replace("\"","%22");
-        res = res.replace("#","%23");
-        res = res.replace("&","%26");
-        res = res.replace("'","%27");
-        res = res.replace("*","%2a");
-        res = res.replace("<","%3c");
-        res = res.replace("=","%3d");
-        res = res.replace(">","%3e");
-        res = res.replace("?","%3f");
-        res = res.replace("[","%5b");
-        res = res.replace("]","%5d");
-        res = res.replace("^","%5e");
-        res = res.replace("`","%60");
-        res = res.replace("{","%7b");
-        res = res.replace("|","%7c");
-        res = res.replace("}","%7d");
+        String res = str.replace("%", "%25");
+        res = res.replace(" ", "%20");
+        res = res.replace("!", "%21");
+        res = res.replace("\"", "%22");
+        res = res.replace("#", "%23");
+        res = res.replace("&", "%26");
+        res = res.replace("'", "%27");
+        res = res.replace("*", "%2a");
+        res = res.replace("<", "%3c");
+        res = res.replace("=", "%3d");
+        res = res.replace(">", "%3e");
+        res = res.replace("?", "%3f");
+        res = res.replace("[", "%5b");
+        res = res.replace("]", "%5d");
+        res = res.replace("^", "%5e");
+        res = res.replace("`", "%60");
+        res = res.replace("{", "%7b");
+        res = res.replace("|", "%7c");
+        res = res.replace("}", "%7d");
 
         return res;
     }
 
 
-    private static class MyTrustManager implements X509TrustManager
-    {
+    private JSONObject getJSONObjfromURL(String url) throws FOAPI_Exceptions {
 
-        @Override
-        public void checkClientTrusted(X509Certificate[] chain, String authType)
-                throws CertificateException
-        {
+        JSONObject jObj = null;
+        String data;
+
+        try {
+            data = web.getDataFromURL(url, onlyTrustedSSL);
+        } catch (IOException e) {
+            throw new FOAPI_Exceptions(url, FOAPI_Exceptions.ECodes.API_REQUEST_ERROR, FOTT_Exceptions.ExeptionLevels.WARNING);
         }
 
-        @Override
-        public void checkServerTrusted(X509Certificate[] chain, String authType)
-                throws CertificateException
-        {
-        }
+        data = FindErrorInData(data);
 
-        @Override
-        public X509Certificate[] getAcceptedIssuers()
-        {
-            return null;
-        }
+        try {
+            jObj = new JSONObject(data);
 
+        } catch (JSONException e) {
+            throw new FOAPI_Exceptions(url + "/n" + data, FOAPI_Exceptions.ECodes.API_WRONG_DATA, FOTT_Exceptions.ExeptionLevels.WARNING);
+        }
+        return jObj;
     }
 
-    private static class NullHostNameVerifier implements HostnameVerifier {
+    private JSONArray getJSONArrfromURL(String url) throws FOAPI_Exceptions {
 
-        @Override
-        public boolean verify(String s, SSLSession sslSession) {
-            return true;
+        JSONArray jArr = null;
+        JSONObject jObj = getJSONObjfromURL(url);
+
+        try {
+            jArr = jObj.getJSONArray("fo_obj");
+        } catch (JSONException e) {
+            throw new FOAPI_Exceptions(url + "/n" + jObj.toString(), FOAPI_Exceptions.ECodes.API_WRONG_DATA, FOTT_Exceptions.ExeptionLevels.WARNING);
         }
 
+        return jArr;
     }
 
-    private static class JSONfunctions {
+    private String FindErrorInData(String data) throws FOAPI_Exceptions {
 
-        private static String error="";
-
-        public static String getError() {return error;}
-
-        private static void resetError(){
-            error = "";
+        if (TextUtils.isEmpty(data)) {
+            throw new FOAPI_Exceptions(data, FOAPI_Exceptions.ECodes.API_EMPTY_DATA, FOTT_Exceptions.ExeptionLevels.WARNING);
         }
 
-        private static String getStringFromURL(String url, boolean untrustCA) {
-
-            InputStream is;
-            String result = "";
-
-            // Download JSON data from URL
-            if (url.startsWith("https://")) {
-                is = getFromHTTPS(url, untrustCA);
-            } else {
-                is = getFromHTTP(url);
-            }
-            if (!error.isEmpty()) {
-                return null;
-            }
-            if (is == null) {
-                error = "Server didn't responde";
-                return null;
-            }
-
-            // Convert response to string
-            try {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-                StringBuilder sb = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    sb.append(line + "\n");
-                }
-                is.close();
-
-                result = sb.toString();
-
-            } catch (Exception e) {
-                error = "Error converting result";
-                Log.e("log_tag", "Error converting result " + e.toString());
-            }
-            if (result.startsWith("[")) {
-                //Add global JSON object for array
-                result = "{\""+ FOAPI_Dictionary.FO_API_MAIN_OBJ+"\":" + result + "}";
-            }
-            if (result.startsWith("false") || result.startsWith("true"))
-                result = "{\"" + FOAPI_Dictionary.FO_API_FIELD_RESULT+ "\":\"" + result + "\"}";
-            return result;
+        if (data.startsWith("Fatal error")) {
+            throw new FOAPI_Exceptions(data, FOAPI_Exceptions.ECodes.API_FATAL_ERROR, FOTT_Exceptions.ExeptionLevels.WARNING);
         }
 
-        private static void FindErrorInData(String data) {
-            if (data == null){
-                error = "EmptyData";
-                return;
-            }
-
-            if (data.isEmpty()){
-                error = "EmptyData";
-                return;
-            }
-
-            if (data.startsWith("Fatal error")) {
-                error = data;
-                return;
-            }
-
-            if (data.startsWith("API Response")) {
-                error = data;
-                return;
-            }
-
-            if (!data.startsWith("{")) {
-                error = "Wrong data format";
-            }
+        if (data.startsWith("API Response")) {
+            throw new FOAPI_Exceptions(data, FOAPI_Exceptions.ECodes.API_WRONG_DATA, FOTT_Exceptions.ExeptionLevels.WARNING);
         }
 
+        if (data.startsWith("[")) {
+            //Add global JSON object for array
+            data = "{\"" + FOAPI_Dictionary.FO_API_MAIN_OBJ + "\":" + data + "}";
+        }
+        if (data.startsWith("false") || data.startsWith("true"))
+            data = "{\"" + FOAPI_Dictionary.FO_API_FIELD_RESULT + "\":\"" + data + "\"}";
 
-        public static JSONObject getJSONObjfromURL(String url, boolean untrustCA) {
-
-            resetError();
-            JSONObject jObj = null;
-            String data = getStringFromURL(url, untrustCA);
-            FindErrorInData(data);
-            if (!error.isEmpty()) {return null;}
-
-            try {
-
-                jObj = new JSONObject(data);
-
-            } catch (JSONException e) {
-                error = "Error parsing data";
-                Log.e("log_tag", "Error parsing data " + e.toString());
-            }
-
-            return jObj;
+        if (!data.startsWith("{")) {
+            throw new FOAPI_Exceptions(data, FOAPI_Exceptions.ECodes.API_WRONG_DATA, FOTT_Exceptions.ExeptionLevels.WARNING);
         }
 
-        public static JSONArray getJSONArrfromURL(String url, boolean untrustCA) {
-
-            JSONArray jArr = null;
-            JSONObject jObj = getJSONObjfromURL(url, untrustCA);
-            if (!error.isEmpty()) {return null;}
-
-            try {
-                jArr = jObj.getJSONArray("fo_obj");
-            } catch (JSONException e) {
-                error = "Error parsing data";
-                Log.e("log_tag", "Error parsing data " + e.toString());
-            }
-
-            return jArr;
-        }
-
-        private static InputStream getFromHTTP(String url){
-
-            InputStream content = null;
-            try {
-                URL url_obj = new URL(url);
-                URLConnection httpclient = url_obj.openConnection();
-                content = httpclient.getInputStream();
-            }
-            catch (Exception e)
-            {
-                error = "Couldn't connect this URL";
-                Log.e("log_tag", "Error in http connection " + e.toString());
-            }
-            return content;
-        }
-
-        private static InputStream getFromHTTPS(String url, boolean untrustCA){
-
-            InputStream content = null;
-            try {
-                URL url_obj = new URL(url);
-                HttpsURLConnection httpsclient = (HttpsURLConnection) url_obj.openConnection();
-
-                if (untrustCA) {
-                    //Add Self-sign certificate
-                    //SSLContext context = getSelfSignedSSL(url);
-
-                    //Disable SSL checks
-                    httpsclient.setHostnameVerifier(new NullHostNameVerifier());
-                    SSLContext context = SSLContext.getInstance("TLS");
-                    TrustManager[] tmlist = {new MyTrustManager()};
-                    context.init(null, tmlist, null);
-
-                    httpsclient.setSSLSocketFactory(context.getSocketFactory());
-                }
-                content = httpsclient.getInputStream();
-            }
-            catch (Exception e)
-            {
-                if (untrustCA) {
-                    error = "Couldn't connect this URL";
-                }
-                else
-                {
-                    error = "Error in https connection. Check URL or enable using untrusted certificates";
-                }
-                Log.e("log_tag", "Error in https connection " + e.toString());
-            }
-            return content;
-        }
-
-        /* ----
-        This function dosn't work properly
-        TODO: find, how load certificate from Stream
-        ----- */
-        private static SSLContext getSelfSignedSSL(String url) throws Exception{
-            // Load CAs from an InputStream
-            CertificateFactory cf = CertificateFactory.getInstance("X.509");
-
-            InputStream caInput =new BufferedInputStream(new FileInputStream("local.cer"));
-            Certificate ca;
-            try{
-                ca = cf.generateCertificate(caInput);
-                System.out.println("ca="+((X509Certificate) ca).getSubjectDN());
-            }finally{
-                caInput.close();
-            }
-
-            // Create a KeyStore containing our trusted CAs
-            String keyStoreType = KeyStore.getDefaultType();
-            KeyStore keyStore =KeyStore.getInstance(keyStoreType);
-            keyStore.load(null,null);
-            keyStore.setCertificateEntry("ca", ca);
-
-            // Create a TrustManager that trusts the CAs in our KeyStore
-            String tmfAlgorithm =TrustManagerFactory.getDefaultAlgorithm();
-            TrustManagerFactory tmf =TrustManagerFactory.getInstance(tmfAlgorithm);
-            tmf.init(keyStore);
-
-            // Create an SSLContext that uses our TrustManager
-            SSLContext context =SSLContext.getInstance("TLS");
-            context.init(null, tmf.getTrustManagers(),null);
-            return context;
-        }
-
+        return data;
     }
 }

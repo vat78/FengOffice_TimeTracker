@@ -18,6 +18,7 @@ import ru.vat78.fotimetracker.connectors.fo_api.FOAPI_Exceptions;
 import ru.vat78.fotimetracker.connectors.fo_api.FOAPI_Members;
 import ru.vat78.fotimetracker.connectors.fo_api.FOAPI_Tasks;
 import ru.vat78.fotimetracker.connectors.fo_api.FOAPI_Timeslots;
+import ru.vat78.fotimetracker.controllers.FOTT_Exceptions;
 import ru.vat78.fotimetracker.model.FOTT_Member;
 import ru.vat78.fotimetracker.model.FOTT_Task;
 import ru.vat78.fotimetracker.model.FOTT_Timeslot;
@@ -62,7 +63,7 @@ public class FOTT_App extends Application {
         super.onCreate();
 
         //Create web-service connection
-        web_service = new FOAPI_Connector(this);
+
 
         //Application preferences
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
@@ -87,13 +88,12 @@ public class FOTT_App extends Application {
 
         setDateTimeFormat();
 
-        String s = preferences.getString(getString(R.string.pref_sync_url), "");
-        if (!s.isEmpty()) web_service.setFO_Url(s);
-        s = preferences.getString(getString(R.string.pref_sync_login), "");
-        if (!s.isEmpty()) web_service.setFO_User(s);
-        s = preferences.getString(getString(R.string.pref_sync_password), "");
-        if (!s.isEmpty()) web_service.setFO_Pwd(s);
-        web_service.canUseUntrustCert(preferences.getBoolean(getString(R.string.pref_sync_certs), false));
+        try {
+            web_service = FOAPI_Connector.getInstance(preferences.getString(getString(R.string.pref_sync_url), ""),
+                    preferences.getString(getString(R.string.pref_sync_login), ""),
+                    preferences.getString(getString(R.string.pref_sync_password), ""),
+                    preferences.getBoolean(getString(R.string.pref_sync_certs), true));
+        } catch (FOTT_Exceptions e) {}
     }
 
     public void setDateTimeFormat() {
@@ -199,7 +199,7 @@ public class FOTT_App extends Application {
         long stamp = System.currentTimeMillis();
         error.reset_error();
 
-        if (!getWeb_service().testConnection()) {
+        if (!getWeb_service().isNetworkAvailable(this)) {
             setSyncing(false);
             return false;
         }

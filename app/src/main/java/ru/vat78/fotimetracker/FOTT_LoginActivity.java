@@ -26,6 +26,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import ru.vat78.fotimetracker.connectors.fo_api.FOAPI_Connector;
+import ru.vat78.fotimetracker.connectors.fo_api.FOAPI_Exceptions;
 import ru.vat78.fotimetracker.views.FOTT_ErrorsHandler;
 
 
@@ -77,10 +78,10 @@ public class FOTT_LoginActivity extends AppCompatActivity {
         FOTT_Preferences preferences = app.getPreferences();
         mURLView.setText(preferences.getString(getString(R.string.pref_sync_url), ""));
         mLoginView.setText(preferences.getString(getString(R.string.pref_sync_login), ""));
-        mUntrustCA.setChecked(preferences.getBoolean(getString(R.string.pref_sync_certs), false));
+        mUntrustCA.setChecked(preferences.getBoolean(getString(R.string.pref_sync_certs), true));
 
         mPasswordView = (EditText) findViewById(R.id.password);
-        mPasswordView.setText(preferences.getString(getString(R.string.pref_sync_password), FOApp.getFO_Pwd()));
+        mPasswordView.setText(preferences.getString(getString(R.string.pref_sync_password), ""));
         mSaveCred.setChecked(preferences.getBoolean(getString(R.string.pref_sync_save_creds), false));
 
                 mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -128,7 +129,7 @@ public class FOTT_LoginActivity extends AppCompatActivity {
         String login = mLoginView.getText().toString();
         String password = mPasswordView.getText().toString();
 
-        boolean cancel;
+        boolean cancel = false;
         View focusView = null;
 
         ULC = new UserLoginCheck();
@@ -138,28 +139,15 @@ public class FOTT_LoginActivity extends AppCompatActivity {
             mURLView.setError(getString(R.string.error_field_required));
             focusView = mURLView;
             cancel = true;
-        } else {
-            cancel = !FOApp.setFO_Url(url);
-            if (cancel) {
-                mURLView.setError(getString(R.string.error_incorrect_value));
-                focusView = mURLView;
-            }
         }
 
         if (!cancel) {
-            FOApp.canUseUntrustCert(mUntrustCA.isChecked());
 
             // Check for a valid password, if the user entered one.
             if (TextUtils.isEmpty(password)) {
                 mPasswordView.setError(getString(R.string.error_invalid_password));
                 focusView = mPasswordView;
                 cancel = true;
-            } else {
-                cancel = !FOApp.setFO_Pwd(password);
-                if (cancel) {
-                    mPasswordView.setError(getString(R.string.error_incorrect_value));
-                    focusView = mPasswordView;
-                }
             }
         }
 
@@ -169,17 +157,19 @@ public class FOTT_LoginActivity extends AppCompatActivity {
                 mLoginView.setError(getString(R.string.error_field_required));
                 focusView = mLoginView;
                 cancel = true;
-            } else {
-                cancel = !FOApp.setFO_User(login);
-                if (cancel) {
-                    mLoginView.setError(getString(R.string.error_incorrect_value));
-                    focusView = mLoginView;
-                }
             }
         }
 
         if (!cancel) {
-            cancel = !isNetworkAvailable();
+
+            try {
+                FOApp = FOAPI_Connector.getInstance(url, login, password, !mUntrustCA.isChecked());
+            } catch (FOAPI_Exceptions e) {
+                //ToDo: error handler here
+                mLoginView.setError(e.toString());
+            }
+
+            cancel = !FOApp.isNetworkAvailable(this);
             if (cancel) {
                 app.getError().error_handler(FOTT_ErrorsHandler.ERROR_SHOW_MESSAGE,CLASS_NAME,getString(R.string.nonetwork_message));
                 focusView = mURLView;
@@ -255,7 +245,7 @@ public class FOTT_LoginActivity extends AppCompatActivity {
         @Override
         protected Boolean doInBackground(Void... params) {
 
-            if (!FOApp.testConnection()) { return false;}
+            if (!isNetworkAvailable()) { return false;}
             app.setNeedFullSync(true);
 
             return app.dataSynchronization();
@@ -281,7 +271,7 @@ public class FOTT_LoginActivity extends AppCompatActivity {
                 setResult(RESULT_OK, intent);
                 finish();
             } else {
-                app.getError().error_handler(FOTT_ErrorsHandler.ERROR_SHOW_MESSAGE,CLASS_NAME,FOApp.getError());
+                //app.getError().error_handler(FOTT_ErrorsHandler.ERROR_SHOW_MESSAGE,CLASS_NAME,FOApp.getError());
                 mURLView.requestFocus();
             }
         }
