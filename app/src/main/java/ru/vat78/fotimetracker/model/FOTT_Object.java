@@ -8,6 +8,7 @@ import java.util.Date;
  */
 public class FOTT_Object {
 
+    final private long dbID;
     final private long webID;
     final private String name;
     final private String desc;
@@ -30,6 +31,7 @@ public class FOTT_Object {
     */
 
     public FOTT_Object(FOTT_ObjectBuilder builder){
+        this.dbID = 0;
         this.webID = builder.webID;
         this.name = builder.name;
         this.desc = builder.desc;
@@ -37,6 +39,10 @@ public class FOTT_Object {
         this.membersWebIds = builder.membersWebIds;
         this.changed = builder.changed;
         this.deleted = builder.deleted;
+    }
+
+    public long getDbID() {
+        return dbID;
     }
 
     public long getWebId() {

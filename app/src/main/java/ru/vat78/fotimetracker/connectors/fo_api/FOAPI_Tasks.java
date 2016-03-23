@@ -55,14 +55,16 @@ public class FOAPI_Tasks implements FOTT_ObjectsConnector {
     @Override
     public FOTT_Task loadObject(long objectId) throws FOAPI_Exceptions {
 
-        return null;
-        /*
+                /*
+                ToDo: load task by ID
         HashMap<String,String> args = new HashMap<>();
         args.put(FOAPI_Dictionary.FO_API_FIELD_ID, "" + objectId);
 
         return readElement(webService.executeAPI(FOAPI_Dictionary.FO_METHOD_LISTING,
                 FOAPI_Dictionary.FO_SERVICE_TASKS, args)).buildObject();
                 */
+
+        return null;
     }
 
     @Override
@@ -78,7 +80,7 @@ public class FOAPI_Tasks implements FOTT_ObjectsConnector {
 
         try {
             result = jo.getLong(FOAPI_Dictionary.FO_API_FIELD_ID);
-            saveTaskStatus(result, task.getStatus());
+            saveTaskStatus(result, task);
         } catch (JSONException ignored) {}
 
         return result;
@@ -117,6 +119,7 @@ public class FOAPI_Tasks implements FOTT_ObjectsConnector {
         ArrayList<FOTT_Task> result = new ArrayList<>();
         if (data == null) {return result;}
 
+        //ToDo: check current task
         //long current_task = app.getCurTask();
         //boolean isIncludeCurrentTask = !checkCurrentTask;
 
@@ -211,17 +214,17 @@ public class FOAPI_Tasks implements FOTT_ObjectsConnector {
         return args;
     }
 
-    private void saveTaskStatus(long taskWebId, FOTT_Task.TaskStatus status) throws FOAPI_Exceptions {
+    private void saveTaskStatus(long taskWebId, FOTT_Task task) throws FOAPI_Exceptions {
 
         if (taskWebId !=0 ) {
 
-            switch (status) {
-                case ACTIVE:
+            switch (task.getStatus()) {
+                case FOTT_Task.STATUS_ACTIVE:
                     webService.executeAPI(FOAPI_Dictionary.FO_METHOD_COMPLETE_TASK,
                                 taskWebId, FOAPI_Dictionary.FO_ACTION_OPEN_TASK);
                     break;
 
-                case COMPLETED:
+                case FOTT_Task.STATUS_COMPLETED:
                     webService.executeAPI(FOAPI_Dictionary.FO_METHOD_COMPLETE_TASK,
                                 taskWebId, FOAPI_Dictionary.FO_ACTION_COMPLETE_TASK);
                     break;
@@ -229,16 +232,16 @@ public class FOAPI_Tasks implements FOTT_ObjectsConnector {
         }
     }
 
-    private FOTT_Task.TaskStatus getStatusFromJSON(FOAPI_JSONHandler element) {
+    private int getStatusFromJSON(FOAPI_JSONHandler element) {
 
-        FOTT_Task.TaskStatus result;
+        int result;
         int status = element.getInt(FOAPI_Dictionary.FO_API_FIELD_STATUS,0);
         switch (status) {
             case 0:
-                result = FOTT_Task.TaskStatus.ACTIVE;
+                result = FOTT_Task.STATUS_ACTIVE;
                 break;
             default:
-                result = FOTT_Task.TaskStatus.COMPLETED;
+                result = FOTT_Task.STATUS_COMPLETED;
                 break;
         }
         return  result;

@@ -17,36 +17,14 @@ import ru.vat78.fotimetracker.views.FOTT_ErrorsHandler;
 /**
  * Created by vat on 21.12.2015.
  */
-public class FOTT_DBMembers extends FOTT_DBContract {
+public class FOTT_DBMembers implements FOTT {
     private static final String CLASS_NAME = "FOTT_DBMembers";
 
-    private static final String TABLE_NAME = "members";
-    private static final String COLUMN_NAME_COLOR = "color";
-    private static final String COLUMN_NAME_TYPE = "type";
-    private static final String COLUMN_NAME_PATH = "path";
-    private static final String COLUMN_NAME_PARENT = "parentid";
-    private static final String COLUMN_NAME_LEVEL = "level";
-    private static final String COLUMN_NAME_TASKS = "tasks_cnt";
 
-    public static final String SQL_CREATE_ENTRIES =
-            CREATE_TABLE + TABLE_NAME + " (" +
-                    BaseColumns._ID + INTEGER_TYPE + PRIMARY_KEY + COMMA_SEP +
-                    COLUMN_NAME_FO_ID + INTEGER_TYPE + UNIQUE_FIELD + COMMA_SEP +
-                    COLUMN_NAME_TITLE + TEXT_TYPE + COMMA_SEP +
-                    COLUMN_NAME_COLOR + INTEGER_TYPE + COMMA_SEP +
-                    COLUMN_NAME_TYPE + TEXT_TYPE + COMMA_SEP +
-                    COLUMN_NAME_PATH + TEXT_TYPE + COMMA_SEP +
-                    COLUMN_NAME_PARENT + TEXT_TYPE + COMMA_SEP +
-                    COLUMN_NAME_LEVEL + INTEGER_TYPE + COMMA_SEP +
-                    COLUMN_NAME_TASKS + INTEGER_TYPE + COMMA_SEP +
-                    COLUMN_NAME_CHANGED + NUMERIC_TYPE +
-                    " );";
-    public static final String SQL_DELETE_ENTRIES =
-            DROP_TABLE + TABLE_NAME +";";
 
     public static void rebuild(FOTT_App app){
-        app.getDatabase().execSQL(SQL_DELETE_ENTRIES);
-        app.getDatabase().execSQL(SQL_CREATE_ENTRIES);
+        app.getDatabase().execSQL(MEMBERS_TABLE_DELETE);
+        app.getDatabase().execSQL(MEMBERS_TABLE_CREATE);
     }
 
     public static void save(FOTT_App app, ArrayList<FOTT_Member> members) {
@@ -72,20 +50,20 @@ public class FOTT_DBMembers extends FOTT_DBContract {
 
     private static void insert(FOTT_App app, FOTT_Member member) {
         ContentValues ts = convertToDB(member);
-        app.getDatabase().insertOrUpdate(TABLE_NAME, ts);
+        app.getDatabase().insertOrUpdate(MEMBERS_TABLE_NAME, ts);
     }
 
     private static ContentValues convertToDB(FOTT_Member member) {
         ContentValues res = new ContentValues();
-        res.put(COLUMN_NAME_FO_ID, member.getWebId());
-        res.put(COLUMN_NAME_TITLE,member.getName());
+        res.put(COMMON_COLUMN_FO_ID, member.getWebId());
+        res.put(COMMON_COLUMN_TITLE,member.getName());
 
-        res.put(COLUMN_NAME_PATH,member.getPath());
-        res.put(COLUMN_NAME_LEVEL, member.getLevel());
-        res.put(COLUMN_NAME_COLOR, member.getColor());
+        res.put(MEMBERS_COLUMN_PATH,member.getPath());
+        res.put(MEMBERS_COLUMN_LEVEL, member.getLevel());
+        res.put(MEMBERS_COLUMN_COLOR, member.getColor());
 
-        res.put(COLUMN_NAME_TASKS, 0); // member.getTasksCnt());
-        //res.put(COLUMN_NAME_CHANGED,member.getChanged().getTime());
+        res.put(MEMBERS_COLUMN_TASKS, 0); // member.getTasksCnt());
+        //res.put(COLUMN_CHANGED,member.getChanged().getTime());
 
         return res;
     }
@@ -103,16 +81,16 @@ public class FOTT_DBMembers extends FOTT_DBContract {
         ArrayList<FOTT_DrawingMember> members = new ArrayList<>();
         int taskCnt = 0;
 
-        Cursor memberCursor = app.getDatabase().query(TABLE_NAME + " m",
-                new String[]{"m." + COLUMN_NAME_FO_ID,
-                        "m." + COLUMN_NAME_TITLE,
-                        "m." + COLUMN_NAME_PATH,
-                        "m." + COLUMN_NAME_LEVEL,
-                        "m." + COLUMN_NAME_COLOR,
+        Cursor memberCursor = app.getDatabase().query(MEMBERS_TABLE_NAME + " m",
+                new String[]{"m." + COMMON_COLUMN_FO_ID,
+                        "m." + COMMON_COLUMN_TITLE,
+                        "m." + MEMBERS_COLUMN_PATH,
+                        "m." + MEMBERS_COLUMN_LEVEL,
+                        "m." + MEMBERS_COLUMN_COLOR,
                         "(" + FOTT_DBMembers_Objects.getSQLObectsCnt("m." +
-                                COLUMN_NAME_FO_ID) + ") AS TaskCnt"},
+                                COMMON_COLUMN_FO_ID) + ") AS TaskCnt"},
                 null,
-                COLUMN_NAME_PATH + " ASC");
+                MEMBERS_COLUMN_PATH + " ASC");
 
         memberCursor.moveToFirst();
         FOTT_MemberBuilder any = null;
@@ -171,17 +149,17 @@ public class FOTT_DBMembers extends FOTT_DBContract {
 
 
         if (id > 0) {
-            String filter = " " + COLUMN_NAME_FO_ID + " = " + id;
-            Cursor memberCursor = app.getDatabase().query(TABLE_NAME + " m",
-                    new String[]{"m." + COLUMN_NAME_FO_ID,
-                            "m." + COLUMN_NAME_TITLE,
-                            "m." + COLUMN_NAME_PATH,
-                            "m." + COLUMN_NAME_LEVEL,
-                            "m." + COLUMN_NAME_COLOR,
+            String filter = " " + COMMON_COLUMN_FO_ID + " = " + id;
+            Cursor memberCursor = app.getDatabase().query(MEMBERS_TABLE_NAME + " m",
+                    new String[]{"m." + COMMON_COLUMN_FO_ID,
+                            "m." + COMMON_COLUMN_TITLE,
+                            "m." + MEMBERS_COLUMN_PATH,
+                            "m." + MEMBERS_COLUMN_LEVEL,
+                            "m." + MEMBERS_COLUMN_COLOR,
                             "(" + FOTT_DBMembers_Objects.getSQLObectsCnt(String.valueOf(id)) +
                                     ") AS TaskCnt"},
                     filter,
-                    COLUMN_NAME_PATH);
+                    MEMBERS_COLUMN_PATH);
             memberCursor.moveToFirst();
             if (!memberCursor.isAfterLast()) {
                 res.setWebID(memberCursor.getLong(0));

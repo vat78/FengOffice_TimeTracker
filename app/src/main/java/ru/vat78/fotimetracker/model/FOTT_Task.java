@@ -8,13 +8,14 @@ import java.util.Date;
  */
 public class FOTT_Task extends FOTT_Object {
 
-    public static enum TaskStatus {
-        ACTIVE, COMPLETED
-    }
+    public static final int STATUS_ACTIVE = 0;
+    public static final int STATUS_COMPLETED = 1;
+
+
     final private Date startDate;
     final private Date dueDate;
     final private int priority;
-    final private TaskStatus status;
+    final private int status;
     final private boolean canAddTimeslots;
 
     public FOTT_Task(FOTT_TaskBuilder builder){
@@ -31,7 +32,7 @@ public class FOTT_Task extends FOTT_Object {
         return dueDate;
     }
 
-    public FOTT_Task.TaskStatus getStatus() {return status;}
+    public int getStatus() {return status;}
 
     public Date getStartDate() {
         return startDate;

@@ -6,12 +6,12 @@ public class FOTT_TaskBuilder extends FOTT_ObjectBuilder {
     protected Date startDate;
     protected Date dueDate;
     protected int priority;
-    protected FOTT_Task.TaskStatus status;
+    protected int status;
     protected boolean canAddTimeslots;
 
     public FOTT_TaskBuilder() {
         super();
-        status = FOTT_Task.TaskStatus.ACTIVE;
+        status = FOTT_Task.STATUS_ACTIVE;
         canAddTimeslots = true;
     }
 
@@ -49,7 +49,7 @@ public class FOTT_TaskBuilder extends FOTT_ObjectBuilder {
         return this;
     }
 
-    public FOTT_TaskBuilder setStatus(FOTT_Task.TaskStatus status) {
+    public FOTT_TaskBuilder setStatus(int status) {
         this.status = status;
         return this;
     }

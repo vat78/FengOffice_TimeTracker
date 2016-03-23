@@ -18,31 +18,34 @@ public class FOTT_DBHelper extends SQLiteOpenHelper {
     private  int db_version;
     private FOTT_App MainApp;
 
-    public int getDB_version() {
-        return db_version;
-    }
-
     public FOTT_DBHelper(Context context, FOTT_App app) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
         MainApp = app;
         db_version = DATABASE_VERSION;
     }
 
-    @Override
-    public void onCreate(SQLiteDatabase db) {
-        db.execSQL(FOTT_DBMembers.SQL_CREATE_ENTRIES);
-        db.execSQL(FOTT_DBTasks.SQL_CREATE_ENTRIES);
-        db.execSQL(FOTT_DBTimeslots.SQL_CREATE_ENTRIES);
+    public int getDB_version() {
+        return db_version;
     }
 
+    @Override
+    public void onCreate(SQLiteDatabase db) {
+        db.execSQL(FOTT_DBContract.MEMBERS_TABLE_CREATE);
+        db.execSQL(FOTT_DBContract.TASK_TABLE_CREATE);
+        db.execSQL(FOTT_DBContract.TIMESLOTS_TABLE_CREATE);
+    }
+
+    @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // This database is only a cache for online data, so its upgrade policy is
         // to simply to discard the data and start over
-        db.execSQL(FOTT_DBMembers.SQL_DELETE_ENTRIES);
-        db.execSQL(FOTT_DBTasks.SQL_DELETE_ENTRIES);
-        db.execSQL(FOTT_DBTimeslots.SQL_DELETE_ENTRIES);
+        db.execSQL(FOTT_DBContract.MEMBERS_TABLE_DELETE);
+        db.execSQL(FOTT_DBContract.TASK_TABLE_DELETE);
+        db.execSQL(FOTT_DBContract.TIMESLOTS_TABLE_DELETE);
         onCreate(db);
     }
+
+    @Override
     public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         onUpgrade(db, oldVersion, newVersion);
     }

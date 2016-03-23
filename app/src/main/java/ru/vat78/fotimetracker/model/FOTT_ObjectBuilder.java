@@ -5,6 +5,7 @@ import java.util.Date;
 
 abstract public class FOTT_ObjectBuilder {
 
+    protected long dbID;
     protected long webID;
     protected String name;
     protected String desc;
@@ -14,6 +15,7 @@ abstract public class FOTT_ObjectBuilder {
     protected boolean deleted;
 
     public FOTT_ObjectBuilder(){
+        dbID = 0;
         webID = 0;
         name = "";
         desc = "";
@@ -23,6 +25,7 @@ abstract public class FOTT_ObjectBuilder {
     }
 
     public FOTT_ObjectBuilder(FOTT_Object template){
+        dbID = template.getDbID();
         webID = template.getWebId();
         name = template.getName();
         desc = template.getDesc();
@@ -30,6 +33,11 @@ abstract public class FOTT_ObjectBuilder {
         membersWebIds = template.getMembersWebIds();
         changed = template.getChanged();
         deleted = template.isDeleted();
+    }
+
+    public FOTT_ObjectBuilder setDbID(long dbID) {
+        this.dbID = dbID;
+        return this;
     }
 
     public FOTT_ObjectBuilder setWebID(long webID) {
