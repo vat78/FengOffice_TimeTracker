@@ -311,7 +311,7 @@ public class FOAPI_Connector {
             jObj = new JSONObject(data);
 
         } catch (JSONException e) {
-            throw new FOAPI_Exceptions(url + "/n" + data, FOAPI_Exceptions.ECodes.API_WRONG_DATA, FOTT_Exceptions.ExeptionLevels.WARNING);
+            throw new FOAPI_Exceptions(url + "\n" + data, FOAPI_Exceptions.ECodes.API_WRONG_DATA, FOTT_Exceptions.ExeptionLevels.WARNING);
         }
         return jObj;
     }
@@ -324,7 +324,7 @@ public class FOAPI_Connector {
         try {
             jArr = jObj.getJSONArray("fo_obj");
         } catch (JSONException e) {
-            throw new FOAPI_Exceptions(url + "/n" + jObj.toString(), FOAPI_Exceptions.ECodes.API_WRONG_DATA, FOTT_Exceptions.ExeptionLevels.WARNING);
+            throw new FOAPI_Exceptions(url + "\n" + jObj.toString(), FOAPI_Exceptions.ECodes.API_WRONG_DATA, FOTT_Exceptions.ExeptionLevels.WARNING);
         }
 
         return jArr;
