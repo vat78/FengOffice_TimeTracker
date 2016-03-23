@@ -1,19 +1,20 @@
 package ru.vat78.fotimetracker.connectors.database;
 
 import android.content.ContentValues;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import ru.vat78.fotimetracker.FOTT_App;
 import ru.vat78.fotimetracker.model.FOTT_Object;
 
-/**
- * Created by vat on 21.12.2015.
- */
+import static ru.vat78.fotimetracker.connectors.database.FOTT_DBContract.*;
+
 public class FOTT_DBMembers_Objects {
 
+    public static final int TASK = 0;
+    public static final int TIMESLOT = 1;
 
-
-    public static void addObject(SQLiteDatabase db, FOTT_Object object, int object_type) {
+    public static void addObjectLinks(SQLiteDatabase db, FOTT_Object object, int objectType) {
 
         String[] members = object.getMembersWebIds();
         long obj_id = object.getWebId();
@@ -23,18 +24,35 @@ public class FOTT_DBMembers_Objects {
                 ContentValues data = new ContentValues();
                 data.put(LINKS_COLUMN_OBJECT_ID, obj_id);
                 data.put(LINKS_COLUMN_MEMBER_ID, member);
-                data.put(LINKS_COLUMN_OBJECT_TYPE, object_type);
-                app.getDatabase().insertOrUpdate(LINKS_TABLE_NAME, data);
+                data.put(LINKS_COLUMN_OBJECT_TYPE, objectType);
+                db.insertWithOnConflict(LINKS_TABLE_NAME, "", data, SQLiteDatabase.CONFLICT_REPLACE);
             }
         }
+
         //Add link with member "Any"
-        if (object_type == 1 && obj_id != 0) {
+        if (objectType == TASK && obj_id != 0) {
             ContentValues data = new ContentValues();
             data.put(LINKS_COLUMN_OBJECT_ID, obj_id);
             data.put(LINKS_COLUMN_MEMBER_ID, 0);
-            data.put(LINKS_COLUMN_OBJECT_TYPE, object_type);
-            app.getDatabase().insertOrUpdate(LINKS_TABLE_NAME, data);
+            data.put(LINKS_COLUMN_OBJECT_TYPE, objectType);
+            db.insertWithOnConflict(LINKS_TABLE_NAME, "", data, SQLiteDatabase.CONFLICT_REPLACE);
         }
+    }
+
+    public static int getObjectsCntForMember(SQLiteDatabase db, long memberId, int objectType) {
+
+        int result = 0;
+
+        Cursor cursor = db.query(LINKS_TABLE_NAME,
+                new String[] {"COUNT(" + LINKS_COLUMN_OBJECT_ID + ") as objCnt"},
+                LINKS_COLUMN_MEMBER_ID + " = " + memberId + " AND" +
+                        LINKS_COLUMN_OBJECT_TYPE + " = " + objectType,
+                null, LINKS_COLUMN_MEMBER_ID, "", "");
+
+        if (cursor.moveToFirst()) result = cursor.getInt(0);
+        cursor.close();
+
+        return result;
     }
 
     public static String getSQLCondition(long member_id, int object_type){

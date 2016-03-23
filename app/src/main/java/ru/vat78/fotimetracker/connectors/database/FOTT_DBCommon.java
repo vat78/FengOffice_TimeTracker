@@ -12,9 +12,9 @@ import ru.vat78.fotimetracker.model.FOTT_Task;
 
 abstract class FOTT_DBCommon implements FOTT_ObjectsConnector {
 
-    private final SQLiteDatabase db;
+    protected final SQLiteDatabase db;
 
-    FOTT_DBCommon(SQLiteDatabase db) {
+    protected FOTT_DBCommon(SQLiteDatabase db) {
         this.db = db;
     }
 

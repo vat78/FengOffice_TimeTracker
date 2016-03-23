@@ -2,16 +2,16 @@ package ru.vat78.fotimetracker.adapters;
 
 
 import ru.vat78.fotimetracker.model.FOTT_Member;
+import ru.vat78.fotimetracker.model.FOTT_MemberBuilder;
 
-public class FOTT_DrawingMember {
-    private final FOTT_Member member;
+public class FOTT_DrawingMember extends FOTT_Member {
 
     private boolean visible;
     private int node;
     private int tasksCnt;
 
-    public FOTT_DrawingMember(FOTT_Member member){
-        this.member = member;
+    public FOTT_DrawingMember(FOTT_MemberBuilder builder){
+        super(builder);
     }
 
     public void setVisible(boolean visible) {
@@ -24,10 +24,6 @@ public class FOTT_DrawingMember {
 
     public void setTasksCnt(int tasksCnt) {
         this.tasksCnt = tasksCnt;
-    }
-
-    public FOTT_Member getMember() {
-        return member;
     }
 
     public boolean isVisible() {

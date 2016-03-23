@@ -2,30 +2,105 @@ package ru.vat78.fotimetracker.connectors.database;
 
 import android.content.ContentValues;
 import android.database.Cursor;
-import android.graphics.Color;
-import android.provider.BaseColumns;
+import android.database.sqlite.SQLiteDatabase;
 
 import java.util.ArrayList;
 
 import ru.vat78.fotimetracker.FOTT_App;
-import ru.vat78.fotimetracker.R;
 import ru.vat78.fotimetracker.adapters.FOTT_DrawingMember;
 import ru.vat78.fotimetracker.model.FOTT_Member;
 import ru.vat78.fotimetracker.model.FOTT_MemberBuilder;
-import ru.vat78.fotimetracker.views.FOTT_ErrorsHandler;
+import ru.vat78.fotimetracker.model.FOTT_Object;
 
-/**
- * Created by vat on 21.12.2015.
- */
-public class FOTT_DBMembers implements FOTT {
+import static ru.vat78.fotimetracker.connectors.database.FOTT_DBContract.*;
+
+public class FOTT_DBMembers extends FOTT_DBCommon {
+
     private static final String CLASS_NAME = "FOTT_DBMembers";
 
+    public FOTT_DBMembers(SQLiteDatabase db) {
+        super(db);
+    }
 
+    @Override
+    public ArrayList<FOTT_DrawingMember> loadFilteredObjects(String filter) {
+
+        ArrayList<FOTT_DrawingMember> members = new ArrayList<>();
+
+        Cursor memberCursor = db.query(MEMBERS_TABLE_NAME,
+                new String[]{COMMON_COLUMN_ID,
+                        COMMON_COLUMN_FO_ID,
+                        COMMON_COLUMN_TITLE,
+                        MEMBERS_COLUMN_PATH,
+                        MEMBERS_COLUMN_COLOR,
+                        COMMON_COLUMN_CHANGED},
+                filter, null, "", "",
+                MEMBERS_COLUMN_PATH + " ASC");
+
+        memberCursor.moveToFirst();
+        if (!memberCursor.isAfterLast()) {
+            do {
+                FOTT_MemberBuilder m = new FOTT_MemberBuilder();
+                m.setDbID(memberCursor.getLong(0));
+                m.setWebID(memberCursor.getLong(1));
+                m.setName(memberCursor.getString(2));
+                m.setPath(memberCursor.getString(3));
+                m.setColor(memberCursor.getInt(4));
+                m.setChanged(memberCursor.getLong(5));
+
+                FOTT_DrawingMember el = new FOTT_DrawingMember(m);
+                el.setTasksCnt(FOTT_DBMembers_Objects.getObjectsCntForMember(db,
+                        el.getWebId(),FOTT_DBMembers_Objects.TASK));
+                members.add(new FOTT_DrawingMember(m));
+            } while (memberCursor.moveToNext());
+        }
+        memberCursor.close();
+
+        return members;
+    }
+
+    @Override
+    public long saveObject(FOTT_Object savingObject) {
+
+        long result = 0;
+        if (savingObject == null) return result;
+
+        FOTT_Member member = (FOTT_Member) savingObject;
+
+        ContentValues data = convertToDB(member);
+        result = db.insertWithOnConflict(MEMBERS_TABLE_NAME, "", data, SQLiteDatabase.CONFLICT_REPLACE);
+
+        return result;
+    }
+
+    @Override
+    public boolean deleteObject(FOTT_Object deletingObject) {
+        return db.delete(MEMBERS_TABLE_NAME,
+                COMMON_COLUMN_ID + " = " + deletingObject.getDbID(), null) == 0;
+    }
 
     public static void rebuild(FOTT_App app){
         app.getDatabase().execSQL(MEMBERS_TABLE_DELETE);
         app.getDatabase().execSQL(MEMBERS_TABLE_CREATE);
     }
+
+
+
+    private static ContentValues convertToDB(FOTT_Member member) {
+
+        ContentValues res = new ContentValues();
+        if (member.getDbID() != 0) res.put(COMMON_COLUMN_ID, member.getDbID());
+        if (member.getWebId() != 0) res.put(COMMON_COLUMN_FO_ID, member.getWebId());
+        res.put(COMMON_COLUMN_TITLE,member.getName());
+
+        res.put(MEMBERS_COLUMN_PATH, member.getPath());
+        res.put(MEMBERS_COLUMN_COLOR, member.getColor());
+
+        return res;
+    }
+
+    /*
+    ToDo: need to clean
 
     public static void save(FOTT_App app, ArrayList<FOTT_Member> members) {
 
@@ -53,20 +128,7 @@ public class FOTT_DBMembers implements FOTT {
         app.getDatabase().insertOrUpdate(MEMBERS_TABLE_NAME, ts);
     }
 
-    private static ContentValues convertToDB(FOTT_Member member) {
-        ContentValues res = new ContentValues();
-        res.put(COMMON_COLUMN_FO_ID, member.getWebId());
-        res.put(COMMON_COLUMN_TITLE,member.getName());
 
-        res.put(MEMBERS_COLUMN_PATH,member.getPath());
-        res.put(MEMBERS_COLUMN_LEVEL, member.getLevel());
-        res.put(MEMBERS_COLUMN_COLOR, member.getColor());
-
-        res.put(MEMBERS_COLUMN_TASKS, 0); // member.getTasksCnt());
-        //res.put(COLUMN_CHANGED,member.getChanged().getTime());
-
-        return res;
-    }
 
     private static FOTT_Member generateAnyMember(FOTT_App app) {
         FOTT_MemberBuilder any = new FOTT_MemberBuilder();
@@ -175,4 +237,6 @@ public class FOTT_DBMembers implements FOTT {
         FOTT_Member res = getMemberById(app, memberID);
         return (res.getWebId() == memberID);
     }
+
+    */
 }

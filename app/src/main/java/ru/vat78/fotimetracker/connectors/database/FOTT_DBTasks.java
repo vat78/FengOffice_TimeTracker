@@ -5,10 +5,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import java.util.ArrayList;
-import java.util.Date;
 
 import ru.vat78.fotimetracker.FOTT_App;
-import ru.vat78.fotimetracker.connectors.FOTT_ObjectsConnector;
 import ru.vat78.fotimetracker.model.FOTT_Object;
 import ru.vat78.fotimetracker.model.FOTT_Task;
 import ru.vat78.fotimetracker.model.FOTT_TaskBuilder;
@@ -16,18 +14,11 @@ import ru.vat78.fotimetracker.model.FOTT_TaskBuilder;
 import static ru.vat78.fotimetracker.connectors.database.FOTT_DBContract.*;
 
 
-public class FOTT_DBTasks implements FOTT_ObjectsConnector {
+public class FOTT_DBTasks extends FOTT_DBCommon {
     private static final String CLASS_NAME ="FOTT_DBTasks";
 
-    private final SQLiteDatabase db;
-
-    FOTT_DBTasks(SQLiteDatabase db) {
-        this.db = db;
-    }
-
-    @Override
-    public ArrayList<FOTT_Task> loadObjects() {
-        return loadFilteredObjects("");
+    public FOTT_DBTasks(SQLiteDatabase db) {
+        super(db);
     }
 
     @Override
@@ -46,10 +37,9 @@ public class FOTT_DBTasks implements FOTT_ObjectsConnector {
                 TASK_COLUMN_DUEDATE + " ASC");
 
         taskCursor.moveToFirst();
-        FOTT_TaskBuilder t;
         if (!taskCursor.isAfterLast()) {
             do {
-                t = new FOTT_TaskBuilder();
+                FOTT_TaskBuilder t = new FOTT_TaskBuilder();
                 t.setDbID(taskCursor.getLong(0));
                 t.setWebID(taskCursor.getLong(1));
                 t.setName(taskCursor.getString(2));
@@ -65,26 +55,6 @@ public class FOTT_DBTasks implements FOTT_ObjectsConnector {
     }
 
     @Override
-    public ArrayList<FOTT_Task> loadChangedObjects(Date milestone) {
-        String filter = COMMON_COLUMN_CHANGED + " >= " + milestone.getTime();
-        return loadFilteredObjects(filter);
-    }
-
-    @Override
-    public FOTT_Task loadObject(long objectId) {
-
-        if (objectId != 0) {
-
-            String filter = COMMON_COLUMN_FO_ID + " = " + objectId;
-
-            ArrayList<FOTT_Task> result = loadFilteredObjects(filter);
-            if (result.size() > 0) return result.get(0);
-        }
-
-        return null;
-    }
-
-    @Override
     public long saveObject(FOTT_Object savingObject) {
 
         long result = 0;
@@ -93,40 +63,14 @@ public class FOTT_DBTasks implements FOTT_ObjectsConnector {
         FOTT_Task task = (FOTT_Task) savingObject;
 
         ContentValues data = convertToDB(task);
-        result = db.insertWithOnConflict(TASK_TABLE_NAME, "", data, db.CONFLICT_REPLACE);
+        result = db.insertWithOnConflict(TASK_TABLE_NAME, "", data, SQLiteDatabase.CONFLICT_REPLACE);
 
         if (result !=0 && task.getMembersWebIds().length > 0) {
-            FOTT_DBMembers_Objects.addObject(db, task, 1);
+            FOTT_DBMembers_Objects.addObjectLinks(db, task, FOTT_DBMembers_Objects.TASK);
         }
 
         return result;
     }
-
-    @Override
-    public boolean saveObjects(ArrayList<? extends FOTT_Object> savingObjects) {
-
-        boolean result = true;
-        for (FOTT_Object obj : savingObjects) {
-
-            result = result && (saveObject(obj) != 0);
-        }
-        return result;
-    }
-
-    @Override
-    public boolean saveChangedObjects(ArrayList<? extends FOTT_Object> savingObjects, Date milestone) {
-
-        boolean result = true;
-        for (FOTT_Object obj : savingObjects) {
-
-            if (obj.getChanged().after(milestone))
-                result = result && (saveObject(obj) != 0);
-        }
-        return result;
-    }
-
-    @Override
-    public boolean deleteObjects(ArrayList<? extends FOTT_Object> deletingObjects) { return false; }
 
     @Override
     public boolean deleteObject(FOTT_Object deletingObject) {
@@ -134,15 +78,10 @@ public class FOTT_DBTasks implements FOTT_ObjectsConnector {
                 COMMON_COLUMN_ID + " = " + deletingObject.getDbID(), null) == 0;
     }
 
-
-
-
     public static void rebuild(FOTT_App app){
         app.getDatabase().execSQL(TASK_TABLE_DELETE);
         app.getDatabase().execSQL(TASK_TABLE_CREATE);
     }
-
-
 
     private static ContentValues convertToDB(FOTT_Task task) {
         ContentValues res = new ContentValues();
@@ -167,7 +106,7 @@ public class FOTT_DBTasks implements FOTT_ObjectsConnector {
 
 
     /*
-
+    ToDo: need to clear
 
     public static void clearNewTasks(FOTT_App app) {
         app.getDatabase().delete(TASK_TABLE_NAME, COMMON_COLUMN_FO_ID + " < 0 ");
