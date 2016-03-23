@@ -8,7 +8,9 @@ import java.util.Date;
 import ru.vat78.fotimetracker.connectors.FOTT_ObjectsConnector;
 import ru.vat78.fotimetracker.controllers.FOTT_Exceptions;
 import ru.vat78.fotimetracker.model.FOTT_Object;
-import ru.vat78.fotimetracker.model.FOTT_Task;
+
+import static ru.vat78.fotimetracker.connectors.database.FOTT_DBContract.COMMON_COLUMN_DELETED;
+import static ru.vat78.fotimetracker.connectors.database.FOTT_DBContract.COMMON_COLUMN_FO_ID;
 
 abstract class FOTT_DBCommon implements FOTT_ObjectsConnector {
 
@@ -75,6 +77,22 @@ abstract class FOTT_DBCommon implements FOTT_ObjectsConnector {
         for (FOTT_Object obj : deletingObjects) {
             result = result && deleteObject(obj);
         }
+        return result;
+    }
+
+    public ArrayList<? extends FOTT_Object> getObjectsMarkedAsDeleted() throws FOTT_Exceptions{
+        return loadFilteredObjects(COMMON_COLUMN_DELETED + " > 0 AND " +
+                COMMON_COLUMN_FO_ID + " > 0");
+    }
+
+    public boolean isExistInDB(long objectID) {
+
+        boolean result = false;
+        try {
+            FOTT_Object obj = loadObject(objectID);
+            result = (obj != null);
+        } catch (FOTT_Exceptions ignore) {    }
+
         return result;
     }
 }

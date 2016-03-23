@@ -15,12 +15,10 @@ import static ru.vat78.fotimetracker.connectors.database.FOTT_DBContract.*;
  */
 public class FOTT_DBHelper extends SQLiteOpenHelper {
 
-    private  int db_version;
-    private FOTT_App MainApp;
+    private final int db_version;
 
-    public FOTT_DBHelper(Context context, FOTT_App app) {
+    public FOTT_DBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
-        MainApp = app;
         db_version = DATABASE_VERSION;
     }
 

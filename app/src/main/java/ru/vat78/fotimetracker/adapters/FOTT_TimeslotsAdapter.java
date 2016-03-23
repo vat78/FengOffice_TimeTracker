@@ -12,6 +12,7 @@ import java.util.Date;
 import ru.vat78.fotimetracker.FOTT_App;
 import ru.vat78.fotimetracker.R;
 import ru.vat78.fotimetracker.connectors.database.FOTT_DBTimeslots;
+import ru.vat78.fotimetracker.controllers.FOTT_Exceptions;
 import ru.vat78.fotimetracker.model.FOTT_Timeslot;
 import ru.vat78.fotimetracker.model.FOTT_TimeslotBuilder;
 import ru.vat78.fotimetracker.views.FOTT_TimeslotsFragment;
@@ -97,7 +98,9 @@ public class FOTT_TimeslotsAdapter extends RecyclerView.Adapter<FOTT_TimeslotsAd
 
     public void load() {
 
-        this.timeslots = FOTT_DBTimeslots.load(app,"");
+        try {
+            this.timeslots = (ArrayList<FOTT_Timeslot>) new FOTT_DBTimeslots(app.getDatabase()).loadObjects();
+        } catch (FOTT_Exceptions e) {}
 
     }
 
@@ -114,8 +117,8 @@ public class FOTT_TimeslotsAdapter extends RecyclerView.Adapter<FOTT_TimeslotsAd
         ts.setMembersWebIds(new String[] {"" + app.getCurMember()});
 
         ts.setChanged(System.currentTimeMillis());
-        FOTT_DBTimeslots.save(app,ts.buildObject());
-        return (true);
+        long result = new FOTT_DBTimeslots(app.getDatabase()).saveObject(ts.buildObject());
+        return (result != 0);
     }
 
     public void onClickTS(FOTT_Timeslot selection){

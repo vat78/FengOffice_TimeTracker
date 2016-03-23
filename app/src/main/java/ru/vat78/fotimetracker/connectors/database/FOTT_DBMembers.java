@@ -79,11 +79,10 @@ public class FOTT_DBMembers extends FOTT_DBCommon {
                 COMMON_COLUMN_ID + " = " + deletingObject.getDbID(), null) == 0;
     }
 
-    public static void rebuild(FOTT_App app){
-        app.getDatabase().execSQL(MEMBERS_TABLE_DELETE);
-        app.getDatabase().execSQL(MEMBERS_TABLE_CREATE);
+    public void rebuild(){
+        db.execSQL(MEMBERS_TABLE_DELETE);
+        db.execSQL(MEMBERS_TABLE_CREATE);
     }
-
 
 
     private static ContentValues convertToDB(FOTT_Member member) {

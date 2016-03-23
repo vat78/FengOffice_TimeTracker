@@ -72,8 +72,8 @@ public class FOTT_DBMembers_Objects {
                 LINKS_COLUMN_MEMBER_ID + " = " + parent_id;
     }
 
-    public static void rebuild(FOTT_App app) {
-        app.getDatabase().execSQL(LINKS_TABLE_DELETE);
-        app.getDatabase().execSQL(LINKS_TABLE_CREATE);
+    public static void rebuild(SQLiteDatabase db) {
+        db.execSQL(LINKS_TABLE_DELETE);
+        db.execSQL(LINKS_TABLE_CREATE);
     }
 }

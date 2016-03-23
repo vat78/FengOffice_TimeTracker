@@ -293,18 +293,18 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
         if (MainApp.getCurTask() > 0)
         {
             FOTT_Task t = tasks.getTaskById(MainApp.getCurTask());
-            FOTT_Task.TaskStatus status = (FOTT_Task.TaskStatus) intent.getSerializableExtra(EXTRA_MESSAGE_TS_EDIT_TASK_STATUS);
-            if (status == null) status = t.getStatus();
+            int status =  intent.getIntExtra(EXTRA_MESSAGE_TS_EDIT_TASK_STATUS, t.getStatus());
             long duedate = intent.getLongExtra(EXTRA_MESSAGE_TS_EDIT_TASK_DUE, t.getDueDate().getTime());
             FOTT_TaskBuilder newTask = new FOTT_TaskBuilder(t);
             if (tclose && status != t.getStatus()) {
                 newTask.setStatus(status);
                 newTask.setChanged(System.currentTimeMillis());
-                FOTT_DBTasks.save(MainApp,newTask.buildObject());
+
+                new FOTT_DBTasks(MainApp.getDatabase()).saveObject(newTask.buildObject());
             } else if (tmove && duedate != t.getDueDate().getTime()) {
                 newTask.setDueDate(duedate);
                 newTask.setChanged(System.currentTimeMillis());
-                FOTT_DBTasks.save(MainApp, newTask.buildObject());
+                new FOTT_DBTasks(MainApp.getDatabase()).saveObject(newTask.buildObject());
             }
         }
     }

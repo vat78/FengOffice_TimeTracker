@@ -17,7 +17,7 @@ public class FOTT_DBTimeslots extends FOTT_DBCommon {
 
     private static final String CLASS_NAME = "FOTT_DBTimeslots";
 
-    FOTT_DBTimeslots(SQLiteDatabase db) {
+    public FOTT_DBTimeslots(SQLiteDatabase db) {
         super(db);
     }
 
@@ -87,9 +87,9 @@ public class FOTT_DBTimeslots extends FOTT_DBCommon {
                 COMMON_COLUMN_ID + " = " + deletingObject.getDbID(), null) == 0;
     }
 
-    public static void rebuild(FOTT_App app){
-        app.getDatabase().execSQL(TIMESLOTS_TABLE_DELETE);
-        app.getDatabase().execSQL(TIMESLOTS_TABLE_CREATE);
+    public void rebuild(){
+        db.execSQL(TIMESLOTS_TABLE_DELETE);
+        db.execSQL(TIMESLOTS_TABLE_CREATE);
     }
 
 

@@ -14,6 +14,8 @@ import java.util.List;
 import ru.vat78.fotimetracker.FOTT_App;
 import ru.vat78.fotimetracker.R;
 import ru.vat78.fotimetracker.connectors.database.FOTT_DBTasks;
+import ru.vat78.fotimetracker.connectors.fo_api.FOAPI_Exceptions;
+import ru.vat78.fotimetracker.controllers.FOTT_Exceptions;
 import ru.vat78.fotimetracker.model.FOTT_Task;
 import ru.vat78.fotimetracker.views.FOTT_TasksFragment;
 
@@ -79,7 +81,7 @@ public class FOTT_TasksAdapter extends RecyclerView.Adapter<FOTT_TasksAdapter.Ta
         taskViewHolder.title.setSelected(app.getCurTask() == objectItem.getWebId());
         taskViewHolder.duedate.setSelected(app.getCurTask() == objectItem.getWebId());
 
-        if (objectItem.isDeleted() || objectItem.getStatus() == FOTT_Task.TaskStatus.COMPLETED){
+        if (objectItem.isDeleted() || objectItem.getStatus() == FOTT_Task.STATUS_COMPLETED){
             taskViewHolder.title.setPaintFlags(taskViewHolder.title.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
         }
 
@@ -101,11 +103,18 @@ public class FOTT_TasksAdapter extends RecyclerView.Adapter<FOTT_TasksAdapter.Ta
     }
 
     public void load(){
-        this.tasks = FOTT_DBTasks.load(app,"");
+        try {
+            this.tasks = (ArrayList<FOTT_Task>) new FOTT_DBTasks(app.getDatabase()).loadObjects();
+        } catch (FOTT_Exceptions e) {}
     }
 
     public FOTT_Task getTaskById(long id){
-        return FOTT_DBTasks.getTaskById(app, id);
+
+        FOTT_Task result = null;
+        try {
+            result = (FOTT_Task) new FOTT_DBTasks(app.getDatabase()).loadObject(id);
+        } catch (FOTT_Exceptions e) {}
+        return result;
     }
 
     public void onClickTask(FOTT_Task selection){

@@ -2,6 +2,7 @@ package ru.vat78.fotimetracker;
 
 import android.app.Application;
 import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteDatabase;
 import android.preference.PreferenceManager;
 
 import java.text.SimpleDateFormat;
@@ -9,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.TimeZone;
 
-import ru.vat78.fotimetracker.connectors.database.FOTT_DB;
+import ru.vat78.fotimetracker.connectors.database.FOTT_DBHelper;
 import ru.vat78.fotimetracker.connectors.database.FOTT_DBMembers;
 import ru.vat78.fotimetracker.connectors.database.FOTT_DBTasks;
 import ru.vat78.fotimetracker.connectors.database.FOTT_DBTimeslots;
@@ -38,7 +39,7 @@ public class FOTT_App extends Application {
 
 
     private FOAPI_Connector web_service;
-    private FOTT_DB database;
+    private SQLiteDatabase database;
     private boolean needFullSync;
 
     private FOTT_MainActivity mainActivity;
@@ -71,8 +72,14 @@ public class FOTT_App extends Application {
 
         //Create database connection
         long db_version = preferences.getLong(getString(R.string.pref_db_version), 0);
-        database = new FOTT_DB(this,db_version);
-        preferences.set(getString(R.string.pref_db_version), database.getDb_version());
+        FOTT_DBHelper helper = new FOTT_DBHelper(this);
+        database = helper.getWritableDatabase();
+        if (db_version != helper.getDB_version()) {
+            //DB structure was changed and all records were deleted
+            //Need to reload from web-service
+            setNeedFullSync(true);
+        }
+        preferences.set(getString(R.string.pref_db_version), helper.getDB_version());
 
         //Create error handler
         error = new FOTT_ErrorsHandler(this);
@@ -106,7 +113,7 @@ public class FOTT_App extends Application {
         timeFormat.setTimeZone(TimeZone.getDefault());
     }
 
-    public FOTT_DB getDatabase() {
+    public SQLiteDatabase getDatabase() {
         return database;
     }
 
@@ -217,8 +224,11 @@ public class FOTT_App extends Application {
             return false;
         }
 
-        FOTT_DBMembers.save(this, members);
-        if (getError().is_error()) {
+        FOTT_DBMembers membersDb = new FOTT_DBMembers(database);
+        membersDb.rebuild();
+        try {
+            membersDb.saveObjects(members);
+        } catch (FOTT_Exceptions e) {
             setSyncing(false);
             return false;
         }
@@ -227,7 +237,14 @@ public class FOTT_App extends Application {
         //Sync task
         boolean success;
         FOAPI_Tasks apiTasks = FOAPI_Tasks.getInstance(web_service);
-        ArrayList<FOTT_Task> tasks = FOTT_DBTasks.getDeletedTasks(this);
+        FOTT_DBTasks tasksDb = new FOTT_DBTasks(database);
+
+        ArrayList<FOTT_Task> tasks;
+        try {
+            tasks = (ArrayList<FOTT_Task>) tasksDb.getObjectsMarkedAsDeleted();
+        } catch (FOTT_Exceptions e) {
+            tasks = new ArrayList<>();
+        }
         for (FOTT_Task t : tasks) {
             success = true;
             try {
@@ -235,9 +252,14 @@ public class FOTT_App extends Application {
             } catch (FOAPI_Exceptions e) {
                 success = false;
             }
-            if (success && !fullSync) FOTT_DBTasks.deleteTask(this, t);
+            if (success && !fullSync) tasksDb.deleteObject(t);
         }
-        tasks = FOTT_DBTasks.getChangedTasks(this, getLastSync());
+
+        try {
+            tasks = (ArrayList<FOTT_Task>) tasksDb.loadChangedObjects(getLastSync());
+        } catch (FOTT_Exceptions e) {
+            tasks = new ArrayList<>();
+        }
         for (FOTT_Task t : tasks) {
             long id;
             try {
@@ -245,7 +267,7 @@ public class FOTT_App extends Application {
             } catch (FOAPI_Exceptions e) {
                 id = 0;
             }
-            if (id != 0 && !fullSync) FOTT_DBTasks.deleteTask(this, t);
+            if (id != 0 && !fullSync) tasksDb.deleteObject(t);
         }
         try {
             tasks = apiTasks.loadChangedObjects(d);
@@ -253,8 +275,13 @@ public class FOTT_App extends Application {
             setSyncing(false);
             return false;
         }
-        FOTT_DBTasks.save(this, tasks, fullSync);
-        if (getError().is_error()) {
+
+        if (fullSync) {
+            tasksDb.rebuild();
+        }
+        try {
+            tasksDb.saveObjects(tasks);
+        } catch (FOTT_Exceptions e) {
             setSyncing(false);
             return false;
         }
@@ -262,7 +289,13 @@ public class FOTT_App extends Application {
 
         //Sync timeslots
         FOAPI_Timeslots apiTS = FOAPI_Timeslots.getInstance(web_service);
-        ArrayList<FOTT_Timeslot> timeslots = FOTT_DBTimeslots.getDeletedTS(this);
+        FOTT_DBTimeslots tsDb = new FOTT_DBTimeslots(database);
+        ArrayList<FOTT_Timeslot> timeslots;
+        try {
+            timeslots = (ArrayList<FOTT_Timeslot>) tsDb.getObjectsMarkedAsDeleted();
+        } catch (FOTT_Exceptions e) {
+            timeslots = new ArrayList<>();
+        }
         for (FOTT_Timeslot ts : timeslots) {
             success = true;
             try {
@@ -270,16 +303,20 @@ public class FOTT_App extends Application {
             } catch (FOAPI_Exceptions e) {
                 success = false;
             }
-            if (success && !fullSync) FOTT_DBTimeslots.deleteTS(this, ts);
+            if (success && !fullSync) tsDb.deleteObject(ts);
         }
 
-        timeslots = FOTT_DBTimeslots.getChangedTS(this, getLastSync());
+        try {
+            timeslots = (ArrayList<FOTT_Timeslot>) tsDb.loadChangedObjects(getLastSync());
+        } catch (FOTT_Exceptions e) {
+            timeslots = new ArrayList<>();
+        }
         for (FOTT_Timeslot ts : timeslots) {
             long id = 0;
             try {
                 id = apiTS.saveObject(ts);
             } catch (FOAPI_Exceptions e) { }
-            if (id != 0 && !fullSync) FOTT_DBTimeslots.deleteTS(this, ts);
+            if (id != 0 && !fullSync) tsDb.deleteObject(ts);
         }
 
         try {
@@ -288,8 +325,10 @@ public class FOTT_App extends Application {
             setSyncing(false);
             return false;
         }
-        FOTT_DBTimeslots.save(this, timeslots, fullSync);
-        if (getError().is_error()) {
+        if (fullSync) tsDb.rebuild();
+        try {
+            tsDb.saveObjects(timeslots);
+        } catch (FOTT_Exceptions e) {
             setSyncing(false);
             return false;
         }
@@ -303,16 +342,20 @@ public class FOTT_App extends Application {
 
     public void redrawMainActivity() {
         int shift = 0;
-        if (curMember != 0)
-            if (!FOTT_DBMembers.isExistInDB(this, curMember)) {
+        if (curMember != 0) {
+            FOTT_DBMembers mDb = new FOTT_DBMembers(database);
+            if (!mDb.isExistInDB(curMember)) {
                 setCurMember(0);
                 shift = 1;
             }
-        if (curTask != 0)
-            if (!FOTT_DBTasks.isExistInDB(this, curTask)) {
+        }
+        if (curTask != 0) {
+            FOTT_DBTasks tDb = new FOTT_DBTasks(database);
+            if (!tDb.isExistInDB(curTask)) {
                 setCurTask(0);
                 shift = 2;
             }
+        }
 
         if (mainActivity != null) {
             if (shift == 0)

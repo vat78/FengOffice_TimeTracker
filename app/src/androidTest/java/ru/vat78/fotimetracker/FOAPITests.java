@@ -88,7 +88,7 @@ public class FOAPITests extends TestCase {
         long newId = apiTasks.saveObject(t.buildObject());
         assertEquals("Task change", true, id == newId);
 
-        t.setStatus(FOTT_Task.TaskStatus.COMPLETED);
+        t.setStatus(FOTT_Task.STATUS_COMPLETED);
         newId = apiTasks.saveObject(t.buildObject());
         assertEquals("Task complete", true, id == newId);
 
@@ -176,7 +176,7 @@ public class FOAPITests extends TestCase {
         t.setStartDate(beginOfYear);
         t.setDueDate(endOfYear);
         t.setCanAddTimeslots(true);
-        t.setStatus(FOTT_Task.TaskStatus.ACTIVE);
+        t.setStatus(FOTT_Task.STATUS_ACTIVE);
         t.setChanged(System.currentTimeMillis());
         t.setMembersWebIds(new String[]{"700"});
 
