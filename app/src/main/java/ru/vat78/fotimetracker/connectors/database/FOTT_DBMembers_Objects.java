@@ -45,7 +45,7 @@ public class FOTT_DBMembers_Objects {
 
         Cursor cursor = db.query(LINKS_TABLE_NAME,
                 new String[] {"COUNT(" + LINKS_COLUMN_OBJECT_ID + ") as objCnt"},
-                LINKS_COLUMN_MEMBER_ID + " = " + memberId + " AND" +
+                LINKS_COLUMN_MEMBER_ID + " = " + memberId + " AND " +
                         LINKS_COLUMN_OBJECT_TYPE + " = " + objectType,
                 null, LINKS_COLUMN_MEMBER_ID, "", "");
 

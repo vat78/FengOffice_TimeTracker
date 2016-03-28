@@ -76,7 +76,7 @@ public class FOTT_DBMembers extends FOTT_DBCommon {
     @Override
     public boolean deleteObject(FOTT_Object deletingObject) {
         return db.delete(MEMBERS_TABLE_NAME,
-                COMMON_COLUMN_ID + " = " + deletingObject.getDbID(), null) == 0;
+                COMMON_COLUMN_ID + " = " + deletingObject.getDbID(), null) == 1;
     }
 
     public void rebuild(){
@@ -94,6 +94,9 @@ public class FOTT_DBMembers extends FOTT_DBCommon {
 
         res.put(MEMBERS_COLUMN_PATH, member.getPath());
         res.put(MEMBERS_COLUMN_COLOR, member.getColor());
+
+        if (member.getChanged() != null)
+            res.put(COMMON_COLUMN_CHANGED, member.getChanged().getTime());
 
         return res;
     }

@@ -75,14 +75,13 @@ abstract class FOTT_DBCommon implements FOTT_ObjectsConnector {
         boolean result = true;
 
         for (FOTT_Object obj : deletingObjects) {
-            result = result && deleteObject(obj);
+            if (obj.getDbID() !=0) result = result && deleteObject(obj);
         }
         return result;
     }
 
     public ArrayList<? extends FOTT_Object> getObjectsMarkedAsDeleted() throws FOTT_Exceptions{
-        return loadFilteredObjects(COMMON_COLUMN_DELETED + " > 0 AND " +
-                COMMON_COLUMN_FO_ID + " > 0");
+        return loadFilteredObjects(COMMON_COLUMN_DELETED + " > 0 ");
     }
 
     public boolean isExistInDB(long objectID) {

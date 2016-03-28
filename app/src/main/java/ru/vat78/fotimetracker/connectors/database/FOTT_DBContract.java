@@ -183,11 +183,12 @@ public final class FOTT_DBContract {
         ArrayList<String> res = new ArrayList<>();
         int i = str.indexOf(",");
         while (i>=0) {
-            if (i>0) res.add(str.substring(0,i-1));
+            if (i>0) res.add(str.substring(0,i));
             str = str.substring(i+1);
             i = str.indexOf(",");
         }
         res.add(str);
-        return (String[]) res.toArray();
+
+        return res.toArray(new String[res.size()]);
     }
 }

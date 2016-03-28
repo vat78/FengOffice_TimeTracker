@@ -32,7 +32,8 @@ public class FOTT_DBTasks extends FOTT_DBCommon {
                         COMMON_COLUMN_TITLE,
                         TASK_COLUMN_DUEDATE,
                         TASK_COLUMN_STATUS,
-                        COMMON_COLUMN_CHANGED},
+                        COMMON_COLUMN_CHANGED,
+                        COMMON_COLUMN_DELETED},
                 filter, null, "", "",
                 TASK_COLUMN_DUEDATE + " ASC");
 
@@ -46,6 +47,7 @@ public class FOTT_DBTasks extends FOTT_DBCommon {
                 t.setDueDate(taskCursor.getLong(3));
                 t.setStatus(taskCursor.getInt(4));
                 t.setChanged(taskCursor.getLong(5));
+                t.setDeleted(taskCursor.getInt(6) > 0);
                 tasks.add(t.buildObject());
             } while (taskCursor.moveToNext());
         }
@@ -75,7 +77,7 @@ public class FOTT_DBTasks extends FOTT_DBCommon {
     @Override
     public boolean deleteObject(FOTT_Object deletingObject) {
         return db.delete(TASK_TABLE_NAME,
-                COMMON_COLUMN_ID + " = " + deletingObject.getDbID(), null) == 0;
+                COMMON_COLUMN_ID + " = " + deletingObject.getDbID(), null) == 1;
     }
 
     public void rebuild(){
@@ -96,13 +98,19 @@ public class FOTT_DBTasks extends FOTT_DBCommon {
 
         res.put(TASK_COLUMN_STATUS, task.getStatus());
 
-        res.put(TASK_COLUMN_DUEDATE,task.getDueDate().getTime());
+        if (task.getDueDate() != null)
+            res.put(TASK_COLUMN_DUEDATE,task.getDueDate().getTime());
 
-        res.put(COMMON_COLUMN_CHANGED,task.getChanged().getTime());
+        if (task.getChanged() != null)
+            res.put(COMMON_COLUMN_CHANGED,task.getChanged().getTime());
 
         res.put(COMMON_COLUMN_MEMBERS_IDS, arrayToString(task.getMembersWebIds()));
 
-        res.put(COMMON_COLUMN_DELETED, task.isDeleted());
+        if (task.isDeleted()) {
+            res.put(COMMON_COLUMN_DELETED, 1);
+        } else {
+            res.put(COMMON_COLUMN_DELETED, 0);
+        }
         return res;
     }
 

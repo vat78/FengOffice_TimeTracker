@@ -84,7 +84,7 @@ public class FOTT_DBTimeslots extends FOTT_DBCommon {
     @Override
     public boolean deleteObject(FOTT_Object deletingObject) {
         return db.delete(TIMESLOTS_TABLE_NAME,
-                COMMON_COLUMN_ID + " = " + deletingObject.getDbID(), null) == 0;
+                COMMON_COLUMN_ID + " = " + deletingObject.getDbID(), null) == 1;
     }
 
     public void rebuild(){

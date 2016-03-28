@@ -31,7 +31,7 @@ public class FOTT_Object {
     */
 
     public FOTT_Object(FOTT_ObjectBuilder builder){
-        this.dbID = 0;
+        this.dbID = builder.dbID;
         this.webID = builder.webID;
         this.name = builder.name;
         this.desc = builder.desc;

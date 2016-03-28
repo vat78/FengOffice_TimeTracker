@@ -71,7 +71,7 @@ public class FOTT_App extends Application {
         preferences = new FOTT_Preferences(pref);
 
         //Create database connection
-        long db_version = preferences.getLong(getString(R.string.pref_db_version), 0);
+        long db_version = preferences.getInt(getString(R.string.pref_db_version), 0);
         FOTT_DBHelper helper = new FOTT_DBHelper(this);
         database = helper.getWritableDatabase();
         if (db_version != helper.getDB_version()) {
