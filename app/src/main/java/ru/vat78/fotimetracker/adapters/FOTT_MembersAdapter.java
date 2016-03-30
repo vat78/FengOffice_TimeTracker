@@ -1,5 +1,6 @@
 package ru.vat78.fotimetracker.adapters;
 
+import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,23 +18,22 @@ import ru.vat78.fotimetracker.controllers.FOTT_Exceptions;
 import ru.vat78.fotimetracker.model.FOTT_Member;
 import ru.vat78.fotimetracker.views.FOTT_MembersFragment;
 
-/**
- * Created by vat on 30.11.2015.
- */
+
 public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapter.MembersViewHolder> {
+
+    final private FOTT_App app;
+    final private FOTT_MembersFragment parent;
 
     private List<FOTT_DrawingMember> members;
     private List<FOTT_DrawingMember> visibleMembers;
-    private FOTT_App app;
-    private FOTT_MembersFragment parent;
 
     public static class MembersViewHolder extends RecyclerView.ViewHolder {
-        // each data item is just a string in this case
-        private TextView title ;
-        private TextView color;
-        private TextView margine;
-        private TextView tasks;
-        private ImageButton selector;
+
+        final private TextView title ;
+        final private TextView color;
+        final private TextView margine;
+        final private TextView tasks;
+        final private ImageButton selector;
 
         public MembersViewHolder(View itemView) {
             super(itemView);
@@ -45,12 +45,12 @@ public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapt
         }
     }
 
-    public FOTT_MembersAdapter(FOTT_App application, FOTT_MembersFragment parent) {
+    public FOTT_MembersAdapter(FOTT_MembersFragment parent) {
+
         super();
-        //this.context = context;
-        this.app = application;
         this.members = new ArrayList<>();
         this.parent = parent;
+        this.app = (FOTT_App) parent.getActivity().getApplication();
     }
 
     @Override
@@ -71,13 +71,11 @@ public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapt
 
     @Override
     public void onBindViewHolder(MembersViewHolder memberViewHolder, int i) {
-        final FOTT_DrawingMember objectItem;
 
-        objectItem = visibleMembers.get(i);
+        final FOTT_DrawingMember objectItem = visibleMembers.get(i);
 
-        String s = "   " + objectItem.getName();
-        memberViewHolder.title.setText(s);
-        //memberViewHolder.tasks.setText(String.valueOf(objectItem.getTasksCnt()));
+        memberViewHolder.title.setText(objectItem.getName());
+        memberViewHolder.tasks.setText(String.valueOf(objectItem.getTasksCnt()));
         memberViewHolder.color.setBackgroundColor(objectItem.getColor());
 
         memberViewHolder.margine.setWidth(36 * objectItem.getMembersWebIds().length);
@@ -86,7 +84,6 @@ public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapt
             memberViewHolder.title.setBackgroundColor(objectItem.getColor());
             memberViewHolder.tasks.setBackgroundColor(objectItem.getColor());
             memberViewHolder.selector.setBackgroundColor(objectItem.getColor());
-            //memberViewHolder.setIsRecyclable(false);
         } else {
             memberViewHolder.title.setBackgroundColor(0);
             memberViewHolder.tasks.setBackgroundColor(0);
@@ -95,10 +92,10 @@ public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapt
 
 
         switch (objectItem.getNode()) {
-            case 1:
+            case FOTT_DrawingMember.NODE_CLOSE:
                 memberViewHolder.selector.setImageResource(R.drawable.ic_chevron_right_24dp);
                 break;
-            case 2:
+            case FOTT_DrawingMember.NODE_OPEN:
                 memberViewHolder.selector.setImageResource(R.drawable.ic_expand_more_24dp);
                 break;
             default:
@@ -125,6 +122,7 @@ public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapt
         super.onAttachedToRecyclerView(recyclerView);
     }
 
+
     public void onClickMember(FOTT_DrawingMember selection){
         if (parent != null) {
             parent.onMemberSelect(selection);
@@ -132,13 +130,13 @@ public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapt
     }
 
     public void onClickSelector(FOTT_DrawingMember selection){
-        //???
+
         int position = visibleMembers.indexOf(selection);
         switch (selection.getNode()) {
-            case 1:
+            case FOTT_DrawingMember.NODE_CLOSE:
                 expandBranch(position);
                 break;
-            case 2:
+            case FOTT_DrawingMember.NODE_OPEN:
                 closeBranch(position);
                 break;
         }
@@ -146,37 +144,47 @@ public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapt
 
     public void load(){
         try {
-            members = (ArrayList<FOTT_DrawingMember>) new FOTT_DBMembers(app.getDatabase()).loadObjects();
+            members = (ArrayList<FOTT_DrawingMember>) new FOTT_DBMembers(app.getReadOnlyDB()).loadObjects();
         } catch (FOTT_Exceptions e) {
             members = new ArrayList<>();
         }
-        initialBuildVisibleList();
+        app.closeDb();
+        initialSetVisibility();
         notifyDataSetChanged();
     }
 
-    public long getMemberId(int position){
-        return visibleMembers.get(position).getDbID();
+    public FOTT_DrawingMember getCurrentMember(){
+
+        FOTT_DrawingMember result = null;
+        for (FOTT_DrawingMember m : members)
+            if (m.getWebId() == app.getCurMember()) {
+                result = m;
+                break;
+            }
+
+        return result;
     }
 
     public FOTT_Member getMemberById(long id){
 
         FOTT_DrawingMember result;
         try {
-            result = (FOTT_DrawingMember) new FOTT_DBMembers(app.getDatabase()).loadObject(id);
+            result = (FOTT_DrawingMember) new FOTT_DBMembers(app.getReadOnlyDB()).loadObject(id);
         } catch (FOTT_Exceptions e) {
             result = null;
         }
+        app.closeDb();
         return result;
     }
 
-    private void rebuildFilteredList(){
+    private void rebuildVisibleList(){
         visibleMembers = new ArrayList<>();
         for (FOTT_DrawingMember el: members){
             if (el.isVisible()) visibleMembers.add(el);
         }
     }
 
-    public void expandBranch(int position){
+    private void expandBranch(int position){
         int curLevel = visibleMembers.get(position).getLevel();
         int curMem = members.indexOf(visibleMembers.get(position));
         int newItems = 0;
@@ -188,12 +196,13 @@ public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapt
                 newItems++;
             }
         }
-        members.get(curMem).setNode(2);
-        rebuildFilteredList();
+        members.get(curMem).setNode(FOTT_DrawingMember.NODE_OPEN);
+        rebuildVisibleList();
         notifyItemChanged(position);
-        notifyItemRangeInserted(position+1,newItems);
+        notifyItemRangeInserted(position + 1, newItems);
     }
-    public void closeBranch(int position){
+
+    private void closeBranch(int position){
         int curLevel = visibleMembers.get(position).getLevel();
         int curMem = members.indexOf(visibleMembers.get(position));
         int delItems = 0;
@@ -204,17 +213,61 @@ public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapt
                 el.setVisible(false);
                 delItems++;
             }
-            if (el.getNode() == 2)el.setNode(1);
-            //if (el.getId() == app.getCurMember()) app.setCurMember(0);
+            if (el.getNode() == FOTT_DrawingMember.NODE_OPEN) el.setNode(FOTT_DrawingMember.NODE_CLOSE);
         }
-        members.get(curMem).setNode(1);
-        rebuildFilteredList();
+        members.get(curMem).setNode(FOTT_DrawingMember.NODE_CLOSE);
+        rebuildVisibleList();
         notifyItemChanged(position);
-        notifyItemRangeRemoved(position+1, delItems);
+        notifyItemRangeRemoved(position + 1, delItems);
     }
 
-    private void initialBuildVisibleList() {
-        //ToDo: make visible current member
-        rebuildFilteredList();
+    private void initialSetVisibility() {
+
+        int visibleLevel = 1;
+        long currentMember = app.getCurMember();
+
+        for (int i = 0; i<members.size() - 1; i++) {
+            FOTT_DrawingMember el = members.get(i);
+
+            visibleLevel = setVisibilityByLevel(el,visibleLevel);
+            setNode(el,members.get(i+1));
+
+            if (el.getWebId() == currentMember) {
+                visibleLevel = el.getLevel();
+                el.setVisible(true);
+                for (int j=i-1; j>=0 && visibleLevel>1; j--) {
+                    visibleLevel = setVisibilityByLevel(members.get(j),visibleLevel);
+                    setNode(members.get(j), members.get(j+1));
+                }
+                visibleLevel = el.getLevel();
+            }
+        }
+
+        rebuildVisibleList();
+    }
+
+    private int setVisibilityByLevel(FOTT_DrawingMember member, int level) {
+
+        int newLevel = level;
+        if (member.getLevel() <= level) {
+            member.setVisible(true);
+            if (member.getNode() == FOTT_DrawingMember.NODE_CLOSE)
+                member.setNode(FOTT_DrawingMember.NODE_OPEN);
+            newLevel = member.getLevel();
+        }
+        return newLevel;
+    }
+
+    private void setNode(FOTT_DrawingMember member, FOTT_DrawingMember nextMember){
+
+        if (nextMember.getLevel() > member.getLevel()) {
+            if (nextMember.isVisible()) {
+                member.setNode(FOTT_DrawingMember.NODE_OPEN);
+            } else {
+                member.setNode(FOTT_DrawingMember.NODE_CLOSE);
+            }
+        } else {
+            member.setNode(FOTT_DrawingMember.NODE_NO);
+        }
     }
 }

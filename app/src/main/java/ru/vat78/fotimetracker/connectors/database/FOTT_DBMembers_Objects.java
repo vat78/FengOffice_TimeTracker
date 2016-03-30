@@ -4,7 +4,6 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-import ru.vat78.fotimetracker.FOTT_App;
 import ru.vat78.fotimetracker.model.FOTT_Object;
 
 import static ru.vat78.fotimetracker.connectors.database.FOTT_DBContract.*;
@@ -17,13 +16,13 @@ public class FOTT_DBMembers_Objects {
     public static void addObjectLinks(SQLiteDatabase db, FOTT_Object object, int objectType) {
 
         String[] members = object.getMembersWebIds();
-        long obj_id = object.getWebId();
+        long obj_id = object.getDbID();
 
         if (members.length > 0 && obj_id != 0){
             for (String member : members) {
                 ContentValues data = new ContentValues();
                 data.put(LINKS_COLUMN_OBJECT_ID, obj_id);
-                data.put(LINKS_COLUMN_MEMBER_ID, member);
+                data.put(LINKS_COLUMN_MEMBER_WEB_ID, member);
                 data.put(LINKS_COLUMN_OBJECT_TYPE, objectType);
                 db.insertWithOnConflict(LINKS_TABLE_NAME, "", data, SQLiteDatabase.CONFLICT_REPLACE);
             }
@@ -33,7 +32,7 @@ public class FOTT_DBMembers_Objects {
         if (objectType == TASK && obj_id != 0) {
             ContentValues data = new ContentValues();
             data.put(LINKS_COLUMN_OBJECT_ID, obj_id);
-            data.put(LINKS_COLUMN_MEMBER_ID, 0);
+            data.put(LINKS_COLUMN_MEMBER_WEB_ID, 0);
             data.put(LINKS_COLUMN_OBJECT_TYPE, objectType);
             db.insertWithOnConflict(LINKS_TABLE_NAME, "", data, SQLiteDatabase.CONFLICT_REPLACE);
         }
@@ -45,9 +44,9 @@ public class FOTT_DBMembers_Objects {
 
         Cursor cursor = db.query(LINKS_TABLE_NAME,
                 new String[] {"COUNT(" + LINKS_COLUMN_OBJECT_ID + ") as objCnt"},
-                LINKS_COLUMN_MEMBER_ID + " = " + memberId + " AND " +
+                LINKS_COLUMN_MEMBER_WEB_ID + " = " + memberId + " AND " +
                         LINKS_COLUMN_OBJECT_TYPE + " = " + objectType,
-                null, LINKS_COLUMN_MEMBER_ID, "", "");
+                null, LINKS_COLUMN_MEMBER_WEB_ID, "", "");
 
         if (cursor.moveToFirst()) result = cursor.getInt(0);
         cursor.close();
@@ -59,7 +58,7 @@ public class FOTT_DBMembers_Objects {
         return "SELECT  " +
                 LINKS_COLUMN_OBJECT_ID + " FROM " +
                 LINKS_TABLE_NAME + " WHERE " +
-                LINKS_COLUMN_MEMBER_ID + " = " +
+                LINKS_COLUMN_MEMBER_WEB_ID + " = " +
                 String.valueOf(member_id) + " AND " +
                 LINKS_COLUMN_OBJECT_TYPE + " = " + String.valueOf(object_type);
     }
@@ -69,7 +68,7 @@ public class FOTT_DBMembers_Objects {
                 "o." + LINKS_COLUMN_OBJECT_ID +
                 ") FROM " + LINKS_TABLE_NAME +
                 " o WHERE o." + LINKS_COLUMN_OBJECT_TYPE + " = 1 AND " +
-                LINKS_COLUMN_MEMBER_ID + " = " + parent_id;
+                LINKS_COLUMN_MEMBER_WEB_ID + " = " + parent_id;
     }
 
     public static void rebuild(SQLiteDatabase db) {

@@ -6,6 +6,10 @@ import ru.vat78.fotimetracker.model.FOTT_MemberBuilder;
 
 public class FOTT_DrawingMember extends FOTT_Member {
 
+    public static final int NODE_NO = 0;
+    public static final int NODE_OPEN = 2;
+    public static final int NODE_CLOSE = 1;
+
     private boolean visible;
     private int node;
     private int tasksCnt;

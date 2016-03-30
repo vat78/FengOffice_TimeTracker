@@ -4,6 +4,7 @@ package ru.vat78.fotimetracker.model;
 public class FOTT_MemberBuilder extends FOTT_ObjectBuilder {
     protected int color;
     protected String path;
+    protected int level;
 
     public FOTT_MemberBuilder() {
         super();
@@ -25,6 +26,10 @@ public class FOTT_MemberBuilder extends FOTT_ObjectBuilder {
 
     public void setPath(String path) {
         this.path = path;
+    }
+
+    public void setLevel(int level) {
+        this.level = level;
     }
 
     @Override

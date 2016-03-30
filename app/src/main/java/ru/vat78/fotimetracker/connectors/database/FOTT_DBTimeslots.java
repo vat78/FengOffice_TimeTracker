@@ -122,7 +122,7 @@ public class FOTT_DBTimeslots extends FOTT_DBCommon {
         ContentValues ts = convertToDB(timeslot);
         ts.put(COMMON_COLUMN_DELETED,0);
 
-        app.getDatabase().insertOrUpdate(TIMESLOTS_TABLE_NAME, ts);
+        app.getWritableDB().insertOrUpdate(TIMESLOTS_TABLE_NAME, ts);
 
         if (!app.getError().is_error()) {
             String[] members = timeslot.getMembersWebIds();
@@ -138,11 +138,11 @@ public class FOTT_DBTimeslots extends FOTT_DBCommon {
     }
 
     public static void clearDeletedTS(FOTT_App app) {
-        app.getDatabase().delete(TIMESLOTS_TABLE_NAME, COMMON_COLUMN_DELETED + " > 0");
+        app.getWritableDB().delete(TIMESLOTS_TABLE_NAME, COMMON_COLUMN_DELETED + " > 0");
     }
 
     public static void deleteTS(FOTT_App app, FOTT_Timeslot timeslot){
-                app.getDatabase().delete(TIMESLOTS_TABLE_NAME, COMMON_COLUMN_FO_ID + " = " + timeslot.getWebId());
+                app.getWritableDB().delete(TIMESLOTS_TABLE_NAME, COMMON_COLUMN_FO_ID + " = " + timeslot.getWebId());
     }
 
     public static ArrayList<FOTT_Timeslot> getDeletedTS(FOTT_App app) {
@@ -151,7 +151,7 @@ public class FOTT_DBTimeslots extends FOTT_DBCommon {
     }
 
     public static void clearNewTS(FOTT_App app) {
-        app.getDatabase().delete(TIMESLOTS_TABLE_NAME, COMMON_COLUMN_FO_ID + " < 0 ");
+        app.getWritableDB().delete(TIMESLOTS_TABLE_NAME, COMMON_COLUMN_FO_ID + " < 0 ");
     }
 
     public static ArrayList<FOTT_Timeslot> getChangedTS(FOTT_App app, Date lastSync) {
@@ -163,7 +163,7 @@ public class FOTT_DBTimeslots extends FOTT_DBCommon {
         //todo ???????????????????
         for (FOTT_Timeslot ts:timeslots){
             if (ts.getWebId()>0){
-                app.getDatabase().delete(TIMESLOTS_TABLE_NAME, COMMON_COLUMN_FO_ID + " = " + ts.getWebId());
+                app.getWritableDB().delete(TIMESLOTS_TABLE_NAME, COMMON_COLUMN_FO_ID + " = " + ts.getWebId());
             }
         }
     }

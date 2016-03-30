@@ -115,8 +115,10 @@ public class FOAPI_Members implements FOTT_ObjectsConnector {
             result.setWebID(id);
             result.setName(s);
 
-            result.setPath(getMemberPathFromJSON(h, s));
+            String path = getMemberPathFromJSON(h, s);
+            result.setPath(path);
             result.setColor(getMemberColorFromJSON(h));
+            result.setLevel(getLevelFromPath(path));
         }
         return result;
     }
@@ -140,6 +142,16 @@ public class FOAPI_Members implements FOTT_ObjectsConnector {
         if (color < FOAPI_Dictionary.memColors.length)color = FOAPI_Dictionary.memColors[color];
 
         return color;
+    }
+
+    private int getLevelFromPath(String path){
+        int result = 0;
+        int i = 0;
+        while (i >= 0) {
+            i = path.indexOf(FOAPI_Dictionary.FO_API_MEMBER_SPLITTER,i);
+            result++;
+        }
+        return result;
     }
 
 }

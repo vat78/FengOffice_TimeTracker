@@ -16,9 +16,6 @@ import ru.vat78.fotimetracker.R;
 import ru.vat78.fotimetracker.adapters.FOTT_MembersAdapter;
 import ru.vat78.fotimetracker.model.FOTT_Member;
 
-/**
- * Created by vat on 30.11.2015.
- */
 public class FOTT_MembersFragment extends Fragment {
 
     private FOTT_App MainApp;
@@ -32,7 +29,7 @@ public class FOTT_MembersFragment extends Fragment {
         mainActivity = (FOTT_MainActivity) context;
         MainApp = (FOTT_App) mainActivity.getApplication();
 
-        membersAdapter = new FOTT_MembersAdapter(MainApp, this);
+        membersAdapter = new FOTT_MembersAdapter(this);
         mainActivity.setMembers(membersAdapter);
     }
 
@@ -45,16 +42,20 @@ public class FOTT_MembersFragment extends Fragment {
         LinearLayoutManager llm = new LinearLayoutManager(this.getContext());
         mList.setLayoutManager(llm);
 
-        membersAdapter.load();
         mList.setAdapter(membersAdapter);
         if (MainApp.getCurTimeslot()>0) mainActivity.setCurrentFragment(1);
         return rootView;
     }
 
+    @Override
+    public void onResume(){
+        super.onResume();
+        membersAdapter.load();
+    }
+
     public void onMemberSelect(FOTT_Member selection) {
         MainApp.setCurMember(selection.getWebId());
         MainApp.setCurTask(0);
-        membersAdapter.notifyDataSetChanged();
         mainActivity.setCurrentFragment(1);
     }
 }

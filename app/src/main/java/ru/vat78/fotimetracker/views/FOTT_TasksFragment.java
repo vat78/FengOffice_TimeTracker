@@ -15,9 +15,6 @@ import ru.vat78.fotimetracker.R;
 import ru.vat78.fotimetracker.adapters.FOTT_TasksAdapter;
 import ru.vat78.fotimetracker.model.FOTT_Task;
 
-/**
- * Created by vat on 02.12.2015.
- */
 public class FOTT_TasksFragment extends Fragment {
 
     private FOTT_App MainApp;
@@ -31,7 +28,7 @@ public class FOTT_TasksFragment extends Fragment {
         mainActivity = (FOTT_MainActivity) context;
         MainApp = (FOTT_App) mainActivity.getApplication();
 
-        tasksAdapter = new FOTT_TasksAdapter(MainApp, this);
+        tasksAdapter = new FOTT_TasksAdapter(this);
         mainActivity.setTasks(tasksAdapter);
     }
 
@@ -44,10 +41,16 @@ public class FOTT_TasksFragment extends Fragment {
         LinearLayoutManager llm = new LinearLayoutManager(this.getContext());
         mList.setLayoutManager(llm);
 
-        tasksAdapter.load();
         mList.setAdapter(tasksAdapter);
+        //ToDo: tap to empty space mast reset CurTask
         if (MainApp.getCurTimeslot()>0) mainActivity.setCurrentFragment(2);
         return rootView;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        tasksAdapter.load();
     }
 
 

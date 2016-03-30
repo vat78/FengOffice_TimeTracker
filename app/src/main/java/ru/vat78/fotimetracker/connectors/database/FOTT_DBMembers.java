@@ -6,7 +6,6 @@ import android.database.sqlite.SQLiteDatabase;
 
 import java.util.ArrayList;
 
-import ru.vat78.fotimetracker.FOTT_App;
 import ru.vat78.fotimetracker.adapters.FOTT_DrawingMember;
 import ru.vat78.fotimetracker.model.FOTT_Member;
 import ru.vat78.fotimetracker.model.FOTT_MemberBuilder;
@@ -33,6 +32,7 @@ public class FOTT_DBMembers extends FOTT_DBCommon {
                         COMMON_COLUMN_TITLE,
                         MEMBERS_COLUMN_PATH,
                         MEMBERS_COLUMN_COLOR,
+                        MEMBERS_COLUMN_LEVEL,
                         COMMON_COLUMN_CHANGED},
                 filter, null, "", "",
                 MEMBERS_COLUMN_PATH + " ASC");
@@ -46,7 +46,8 @@ public class FOTT_DBMembers extends FOTT_DBCommon {
                 m.setName(memberCursor.getString(2));
                 m.setPath(memberCursor.getString(3));
                 m.setColor(memberCursor.getInt(4));
-                m.setChanged(memberCursor.getLong(5));
+                m.setLevel(memberCursor.getInt(5));
+                m.setChanged(memberCursor.getLong(6));
 
                 FOTT_DrawingMember el = new FOTT_DrawingMember(m);
                 el.setTasksCnt(FOTT_DBMembers_Objects.getObjectsCntForMember(db,
@@ -94,6 +95,7 @@ public class FOTT_DBMembers extends FOTT_DBCommon {
 
         res.put(MEMBERS_COLUMN_PATH, member.getPath());
         res.put(MEMBERS_COLUMN_COLOR, member.getColor());
+        res.put(MEMBERS_COLUMN_LEVEL, member.getLevel());
 
         if (member.getChanged() != null)
             res.put(COMMON_COLUMN_CHANGED, member.getChanged().getTime());
@@ -127,7 +129,7 @@ public class FOTT_DBMembers extends FOTT_DBCommon {
 
     private static void insert(FOTT_App app, FOTT_Member member) {
         ContentValues ts = convertToDB(member);
-        app.getDatabase().insertOrUpdate(MEMBERS_TABLE_NAME, ts);
+        app.getWritableDB().insertOrUpdate(MEMBERS_TABLE_NAME, ts);
     }
 
 
@@ -145,7 +147,7 @@ public class FOTT_DBMembers extends FOTT_DBCommon {
         ArrayList<FOTT_DrawingMember> members = new ArrayList<>();
         int taskCnt = 0;
 
-        Cursor memberCursor = app.getDatabase().query(MEMBERS_TABLE_NAME + " m",
+        Cursor memberCursor = app.getWritableDB().query(MEMBERS_TABLE_NAME + " m",
                 new String[]{"m." + COMMON_COLUMN_FO_ID,
                         "m." + COMMON_COLUMN_TITLE,
                         "m." + MEMBERS_COLUMN_PATH,
@@ -214,7 +216,7 @@ public class FOTT_DBMembers extends FOTT_DBCommon {
 
         if (id > 0) {
             String filter = " " + COMMON_COLUMN_FO_ID + " = " + id;
-            Cursor memberCursor = app.getDatabase().query(MEMBERS_TABLE_NAME + " m",
+            Cursor memberCursor = app.getWritableDB().query(MEMBERS_TABLE_NAME + " m",
                     new String[]{"m." + COMMON_COLUMN_FO_ID,
                             "m." + COMMON_COLUMN_TITLE,
                             "m." + MEMBERS_COLUMN_PATH,

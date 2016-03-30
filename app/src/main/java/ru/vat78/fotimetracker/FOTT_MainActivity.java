@@ -34,6 +34,8 @@ import ru.vat78.fotimetracker.connectors.database.FOTT_DBTasks;
 import ru.vat78.fotimetracker.model.FOTT_Member;
 import ru.vat78.fotimetracker.model.FOTT_Task;
 import ru.vat78.fotimetracker.model.FOTT_TaskBuilder;
+import ru.vat78.fotimetracker.model.FOTT_Timeslot;
+import ru.vat78.fotimetracker.model.FOTT_TimeslotBuilder;
 import ru.vat78.fotimetracker.views.FOTT_ErrorsHandler;
 import ru.vat78.fotimetracker.views.FOTT_MembersFragment;
 import ru.vat78.fotimetracker.views.FOTT_TasksFragment;
@@ -266,16 +268,18 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
                 finish();
             }
         }
+        //ToDo: need to use Parcelable object for Intent or keep current objects in MainApp
         if (requestCode == PICK_TSEDIT_REQUEST) {
             if (resultCode == RESULT_OK) {
-                long l = data.getLongExtra(EXTRA_MESSAGE_TS_EDIT_START,0);
-                Date d = new Date(l);
-                l = data.getLongExtra(EXTRA_MESSAGE_TS_EDIT_DURATION, 0);
-                long id = data.getLongExtra(EXTRA_MESSAGE_TS_EDIT_ID,0);
-                String s = data.getStringExtra(EXTRA_MESSAGE_TS_EDIT_DESC);
+                FOTT_TimeslotBuilder ts = new FOTT_TimeslotBuilder();
+                ts.setStart(data.getLongExtra(EXTRA_MESSAGE_TS_EDIT_START, 0));
+                ts.setDuration(data.getLongExtra(EXTRA_MESSAGE_TS_EDIT_DURATION, 0));
+                ts.setWebID(data.getLongExtra(EXTRA_MESSAGE_TS_EDIT_ID, 0));
+                ts.setDesc(data.getStringExtra(EXTRA_MESSAGE_TS_EDIT_DESC));
+
                 if (MainApp.getCurTask() > 0) taskChangesHandler(data);
 
-                if (timeslots.saveTimeslot(id,d,l,s)){
+                if (timeslots.saveTimeslot(ts)){
                     setSyncTimer();
                 } else {
                     MainApp.getError().error_handler(FOTT_ErrorsHandler.ERROR_SHOW_MESSAGE,"",getString(R.string.error_save_record));
@@ -300,11 +304,11 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
                 newTask.setStatus(status);
                 newTask.setChanged(System.currentTimeMillis());
 
-                new FOTT_DBTasks(MainApp.getDatabase()).saveObject(newTask.buildObject());
+                new FOTT_DBTasks(MainApp.getWritableDB()).saveObject(newTask.buildObject());
             } else if (tmove && duedate != t.getDueDate().getTime()) {
                 newTask.setDueDate(duedate);
                 newTask.setChanged(System.currentTimeMillis());
-                new FOTT_DBTasks(MainApp.getDatabase()).saveObject(newTask.buildObject());
+                new FOTT_DBTasks(MainApp.getWritableDB()).saveObject(newTask.buildObject());
             }
         }
     }
@@ -341,13 +345,13 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
     }
 
 
-    public void editTimeslot(long tsId, long start, long duration, String text) {
+    public void editTimeslot(FOTT_Timeslot ts) {
         Intent pickTS = new Intent(this,FOTT_TSEditActivity.class);
 
-        pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_ID, tsId);
-        pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_DESC, text);
-        if (start != 0) pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_START, start);
-        if (duration !=0) pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_DURATION, duration);
+        pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_ID, ts.getWebId());
+        pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_DESC, ts.getDesc());
+        pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_START, ts.getStart().getTime());
+        pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_DURATION, ts.getDuration());
         if (MainApp.getCurTask() != 0){
             FOTT_Task t = tasks.getTaskById(MainApp.getCurTask());
             pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_TASK_NAME, t.getName());
@@ -405,7 +409,9 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
             timer.setBackground(getResources().getDrawable(android.R.drawable.ic_media_play, getTheme()));
             MainApp.setCurTimeslot(0);
             oneMinuteTimer();
-            editTimeslot(0, 0, dur, "");
+            FOTT_TimeslotBuilder ts = new FOTT_TimeslotBuilder();
+            ts.setDuration(dur);
+            editTimeslot(ts.buildObject());
         }
     }
 

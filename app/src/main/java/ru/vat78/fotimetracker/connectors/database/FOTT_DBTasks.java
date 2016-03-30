@@ -120,12 +120,12 @@ public class FOTT_DBTasks extends FOTT_DBCommon {
     ToDo: need to clear
 
     public static void clearNewTasks(FOTT_App app) {
-        app.getDatabase().delete(TASK_TABLE_NAME, COMMON_COLUMN_FO_ID + " < 0 ");
+        app.getWritableDB().delete(TASK_TABLE_NAME, COMMON_COLUMN_FO_ID + " < 0 ");
     }
 
 
     public static void clearDeletedTasks(FOTT_App app) {
-        app.getDatabase().delete(TASK_TABLE_NAME, COMMON_COLUMN_DELETED + " > 0");
+        app.getWritableDB().delete(TASK_TABLE_NAME, COMMON_COLUMN_DELETED + " > 0");
     }
 
     public static ArrayList<FOTT_Task> getDeletedTasks(FOTT_App app) {
@@ -134,7 +134,7 @@ public class FOTT_DBTasks extends FOTT_DBCommon {
     }
 
     public static void deleteTask(FOTT_App app, FOTT_Task task) {
-        app.getDatabase().delete(TASK_TABLE_NAME, COMMON_COLUMN_FO_ID + " = " + task.getWebId());
+        app.getWritableDB().delete(TASK_TABLE_NAME, COMMON_COLUMN_FO_ID + " = " + task.getWebId());
     }
 
     public static boolean isExistInDB(FOTT_App app, long taskID) {

@@ -137,16 +137,16 @@ public final class FOTT_DBContract {
      ***********************************************************/
 
     static final String LINKS_TABLE_NAME = "members_objects";
-    static final String LINKS_COLUMN_MEMBER_ID = "member_id";
+    static final String LINKS_COLUMN_MEMBER_WEB_ID = "member_id";
     static final String LINKS_COLUMN_OBJECT_ID = "object_id";
     static final String LINKS_COLUMN_OBJECT_TYPE = "object_type";
     static final String LINKS_TABLE_CREATE =
             CREATE_TABLE + LINKS_TABLE_NAME + " (" +
                     LINKS_COLUMN_OBJECT_ID + INTEGER_TYPE + COMMA_SEP +
-                    LINKS_COLUMN_MEMBER_ID + INTEGER_TYPE + COMMA_SEP +
+                    LINKS_COLUMN_MEMBER_WEB_ID + INTEGER_TYPE + COMMA_SEP +
                     LINKS_COLUMN_OBJECT_TYPE + INTEGER_TYPE + COMMA_SEP +
                     PRIMARY_KEY + "(" + LINKS_COLUMN_OBJECT_ID + COMMA_SEP +
-                    LINKS_COLUMN_MEMBER_ID + "))" + EOL;
+                    LINKS_COLUMN_MEMBER_WEB_ID + "))" + EOL;
     static final String LINKS_TABLE_DELETE =
             DROP_TABLE + LINKS_TABLE_NAME + EOL;
 

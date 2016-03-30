@@ -19,6 +19,13 @@ public class FOTT_TimeslotBuilder extends FOTT_ObjectBuilder  {
         this.taskWebId = template.getTaskId();
     }
 
+    @Override
+    public FOTT_TimeslotBuilder setDesc(String desc) {
+        if (desc != null ) this.setName(desc.substring(0,255));
+        this.desc = desc;
+        return this;
+    }
+
     public FOTT_TimeslotBuilder setStart(Date start) {
         this.start = start;
         return this;
@@ -38,6 +45,7 @@ public class FOTT_TimeslotBuilder extends FOTT_ObjectBuilder  {
         this.taskWebId = taskWebId;
         return this;
     }
+
 
     public FOTT_Timeslot buildObject(){
         return new FOTT_Timeslot(this);

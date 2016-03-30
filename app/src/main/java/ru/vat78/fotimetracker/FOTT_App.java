@@ -39,6 +39,7 @@ public class FOTT_App extends Application {
 
 
     private FOAPI_Connector web_service;
+    private FOTT_DBHelper dbHelper;
     private SQLiteDatabase database;
     private boolean needFullSync;
 
@@ -72,14 +73,14 @@ public class FOTT_App extends Application {
 
         //Create database connection
         long db_version = preferences.getInt(getString(R.string.pref_db_version), 0);
-        FOTT_DBHelper helper = new FOTT_DBHelper(this);
-        database = helper.getWritableDatabase();
-        if (db_version != helper.getDB_version()) {
+        dbHelper = new FOTT_DBHelper(this);
+        //database = helper.getWritableDatabase();
+        if (db_version != dbHelper.getDB_version()) {
             //DB structure was changed and all records were deleted
             //Need to reload from web-service
             setNeedFullSync(true);
         }
-        preferences.set(getString(R.string.pref_db_version), helper.getDB_version());
+        preferences.set(getString(R.string.pref_db_version), dbHelper.getDB_version());
 
         //Create error handler
         error = new FOTT_ErrorsHandler(this);
@@ -113,8 +114,14 @@ public class FOTT_App extends Application {
         timeFormat.setTimeZone(TimeZone.getDefault());
     }
 
-    public SQLiteDatabase getDatabase() {
-        return database;
+    public SQLiteDatabase getWritableDB() {
+        if (dbHelper == null) return null;
+        return dbHelper.getWritableDatabase();
+    }
+
+    public SQLiteDatabase getReadOnlyDB() {
+        if (dbHelper == null) return null;
+        return dbHelper.getReadableDatabase();
     }
 
     public FOTT_Preferences getPreferences() {
@@ -363,5 +370,9 @@ public class FOTT_App extends Application {
             else
                 mainActivity.setCurrentFragment(shift - 1);
         }
+    }
+
+    public void closeDb() {
+        dbHelper.close();
     }
 }

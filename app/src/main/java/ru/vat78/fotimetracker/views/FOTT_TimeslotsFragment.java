@@ -19,10 +19,8 @@ import ru.vat78.fotimetracker.FOTT_MainActivity;
 import ru.vat78.fotimetracker.R;
 import ru.vat78.fotimetracker.adapters.FOTT_TimeslotsAdapter;
 import ru.vat78.fotimetracker.model.FOTT_Timeslot;
+import ru.vat78.fotimetracker.model.FOTT_TimeslotBuilder;
 
-/**
- * Created by vat on 04.12.2015.
- */
 public class FOTT_TimeslotsFragment extends Fragment {
     private FOTT_App MainApp;
     private FOTT_MainActivity mainActivity;
@@ -35,7 +33,7 @@ public class FOTT_TimeslotsFragment extends Fragment {
         mainActivity = (FOTT_MainActivity) context;
         MainApp = (FOTT_App) mainActivity.getApplication();
 
-        tsAdapter = new FOTT_TimeslotsAdapter(MainApp, this);
+        tsAdapter = new FOTT_TimeslotsAdapter(this);
         mainActivity.setTimeslots(tsAdapter);
     }
 
@@ -59,7 +57,7 @@ public class FOTT_TimeslotsFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if (MainApp.getCurTimeslot() != 0) mainActivity.startStopTimer();
-                else mainActivity.editTimeslot(0, 0, 0, "");
+                else mainActivity.editTimeslot(new FOTT_TimeslotBuilder().buildObject());
             }
         });
 
@@ -81,6 +79,12 @@ public class FOTT_TimeslotsFragment extends Fragment {
         return rootView;
     }
 
+    @Override
+    public void onResume (){
+        super.onResume();
+        tsAdapter.load();
+    }
+
     public void showTSDetails(FOTT_Timeslot timeslot) {
 
         final FOTT_Timeslot ts = timeslot;
@@ -89,15 +93,11 @@ public class FOTT_TimeslotsFragment extends Fragment {
         ad.setCancelable(true);
         ad.setNeutralButton(MainApp.getString(R.string.ts_button_edit), new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int arg1) {
-                mainActivity.editTimeslot(ts.getWebId(),ts.getStart().getTime(),ts.getDuration(), ts.getDesc());
+                mainActivity.editTimeslot(ts);
             }
         });
         ad.show();
     }
 
-    @Override
-    public void onResume (){
-        super.onResume();
 
-    }
 }
