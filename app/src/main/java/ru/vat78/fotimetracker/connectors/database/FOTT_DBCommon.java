@@ -84,14 +84,28 @@ abstract class FOTT_DBCommon implements FOTT_ObjectsConnector {
         return loadFilteredObjects(COMMON_COLUMN_DELETED + " > 0 ");
     }
 
-    public boolean isExistInDB(long objectID) {
+    public long isExistInDB(long objectWebID) {
 
-        boolean result = false;
+        long result = 0;
         try {
-            FOTT_Object obj = loadObject(objectID);
-            result = (obj != null);
+            FOTT_Object obj = findObjectByWebId(objectWebID);
+            if (obj != null) result = obj.getDbID();
         } catch (FOTT_Exceptions ignore) {    }
 
         return result;
     }
+
+    private FOTT_Object findObjectByWebId(long objectWebId) throws FOTT_Exceptions  {
+
+        if (objectWebId != 0) {
+
+            String filter = FOTT_DBContract.COMMON_COLUMN_FO_ID + " = " + objectWebId;
+
+            ArrayList<? extends FOTT_Object> result = loadFilteredObjects(filter);
+            if (result.size() > 0) return result.get(0);
+        }
+
+        return null;
+    }
+
 }

@@ -49,29 +49,29 @@ public class FO_DBTests extends AndroidTestCase {
 
         mDb.rebuild();
 
-        assertEquals("Save members", true, mDb.saveObjects(members));
+        assertTrue("Save members", mDb.saveObjects(members));
 
         ArrayList<FOTT_DrawingMember> membersAfter1 = (ArrayList<FOTT_DrawingMember>) mDb.loadObjects();
-        assertEquals("Load members after first saving", true, membersAfter1.size() == members.size());
+        assertEquals("Load members after first saving", members.size(), membersAfter1.size());
 
         FOTT_MemberBuilder mb = new FOTT_MemberBuilder(members.get(0));
         mb.setChanged(now.getTime() + 10000);
         mb.setWebID(0);
 
         long tempId = mDb.saveObject(new FOTT_DrawingMember(mb));
-        assertEquals("Save one member",  tempId != 0, true);
+        assertFalse("Save one member", tempId == 0);
 
         ArrayList<FOTT_DrawingMember> membersAfter2 = (ArrayList<FOTT_DrawingMember>) mDb.loadObjects();
-        assertEquals("Load members after adding member", true, membersAfter2.size() == members.size() + 1);
+        assertEquals("Load members after adding member", members.size() + 1, membersAfter2.size());
 
         ArrayList<FOTT_DrawingMember> membersAfter3 = (ArrayList<FOTT_DrawingMember>) mDb.loadChangedObjects(now);
-        assertEquals("Load changed members", true, membersAfter3.size() == 1);
+        assertEquals("Load changed members", 1, membersAfter3.size());
 
         mb.setDbID(tempId);
-        assertEquals("Delete member", true, mDb.deleteObject(new FOTT_DrawingMember(mb)));
+        assertTrue("Delete member", mDb.deleteObject(new FOTT_DrawingMember(mb)));
 
         ArrayList<FOTT_DrawingMember> membersAfter4 = (ArrayList<FOTT_DrawingMember>) mDb.loadObjects();
-        assertEquals("Load members after delete one member", true, membersAfter4.size() == members.size());
+        assertEquals("Load members after delete one member", members.size(), membersAfter4.size());
     }
 
     public void testTasksDB() throws Exception {
@@ -84,43 +84,43 @@ public class FO_DBTests extends AndroidTestCase {
 
         tDb.rebuild();
 
-        assertEquals("Save tasks", true, tDb.saveObjects(tasks));
+        assertTrue("Save tasks", tDb.saveObjects(tasks));
 
         ArrayList<FOTT_Task> tasksAfter1 = (ArrayList<FOTT_Task>) tDb.loadObjects();
-        assertEquals("Load tasks after first saving", true, tasksAfter1.size() == tasks.size());
+        assertEquals("Load tasks after first saving", tasks.size(), tasksAfter1.size());
 
         FOTT_TaskBuilder tb = new FOTT_TaskBuilder(tasks.get(0));
         tb.setChanged(now.getTime() + 10000);
         tb.setWebID(0);
 
         long tempId = tDb.saveObject(new FOTT_Task(tb));
-        assertEquals("Save one task", tempId != 0, true);
+        assertFalse("Save one task", tempId == 0);
 
         ArrayList<FOTT_Task> tasksAfter2 = (ArrayList<FOTT_Task>) tDb.loadObjects();
-        assertEquals("Load tasks after adding task", true, tasksAfter2.size() == tasks.size() + 1);
+        assertEquals("Load tasks after adding task", tasks.size() + 1, tasksAfter2.size());
 
         tb.setDeleted(true);
         tb.setDbID(tempId);
-        assertEquals("Change task", true, tDb.saveObject(new FOTT_Task(tb)) == tempId);
+        assertEquals("Change task", tempId, tDb.saveObject(new FOTT_Task(tb)));
 
         ArrayList<FOTT_Task> tasksAfter3 = (ArrayList<FOTT_Task>) tDb.loadObjects();
-        assertEquals("Load tasks after changing task", true, tasksAfter3.size() == tasks.size() + 1);
+        assertEquals("Load tasks after changing task", tasks.size() + 1, tasksAfter3.size());
 
         ArrayList<FOTT_Task> tasksAfter4 = (ArrayList<FOTT_Task>) tDb.loadChangedObjects(now);
-        assertEquals("Load changed tasks", true, tasksAfter4.size() == 1);
+        assertEquals("Load changed tasks", 1, tasksAfter4.size());
 
         ArrayList<FOTT_Task> tasksAfter5 = (ArrayList<FOTT_Task>) tDb.getObjectsMarkedAsDeleted();
-        assertEquals("Load deleted tasks", true, tasksAfter5.size() == 1);
+        assertEquals("Load deleted tasks", 1, tasksAfter5.size());
 
-        assertEquals("Delete tasks", true, tDb.deleteObjects(tasksAfter1));
+        assertTrue("Delete tasks", tDb.deleteObjects(tasksAfter1));
         ArrayList<FOTT_Task> tasksAfter6 = (ArrayList<FOTT_Task>) tDb.loadObjects();
-        assertEquals("Load tasks after deleting tasks", true, tasksAfter6.size() == 1);
+        assertEquals("Load tasks after deleting tasks", 1, tasksAfter6.size());
 
         tb.setDbID(tempId);
-        assertEquals("Delete one task", true, tDb.deleteObject(new FOTT_Task(tb)));
+        assertTrue("Delete one task", tDb.deleteObject(new FOTT_Task(tb)));
 
         ArrayList<FOTT_Task> tasksAfter7 = (ArrayList<FOTT_Task>) tDb.loadObjects();
-        assertEquals("Load tasks after deleting last task", true, tasksAfter7.size() == 0);
+        assertEquals("Load tasks after deleting last task", 0, tasksAfter7.size());
     }
 
     public void testTimeslotsDB() throws Exception {
@@ -133,42 +133,42 @@ public class FO_DBTests extends AndroidTestCase {
 
         tDb.rebuild();
 
-        assertEquals("Save timeslots", true, tDb.saveObjects(timeslots));
+        assertTrue("Save timeslots", tDb.saveObjects(timeslots));
 
         ArrayList<FOTT_Timeslot> tsAfter1 = (ArrayList<FOTT_Timeslot>) tDb.loadObjects();
-        assertEquals("Load timeslots after first save", true, tsAfter1.size() == timeslots.size());
+        assertEquals("Load timeslots after first save", timeslots.size(), tsAfter1.size());
 
         FOTT_TimeslotBuilder tb = new FOTT_TimeslotBuilder(timeslots.get(0));
         tb.setChanged(now.getTime() + 10000);
         tb.setWebID(0);
 
         long tempId = tDb.saveObject(new FOTT_Timeslot(tb));
-        assertEquals("Save one timeslot", tempId != 0, true);
+        assertFalse("Save one timeslot", tempId == 0);
 
         ArrayList<FOTT_Timeslot> tsAfter2 = (ArrayList<FOTT_Timeslot>) tDb.loadObjects();
-        assertEquals("Load timeslots after adding timeslot", true, tsAfter2.size() == timeslots.size() + 1);
+        assertEquals("Load timeslots after adding timeslot", timeslots.size() + 1, tsAfter2.size());
 
         tb.setDeleted(true);
         tb.setDbID(tempId);
-        assertEquals("Change timeslot", true, tDb.saveObject(new FOTT_Timeslot(tb)) == tempId);
+        assertEquals("Change timeslot", tempId, tDb.saveObject(new FOTT_Timeslot(tb)));
 
         ArrayList<FOTT_Timeslot> tsAfter3 = (ArrayList<FOTT_Timeslot>) tDb.loadObjects();
-        assertEquals("Load timeslots after changing timeslot", true, tsAfter3.size() == timeslots.size() + 1);
+        assertEquals("Load timeslots after changing timeslot", timeslots.size() + 1, tsAfter3.size());
 
         ArrayList<FOTT_Timeslot> tsAfter4 = (ArrayList<FOTT_Timeslot>) tDb.loadChangedObjects(now);
-        assertEquals("Load changed timeslots", true, tsAfter4.size() == 1);
+        assertEquals("Load changed timeslots", 1, tsAfter4.size());
 
         ArrayList<FOTT_Timeslot> tsAfter5 = (ArrayList<FOTT_Timeslot>) tDb.getObjectsMarkedAsDeleted();
-        assertEquals("Load deleted timeslots", true, tsAfter5.size() == 1);
+        assertEquals("Load deleted timeslots", 1, tsAfter5.size());
 
-        assertEquals("Delete timeslots", true, tDb.deleteObjects(tsAfter1));
+        assertTrue("Delete timeslots", tDb.deleteObjects(tsAfter1));
         ArrayList<FOTT_Timeslot> tsAfter6 = (ArrayList<FOTT_Timeslot>) tDb.loadObjects();
-        assertEquals("Load timeslots after deleting timeslots", true, tsAfter6.size() == 1);
+        assertEquals("Load timeslots after deleting timeslots", 1, tsAfter6.size());
 
         tb.setDbID(tempId);
-        assertEquals("Delete one timeslot", true, tDb.deleteObject(new FOTT_Timeslot(tb)));
+        assertTrue("Delete one timeslot", tDb.deleteObject(new FOTT_Timeslot(tb)));
         ArrayList<FOTT_Timeslot> tsAfter7 = (ArrayList<FOTT_Timeslot>) tDb.loadObjects();
-        assertEquals("Load timeslots after deleting last timeslot", true, tsAfter7.size() == 0);
+        assertEquals("Load timeslots after deleting last timeslot", 0, tsAfter7.size());
 
     }
 

@@ -30,16 +30,17 @@ import ru.vat78.fotimetracker.controllers.FOTT_Exceptions;
 
 public class FOAPI_Connector {
 
-    private static FOAPI_Connector _instance = null;
-    private final WebStream web;
+    private final Context context;
 
     private final String urlOfServer;
     private final boolean onlyTrustedSSL;
     private final String token;
 
-    private FOAPI_Connector(String url, String user, String password, boolean onlyTrustedSSL) throws FOAPI_Exceptions {
+    public FOAPI_Connector(Context context, String url, String user, String password, boolean onlyTrustedSSL) throws FOAPI_Exceptions {
 
-        web = WebStream.getInstance();
+        this.context = context;
+        if (!this.isNetworkAvailable())
+            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.NO_INTERNET, FOTT_Exceptions.ExeptionLevels.WARNING);
         this.onlyTrustedSSL = onlyTrustedSSL;
         this.urlOfServer = buildUrlWithCheck(url);
         if (this.onlyTrustedSSL) checkSSLCertificate();
@@ -48,14 +49,19 @@ public class FOAPI_Connector {
         checkVatAPIPlugin();
     }
 
-    public static synchronized FOAPI_Connector getInstance(String url, String user, String password, boolean onlyTrustedSSL) throws FOAPI_Exceptions {
-        if (_instance == null)
-            _instance = new FOAPI_Connector(url, user, password, onlyTrustedSSL);
-        return _instance;
+    public FOAPI_Connector(Context context, String url, String token, boolean onlyTrustedSSL) throws FOAPI_Exceptions {
+
+        this.context = context;
+        if (!this.isNetworkAvailable())
+            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.NO_INTERNET, FOTT_Exceptions.ExeptionLevels.WARNING);
+        this.onlyTrustedSSL = onlyTrustedSSL;
+        this.urlOfServer = buildUrlWithCheck(url);
+        this.token = token;
+        checkVatAPIPlugin();
     }
 
-    public boolean isNetworkAvailable(Context context) {
-        return web.isNetworkAvailable(context);
+    public boolean isNetworkAvailable() {
+        return WebStream.getInstance().isNetworkAvailable(context);
     }
 
     //Execute API operation without arguments
@@ -171,7 +177,7 @@ public class FOAPI_Connector {
             url = determineProtocol(url);
         } else {
             try {
-                web.getDataFromURL(url, false);
+                WebStream.getInstance().getDataFromURL(url, false);
             } catch (IOException e) {
                 throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.WRONG_URL, FOTT_Exceptions.ExeptionLevels.CRITICAL);
             }
@@ -184,7 +190,7 @@ public class FOAPI_Connector {
 
         String result = "http://";
         try {
-            web.getDataFromURL(result + url, false);
+            WebStream.getInstance().getDataFromURL(result + url, false);
         } catch (IOException e) {
             result = "";
         }
@@ -192,7 +198,7 @@ public class FOAPI_Connector {
         if (result.isEmpty()) {
             result = "https://";
             try {
-                web.getDataFromURL(result + url, false);
+                WebStream.getInstance().getDataFromURL(result + url, false);
             } catch (IOException e) {
                 throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.WRONG_URL, FOTT_Exceptions.ExeptionLevels.CRITICAL);
             }
@@ -203,7 +209,7 @@ public class FOAPI_Connector {
 
     private void checkSSLCertificate() throws FOAPI_Exceptions {
         try {
-            web.getDataFromURL(urlOfServer, onlyTrustedSSL);
+            WebStream.getInstance().getDataFromURL(urlOfServer, onlyTrustedSSL);
         } catch (IOException e) {
             throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.CERTIFICATE_ERROR, FOTT_Exceptions.ExeptionLevels.CRITICAL);
         }
@@ -211,7 +217,7 @@ public class FOAPI_Connector {
 
     private void checkFengOfficeInstallation() throws FOAPI_Exceptions {
         try {
-            web.getDataFromURL(this.urlOfServer + FOAPI_Dictionary.FO_API_CHECK_FO, this.onlyTrustedSSL);
+            WebStream.getInstance().getDataFromURL(this.urlOfServer + FOAPI_Dictionary.FO_API_CHECK_FO, this.onlyTrustedSSL);
         } catch (IOException e) {
             throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.NO_FENGOFFICE, FOTT_Exceptions.ExeptionLevels.CRITICAL);
         }
@@ -300,7 +306,7 @@ public class FOAPI_Connector {
         String data;
 
         try {
-            data = web.getDataFromURL(url, onlyTrustedSSL);
+            data = WebStream.getInstance().getDataFromURL(url, onlyTrustedSSL);
         } catch (IOException e) {
             throw new FOAPI_Exceptions(url, FOAPI_Exceptions.ECodes.API_REQUEST_ERROR, FOTT_Exceptions.ExeptionLevels.WARNING);
         }

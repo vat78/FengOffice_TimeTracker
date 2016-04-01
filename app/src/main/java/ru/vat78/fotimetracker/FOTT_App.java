@@ -96,12 +96,14 @@ public class FOTT_App extends Application {
 
         setDateTimeFormat();
 
+        /*
         try {
             web_service = FOAPI_Connector.getInstance(preferences.getString(getString(R.string.pref_sync_url), ""),
                     preferences.getString(getString(R.string.pref_sync_login), ""),
                     preferences.getString(getString(R.string.pref_sync_password), ""),
                     preferences.getBoolean(getString(R.string.pref_sync_certs), true));
         } catch (FOTT_Exceptions e) {}
+        */
     }
 
     public void setDateTimeFormat() {
@@ -208,6 +210,7 @@ public class FOTT_App extends Application {
         this.mainActivity = mainActivity;
     }
 
+    /*
     public boolean dataSynchronization() {
 
         long stamp = System.currentTimeMillis();
@@ -347,18 +350,20 @@ public class FOTT_App extends Application {
         return true;
     }
 
+    */
+
     public void redrawMainActivity() {
         int shift = 0;
         if (curMember != 0) {
             FOTT_DBMembers mDb = new FOTT_DBMembers(database);
-            if (!mDb.isExistInDB(curMember)) {
+            if (mDb.isExistInDB(curMember) != 0) {
                 setCurMember(0);
                 shift = 1;
             }
         }
         if (curTask != 0) {
             FOTT_DBTasks tDb = new FOTT_DBTasks(database);
-            if (!tDb.isExistInDB(curTask)) {
+            if (tDb.isExistInDB(curTask) != 0) {
                 setCurTask(0);
                 shift = 2;
             }

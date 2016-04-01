@@ -23,7 +23,7 @@ import ru.vat78.fotimetracker.model.FOTT_Timeslot;
 import ru.vat78.fotimetracker.model.FOTT_TimeslotBuilder;
 
 
-public class FOAPITests extends TestCase {
+public class FOAPITests extends AndroidTestCase {
 
     private static long beginOfYear;
     private static long endOfYear;
@@ -50,7 +50,7 @@ public class FOAPITests extends TestCase {
 
         //enableStrictMode();
 
-        webService = FOAPI_Connector.getInstance(SecretCredentials.getUrl(),
+        webService = new FOAPI_Connector(getContext(),SecretCredentials.getUrl(),
                 SecretCredentials.getUser(),
                 SecretCredentials.getPwd(),
                 false);
@@ -59,78 +59,78 @@ public class FOAPITests extends TestCase {
 
     public void testMemberLoad()throws Exception {
 
-        FOAPI_Members apiMembers = FOAPI_Members.getInstance(webService);
+        FOAPI_Members apiMembers = new FOAPI_Members(webService);
         ArrayList<FOTT_Member> members = apiMembers.loadObjects();
-        assertEquals("Members load ", true, members.size() > 0);
+        assertTrue("Members load ", members.size() > 0);
     }
 
     public void testTasksLoad() throws Exception {
 
-        FOAPI_Tasks apiTasks = FOAPI_Tasks.getInstance(webService);
+        FOAPI_Tasks apiTasks = new FOAPI_Tasks(webService);
         ArrayList<FOTT_Task> tasks = apiTasks.loadChangedObjects(new Date(beginOfYear));
-        assertEquals("Tasks load after 01/01/2016", true, tasks.size() > 0);
+        assertTrue("Tasks load after 01/01/2016", tasks.size() > 0);
 
         tasks = apiTasks.loadChangedObjects(new Date(endOfYear));
-        assertEquals("Tasks load after 01/01/2017", true, tasks.size() == 0);
+        assertEquals("Tasks load after 01/01/2017", 0, tasks.size());
     }
 
     public void testSaveLoadChangeDeleteTask() throws Exception {
 
-        FOAPI_Tasks apiTasks = FOAPI_Tasks.getInstance(webService);
+        FOAPI_Tasks apiTasks = new FOAPI_Tasks(webService);
         FOTT_TaskBuilder t = new FOTT_TaskBuilder(testTask);
 
         long id = apiTasks.saveObject(t.buildObject());
-        assertEquals("Task creation", false, id == 0);
+        assertFalse("Task creation", id == 0);
         if (id == 0) return;
 
         t.setWebID(id);
         t.setDueDate(System.currentTimeMillis());
         long newId = apiTasks.saveObject(t.buildObject());
-        assertEquals("Task change", true, id == newId);
+        assertEquals("Task change", id, newId);
 
         t.setStatus(FOTT_Task.STATUS_COMPLETED);
         newId = apiTasks.saveObject(t.buildObject());
-        assertEquals("Task complete", true, id == newId);
+        assertEquals("Task complete", id, newId);
 
         //FOTT_Task t = apiTasks.loadObject(id);
         //assertEquals("Read created task from web", true, t.getWebId() == id);
         //assertEquals("Read right task name", true, t.getName().equals(testTask.getName()));
 
-        assertEquals("Delete task", true, apiTasks.deleteObject(t.buildObject()));
+        assertTrue("Delete task", apiTasks.deleteObject(t.buildObject()));
     }
 
     public void testTimeslotsLoad() throws Exception {
 
-        FOAPI_Timeslots apiTS = FOAPI_Timeslots.getInstance(webService);
+        FOAPI_Timeslots apiTS = new FOAPI_Timeslots(webService);
         ArrayList<FOTT_Timeslot> timeslots = apiTS.loadChangedObjects(new Date(beginOfYear));
-        assertEquals("Timeslots load after 01/01/2016", true, timeslots.size() > 0);
+        assertTrue("Timeslots load after 01/01/2016", timeslots.size() > 0);
 
         timeslots = apiTS.loadChangedObjects(new Date(endOfYear));
-        assertEquals("Timeslots load after 01/01/2017", true, timeslots.size() == 0);
+        assertEquals("Timeslots load after 01/01/2017", 0, timeslots.size());
     }
 
     public void testSaveChangeDeleteTSinMember() throws Exception {
 
-        FOAPI_Timeslots apiTS = FOAPI_Timeslots.getInstance(webService);
+        FOAPI_Timeslots apiTS = new FOAPI_Timeslots(webService);
 
         long id = apiTS.saveObject(testTS);
-        assertEquals("Timeslot for member creation", true, id != 0);
+        assertFalse("Timeslot for member creation", id == 0);
         if (id == 0) return;
 
         FOTT_TimeslotBuilder ts = new FOTT_TimeslotBuilder(testTS);
         ts.setWebID(id);
         ts.setDuration(30*60*1000).setStart(System.currentTimeMillis());
         long newId = apiTS.saveObject(ts.buildObject());
-        assertEquals("Timeslot for member save changes", true, newId == id);
+        assertEquals("Timeslot for member save changes", id, newId);
 
-        assertEquals("Delete timeslot for member", true, apiTS.deleteObject(ts.buildObject()));
+        assertTrue("Delete timeslot for member", apiTS.deleteObject(ts.buildObject()));
     }
 
 
     public void testSaveChangeDeleteTSinTask() throws Exception {
 
-        FOAPI_Tasks apiTasks = FOAPI_Tasks.getInstance(webService);
-        FOAPI_Timeslots apiTS = FOAPI_Timeslots.getInstance(webService);
+        FOAPI_Tasks apiTasks = new FOAPI_Tasks(webService);
+        FOAPI_Timeslots apiTS = new FOAPI_Timeslots(webService);
 
         long taskId = apiTasks.saveObject(testTask);
         if (taskId ==0) return;
@@ -138,15 +138,15 @@ public class FOAPITests extends TestCase {
         FOTT_TimeslotBuilder ts = new FOTT_TimeslotBuilder(testTS);
         ts.setTaskWebId(taskId);
         long id = apiTS.saveObject(ts.setTaskWebId(taskId).buildObject());
-        assertEquals("Timeslot for task creation", true, id != 0);
+        assertFalse("Timeslot for task creation", id == 0);
 
         if (id != 0) {
             ts.setWebID(id);
             ts.setDuration(30*60*1000).setStart(System.currentTimeMillis());
             long newId = apiTS.saveObject(ts.buildObject());
-            assertEquals("Timeslot for task save changes", true, newId == id);
+            assertEquals("Timeslot for task save changes", id, newId);
 
-            assertEquals("Delete timeslot for task", true, apiTS.deleteObject(ts.buildObject()));
+            assertTrue("Delete timeslot for task", apiTS.deleteObject(ts.buildObject()));
         }
 
         apiTasks.deleteObject(new FOTT_TaskBuilder(testTask).setWebID(taskId).buildObject());
@@ -185,7 +185,6 @@ public class FOAPITests extends TestCase {
 
     private void createTestTimeslot(){
         FOTT_TimeslotBuilder ts = new FOTT_TimeslotBuilder();
-        ts.setName("test time");
         ts.setDesc("test time description");
         ts.setDuration(15 * 60 * 1000);
         ts.setStart(System.currentTimeMillis());

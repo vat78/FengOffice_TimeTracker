@@ -20,16 +20,8 @@ public class FOAPI_Tasks implements FOTT_ObjectsConnector {
 
     private final FOAPI_Connector webService;
 
-    private static FOAPI_Tasks _instance = null;
-
-    private FOAPI_Tasks(FOAPI_Connector webService) {
+    public FOAPI_Tasks(FOAPI_Connector webService) {
         this.webService = webService;
-    }
-
-    public static synchronized FOAPI_Tasks getInstance(FOAPI_Connector webService) {
-        if (_instance == null)
-            _instance = new FOAPI_Tasks(webService);
-        return _instance;
     }
 
     @Override

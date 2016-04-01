@@ -46,7 +46,8 @@ abstract public class FOTT_ObjectBuilder {
     }
 
     public FOTT_ObjectBuilder setName(String name) {
-        this.name = (name.length() > 250 ? name.substring(0, 250) : name);
+        if (name != null )
+            this.name = (name.length() > 250 ? name.substring(0, 250) : name);
         return this;
     }
 

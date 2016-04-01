@@ -21,8 +21,8 @@ public class FOTT_TimeslotBuilder extends FOTT_ObjectBuilder  {
 
     @Override
     public FOTT_TimeslotBuilder setDesc(String desc) {
-        if (desc != null ) this.setName(desc.substring(0,255));
         this.desc = desc;
+        this.setName(desc);
         return this;
     }
 

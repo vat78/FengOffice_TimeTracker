@@ -20,16 +20,8 @@ public class FOAPI_Members implements FOTT_ObjectsConnector {
 
     private final FOAPI_Connector webService;
 
-    private static FOAPI_Members _instance = null;
-
-    private FOAPI_Members(FOAPI_Connector webService) {
+    public FOAPI_Members(FOAPI_Connector webService) {
         this.webService = webService;
-    }
-
-    public static synchronized FOAPI_Members getInstance(FOAPI_Connector webService) {
-        if (_instance == null)
-            _instance = new FOAPI_Members(webService);
-        return _instance;
     }
 
     @Override
@@ -145,10 +137,11 @@ public class FOAPI_Members implements FOTT_ObjectsConnector {
     }
 
     private int getLevelFromPath(String path){
+
         int result = 0;
         int i = 0;
         while (i >= 0) {
-            i = path.indexOf(FOAPI_Dictionary.FO_API_MEMBER_SPLITTER,i);
+            i = path.indexOf(FOAPI_Dictionary.FO_API_MEMBER_SPLITTER,i+1);
             result++;
         }
         return result;

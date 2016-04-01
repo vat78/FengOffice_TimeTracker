@@ -21,16 +21,8 @@ public class FOAPI_Timeslots implements FOTT_ObjectsConnector {
 
     private final FOAPI_Connector webService;
 
-    private static FOAPI_Timeslots _instance = null;
-
-    private FOAPI_Timeslots(FOAPI_Connector webService) {
+    public FOAPI_Timeslots(FOAPI_Connector webService) {
         this.webService = webService;
-    }
-
-    public static synchronized FOAPI_Timeslots getInstance(FOAPI_Connector webService) {
-        if (_instance == null)
-            _instance = new FOAPI_Timeslots(webService);
-        return _instance;
     }
 
     @Override

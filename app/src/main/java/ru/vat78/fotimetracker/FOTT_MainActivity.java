@@ -23,7 +23,6 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
-import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -31,6 +30,7 @@ import ru.vat78.fotimetracker.adapters.FOTT_MembersAdapter;
 import ru.vat78.fotimetracker.adapters.FOTT_TasksAdapter;
 import ru.vat78.fotimetracker.adapters.FOTT_TimeslotsAdapter;
 import ru.vat78.fotimetracker.connectors.database.FOTT_DBTasks;
+import ru.vat78.fotimetracker.controllers.FOTT_Exceptions;
 import ru.vat78.fotimetracker.model.FOTT_Member;
 import ru.vat78.fotimetracker.model.FOTT_Task;
 import ru.vat78.fotimetracker.model.FOTT_TaskBuilder;
@@ -41,7 +41,8 @@ import ru.vat78.fotimetracker.views.FOTT_MembersFragment;
 import ru.vat78.fotimetracker.views.FOTT_TasksFragment;
 import ru.vat78.fotimetracker.views.FOTT_TimeslotsFragment;
 
-public class FOTT_MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
+public class FOTT_MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener,
+            FOTT_ActivityInterface {
 
     static final int PICK_LOGIN_REQUEST = 1;
     static final int PICK_TSEDIT_REQUEST = 2;
@@ -56,7 +57,7 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
 
     static final String SYNC_TIMER_NAME = "ru.vat78.fotimetracker.SYNCTIMER";
 
-    private FOTT_SyncTask syncTask;
+    private FOTT_WebSyncTask syncTask;
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -119,9 +120,9 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
         long freq = Long.valueOf(MainApp.getPreferences().getString(getString(R.string.pref_sync_frequency),"180")) ;
         if (freq > 0) {
             freq = freq * 60 * 1000;
-            syncTimer.schedule(new SyncTimerTask(), 1000, freq);
+            syncTimer.schedule(new SyncTimerTask(this), 1000, freq);
         } else {
-            syncTimer.schedule(new SyncTimerTask(), 1000);
+            syncTimer.schedule(new SyncTimerTask(this), 1000);
         }
     }
 
@@ -572,6 +573,11 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
         }
     }
 
+    @Override
+    public void onPostExecuteWebSyncing(FOTT_Exceptions result) {
+
+    }
+
     private class TimeslotMinuteTimer extends CountDownTimer {
 
         public TimeslotMinuteTimer(){
@@ -602,6 +608,13 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
     }
 
     private class SyncTimerTask extends TimerTask {
+
+        private final FOTT_ActivityInterface parent;
+
+        public SyncTimerTask(FOTT_ActivityInterface parent) {
+            this.parent = parent;
+        }
+
         @Override
         public void run() {
             runOnUiThread(new Runnable() {
@@ -610,7 +623,7 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
                     if (syncTask != null)
                         if (syncTask.getStatus() != AsyncTask.Status.RUNNING && !MainApp.isSyncing()) syncTask = null;
                     if (syncTask == null) {
-                        syncTask = new FOTT_SyncTask(MainApp);
+                        syncTask = new FOTT_WebSyncTask(parent);
                         syncTask.execute();
                     }
                 }
@@ -618,5 +631,7 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
         }
 
     }
+
+
 
 }

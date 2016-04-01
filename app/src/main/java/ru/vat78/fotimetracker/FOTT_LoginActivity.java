@@ -3,14 +3,10 @@ package ru.vat78.fotimetracker;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
-import android.content.Context;
 import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 
-import android.os.AsyncTask;
 
 import android.os.Build;
 import android.os.Bundle;
@@ -25,15 +21,14 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import ru.vat78.fotimetracker.connectors.fo_api.FOAPI_Connector;
-import ru.vat78.fotimetracker.connectors.fo_api.FOAPI_Exceptions;
-import ru.vat78.fotimetracker.views.FOTT_ErrorsHandler;
+import java.util.HashMap;
 
+import ru.vat78.fotimetracker.controllers.FOTT_Exceptions;
 
 /**
  * A login screen that offers login via login/password.
  */
-public class FOTT_LoginActivity extends AppCompatActivity {
+public class FOTT_LoginActivity extends AppCompatActivity implements FOTT_ActivityInterface {
 
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
@@ -41,8 +36,7 @@ public class FOTT_LoginActivity extends AppCompatActivity {
     private static final String CLASS_NAME = "FOTT_LoginActivity";
 
     private FOTT_App app;
-    private FOAPI_Connector FOApp;
-    private UserLoginCheck ULC;
+    private FOTT_WebSyncTask ULC;
 
     // UI references.
     private AutoCompleteTextView mURLView;
@@ -54,6 +48,18 @@ public class FOTT_LoginActivity extends AppCompatActivity {
     private View mLoginFormView;
 
     @Override
+    public void onPostExecuteWebSyncing(FOTT_Exceptions result) {
+
+        ULC = null;
+        showProgress(false);
+        if (result == null) {
+            saveResultsAndFinish();
+        } else {
+            errorHandler(result);
+        }
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
@@ -63,9 +69,7 @@ public class FOTT_LoginActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(false);
         }
 
-        //get web-connector
         app = (FOTT_App) getApplication();
-        FOApp = app.getWeb_service();
 
         // Set up the login form.
         setContentView(R.layout.activity_login);
@@ -115,7 +119,7 @@ public class FOTT_LoginActivity extends AppCompatActivity {
      * errors are presented and no actual login attempt is made.
      */
     private void attemptLogin() {
-        if (ULC != null) {
+        if (ULC!=null) {
             return;
         }
 
@@ -125,17 +129,23 @@ public class FOTT_LoginActivity extends AppCompatActivity {
         mPasswordView.setError(null);
 
         // Store values at the time of the login attempt.
-        String url = mURLView.getText().toString();
-        String login = mLoginView.getText().toString();
-        String password = mPasswordView.getText().toString();
+        HashMap<String, String> values = new HashMap<>(5);
+        values.put("url", mURLView.getText().toString());
+        values.put("login", mLoginView.getText().toString());
+        values.put("password", mPasswordView.getText().toString());
+        if (mUntrustCA.isChecked()) {
+            values.put("sa", "");
+        } else {
+            values.put("sa", null);
+        }
 
         boolean cancel = false;
         View focusView = null;
 
-        ULC = new UserLoginCheck();
+        ULC = new FOTT_WebSyncTask(this);
 
         // Check for a empty url.
-        if (TextUtils.isEmpty(url)) {
+        if (TextUtils.isEmpty(values.get("url"))) {
             mURLView.setError(getString(R.string.error_field_required));
             focusView = mURLView;
             cancel = true;
@@ -144,7 +154,7 @@ public class FOTT_LoginActivity extends AppCompatActivity {
         if (!cancel) {
 
             // Check for a valid password, if the user entered one.
-            if (TextUtils.isEmpty(password)) {
+            if (TextUtils.isEmpty(values.get("password"))) {
                 mPasswordView.setError(getString(R.string.error_invalid_password));
                 focusView = mPasswordView;
                 cancel = true;
@@ -153,26 +163,10 @@ public class FOTT_LoginActivity extends AppCompatActivity {
 
         if (!cancel) {
             // Check for a empty login.
-            if (TextUtils.isEmpty(login)) {
+            if (TextUtils.isEmpty(values.get("login"))) {
                 mLoginView.setError(getString(R.string.error_field_required));
                 focusView = mLoginView;
                 cancel = true;
-            }
-        }
-
-        if (!cancel) {
-
-            try {
-                FOApp = FOAPI_Connector.getInstance(url, login, password, !mUntrustCA.isChecked());
-            } catch (FOAPI_Exceptions e) {
-                //ToDo: error handler here
-                mLoginView.setError(e.toString());
-            }
-
-            cancel = !FOApp.isNetworkAvailable(this);
-            if (cancel) {
-                app.getError().error_handler(FOTT_ErrorsHandler.ERROR_SHOW_MESSAGE,CLASS_NAME,getString(R.string.nonetwork_message));
-                focusView = mURLView;
             }
         }
 
@@ -185,18 +179,10 @@ public class FOTT_LoginActivity extends AppCompatActivity {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            ULC.execute((Void) null);
+            ULC.execute(values);
         }
     }
 
-    private boolean isNetworkAvailable() {
-        // Using ConnectivityManager to check for Network Connection
-        ConnectivityManager connectivityManager = (ConnectivityManager) this.
-                getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetworkInfo = connectivityManager
-                .getActiveNetworkInfo();
-        return activeNetworkInfo != null;
-    }
 
     /**
      * Shows the progress UI and hides the login form.
@@ -234,18 +220,44 @@ public class FOTT_LoginActivity extends AppCompatActivity {
         }
     }
 
+    private void saveResultsAndFinish() {
+        FOTT_Preferences preferences = app.getPreferences();
+        preferences.set(getString(R.string.pref_sync_url), mURLView.getText().toString());
+        preferences.set(getString(R.string.pref_sync_login), mLoginView.getText().toString());
+        preferences.set(getString(R.string.pref_sync_certs), mUntrustCA.isChecked());
+        preferences.set(getString(R.string.pref_sync_save_creds), mSaveCred.isChecked());
+        if (mSaveCred.isChecked()) {
+            preferences.set(getString(R.string.pref_sync_password), mPasswordView.getText().toString());
+        } else {
+            preferences.set(getString(R.string.pref_sync_password), "");
+        }
+        Intent intent = new Intent();
+        setResult(RESULT_OK, intent);
+        finish();
+    }
+
+    private void errorHandler(FOTT_Exceptions error) {
+        mURLView.requestFocus();
+    }
 
     /**
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
-     */
-    public class UserLoginCheck extends AsyncTask<Void, Void, Boolean> {
+
+    public class UserLoginCheck extends AsyncTask<HashMap<String, String>, Void, Boolean> {
 
 
         @Override
-        protected Boolean doInBackground(Void... params) {
+        protected Boolean doInBackground(HashMap<String,String>... params) {
 
-            if (!isNetworkAvailable()) { return false;}
+            HashMap<String,String> param = params[0];
+            try {
+                FOApp = FOAPI_Connector.getInstance(app, param.get("url"),
+                        param.get("login"), param.get("password"), param.get("sa") == null);
+            } catch (FOAPI_Exceptions e) {
+                //ToDo: error handler here
+                mLoginView.setError(e.toString());
+            }
             app.setNeedFullSync(true);
 
             return app.dataSynchronization();
@@ -282,5 +294,6 @@ public class FOTT_LoginActivity extends AppCompatActivity {
             showProgress(false);
         }
     }
+     */
 }
 

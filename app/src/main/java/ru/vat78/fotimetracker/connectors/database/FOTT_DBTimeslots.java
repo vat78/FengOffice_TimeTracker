@@ -93,9 +93,13 @@ public class FOTT_DBTimeslots extends FOTT_DBCommon {
     }
 
 
-    private static ContentValues convertToDB(FOTT_Timeslot ts) {
+    private ContentValues convertToDB(FOTT_Timeslot ts) {
         ContentValues res = new ContentValues();
-        if (ts.getDbID() !=0 ) res.put(COMMON_COLUMN_ID, ts.getDbID());
+
+        long id = ts.getDbID();
+        if (id == 0 && ts.getWebId() != 0) id = isExistInDB(ts.getWebId());
+        if (id !=0 ) res.put(COMMON_COLUMN_ID, ts.getDbID());
+
         if (ts.getWebId() !=0 ) res.put(COMMON_COLUMN_FO_ID, ts.getWebId());
         res.put(COMMON_COLUMN_TITLE,ts.getName());
         res.put(COMMON_COLUMN_DESC,ts.getDesc());

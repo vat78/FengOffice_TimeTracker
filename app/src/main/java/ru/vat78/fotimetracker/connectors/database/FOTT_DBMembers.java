@@ -86,10 +86,14 @@ public class FOTT_DBMembers extends FOTT_DBCommon {
     }
 
 
-    private static ContentValues convertToDB(FOTT_Member member) {
+    private ContentValues convertToDB(FOTT_Member member) {
 
         ContentValues res = new ContentValues();
-        if (member.getDbID() != 0) res.put(COMMON_COLUMN_ID, member.getDbID());
+
+        long id = member.getDbID();
+        if (id == 0 && member.getWebId() != 0) id = isExistInDB(member.getWebId());
+        if (id != 0) res.put(COMMON_COLUMN_ID, member.getDbID());
+
         if (member.getWebId() != 0) res.put(COMMON_COLUMN_FO_ID, member.getWebId());
         res.put(COMMON_COLUMN_TITLE,member.getName());
 

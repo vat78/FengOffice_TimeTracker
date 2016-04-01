@@ -6,7 +6,6 @@ import android.database.sqlite.SQLiteDatabase;
 
 import java.util.ArrayList;
 
-import ru.vat78.fotimetracker.FOTT_App;
 import ru.vat78.fotimetracker.model.FOTT_Object;
 import ru.vat78.fotimetracker.model.FOTT_Task;
 import ru.vat78.fotimetracker.model.FOTT_TaskBuilder;
@@ -88,10 +87,13 @@ public class FOTT_DBTasks extends FOTT_DBCommon {
 
 
 
-    private static ContentValues convertToDB(FOTT_Task task) {
+    private ContentValues convertToDB(FOTT_Task task) {
         ContentValues res = new ContentValues();
 
-        if (task.getDbID() != 0) res.put(COMMON_COLUMN_ID, task.getDbID());
+        long id = task.getDbID();
+        if (id == 0 && task.getWebId() != 0) id = isExistInDB(task.getWebId());
+        if (id != 0) res.put(COMMON_COLUMN_ID, task.getDbID());
+
         if (task.getWebId() != 0) res.put(COMMON_COLUMN_FO_ID, task.getWebId());
         res.put(COMMON_COLUMN_TITLE, task.getName());
         res.put(COMMON_COLUMN_DESC, task.getDesc());
