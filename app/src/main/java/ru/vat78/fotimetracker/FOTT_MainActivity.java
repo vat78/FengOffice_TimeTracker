@@ -38,6 +38,7 @@ import ru.vat78.fotimetracker.model.FOTT_Timeslot;
 import ru.vat78.fotimetracker.model.FOTT_TimeslotBuilder;
 import ru.vat78.fotimetracker.views.FOTT_ErrorsHandler;
 import ru.vat78.fotimetracker.views.FOTT_MembersFragment;
+import ru.vat78.fotimetracker.views.FOTT_Parcel;
 import ru.vat78.fotimetracker.views.FOTT_TasksFragment;
 import ru.vat78.fotimetracker.views.FOTT_TimeslotsFragment;
 
@@ -47,13 +48,8 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
     static final int PICK_LOGIN_REQUEST = 1;
     static final int PICK_TSEDIT_REQUEST = 2;
 
-    static final String EXTRA_MESSAGE_TS_EDIT_ID = "ru.vat78.fotimetracker.TSID";
-    static final String EXTRA_MESSAGE_TS_EDIT_DURATION = "ru.vat78.fotimetracker.TSDURATION";
-    static final String EXTRA_MESSAGE_TS_EDIT_START = "ru.vat78.fotimetracker.TSSTART";
-    static final String EXTRA_MESSAGE_TS_EDIT_DESC = "ru.vat78.fotimetracker.TSDESC";
-    static final String EXTRA_MESSAGE_TS_EDIT_TASK_STATUS = "ru.vat78.fotimetracker.TASKSTATUS";
-    static final String EXTRA_MESSAGE_TS_EDIT_TASK_DUE = "ru.vat78.fotimetracker.TASKDUE";
-    static final String EXTRA_MESSAGE_TS_EDIT_TASK_NAME = "ru.vat78.fotimetracker.TASKNAME";
+    static final String EXTRA_MESSAGE_TS_EDIT_TIMESLOT = "ru.vat78.fotimetracker.TS";
+    static final String EXTRA_MESSAGE_TS_EDIT_TASK = "ru.vat78.fotimetracker.TASK";
     static final String EXTRA_MESSAGE_TS_EDIT_CLOSE_TASK = "ru.vat78.fotimetracker.TASKCLOSE";
     static final String EXTRA_MESSAGE_TS_EDIT_MOVE_TASK = "ru.vat78.fotimetracker.TASKMOVE";
 
@@ -274,11 +270,7 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
         //ToDo: need to use Parcelable object for Intent or keep current objects in MainApp
         if (requestCode == PICK_TSEDIT_REQUEST) {
             if (resultCode == RESULT_OK) {
-                FOTT_TimeslotBuilder ts = new FOTT_TimeslotBuilder();
-                ts.setStart(data.getLongExtra(EXTRA_MESSAGE_TS_EDIT_START, 0));
-                ts.setDuration(data.getLongExtra(EXTRA_MESSAGE_TS_EDIT_DURATION, 0));
-                ts.setWebID(data.getLongExtra(EXTRA_MESSAGE_TS_EDIT_ID, 0));
-                ts.setDesc(data.getStringExtra(EXTRA_MESSAGE_TS_EDIT_DESC));
+                FOTT_TimeslotBuilder ts = FOTT_Parcel.unpackTimeslot(data.getStringArrayExtra(EXTRA_MESSAGE_TS_EDIT_TIMESLOT));
 
                 if (MainApp.getCurTask() > 0) taskChangesHandler(data);
 
@@ -300,18 +292,13 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
         if (MainApp.getCurTask() > 0)
         {
             FOTT_Task t = tasks.getTaskById(MainApp.getCurTask());
-            int status =  intent.getIntExtra(EXTRA_MESSAGE_TS_EDIT_TASK_STATUS, t.getStatus());
-            long duedate = intent.getLongExtra(EXTRA_MESSAGE_TS_EDIT_TASK_DUE, t.getDueDate().getTime());
-            FOTT_TaskBuilder newTask = new FOTT_TaskBuilder(t);
-            if (tclose && status != t.getStatus()) {
-                newTask.setStatus(status);
-                newTask.setChanged(System.currentTimeMillis());
+            FOTT_Task newTask = FOTT_Parcel.unpackTask(
+                    intent.getStringArrayExtra(EXTRA_MESSAGE_TS_EDIT_TASK),
+                    new FOTT_TaskBuilder(t)).buildObject();
 
-                new FOTT_DBTasks(MainApp.getWritableDB()).saveObject(newTask.buildObject());
-            } else if (tmove && duedate != t.getDueDate().getTime()) {
-                newTask.setDueDate(duedate);
-                newTask.setChanged(System.currentTimeMillis());
-                new FOTT_DBTasks(MainApp.getWritableDB()).saveObject(newTask.buildObject());
+            if ((tclose && newTask.getStatus() != t.getStatus()) ||
+                    (tmove && newTask.getDueDate().compareTo(t.getDueDate()) != 0)) {
+                new FOTT_DBTasks(MainApp.getWritableDB()).saveObject(newTask);
             }
         }
     }
@@ -365,17 +352,18 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
 
 
     public void editTimeslot(FOTT_Timeslot ts) {
+
         Intent pickTS = new Intent(this,FOTT_TSEditActivity.class);
 
-        pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_ID, ts.getWebId());
-        pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_DESC, ts.getDesc());
-        pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_START, ts.getStart().getTime());
-        pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_DURATION, ts.getDuration());
+        pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_TIMESLOT, FOTT_Parcel.parcelTimeslot(ts));
         if (MainApp.getCurTask() != 0){
             FOTT_Task t = tasks.getTaskById(MainApp.getCurTask());
-            pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_TASK_NAME, t.getName());
-            pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_TASK_STATUS, t.getStatus());
-            pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_TASK_DUE, t.getDueDate().getTime());
+            pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_TASK, FOTT_Parcel.parcelTask(t));
+
+            pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_CLOSE_TASK,
+                    MainApp.getPreferences().getBoolean(getString(R.string.pref_can_close_task), false));
+            pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_MOVE_TASK,
+                    MainApp.getPreferences().getBoolean(getString(R.string.pref_can_change_task), false));
         }
 
         startActivityForResult(pickTS, PICK_TSEDIT_REQUEST);

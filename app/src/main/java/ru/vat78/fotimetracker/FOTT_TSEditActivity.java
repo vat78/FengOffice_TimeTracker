@@ -145,9 +145,9 @@ public class FOTT_TSEditActivity extends Activity {
     private void getInitialData() {
 
         Intent intent = getIntent();
-        ts = FOTT_Parcel.unpackTimeslot(intent.getStringArrayExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_ID)).buildObject();
+        ts = FOTT_Parcel.unpackTimeslot(intent.getStringArrayExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_TIMESLOT)).buildObject();
 
-        task = FOTT_Parcel.unpackTask(intent.getStringArrayExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_TASK_NAME)).buildObject();
+        task = FOTT_Parcel.unpackTask(intent.getStringArrayExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_TASK)).buildObject();
 
         tclose = intent.getBooleanExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_CLOSE_TASK, false);
         tmove = intent.getBooleanExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_MOVE_TASK, false);
@@ -198,7 +198,7 @@ public class FOTT_TSEditActivity extends Activity {
         tsb.setDesc(vTSDesc.getText().toString());
 
         result = new Intent();
-        result.putExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_ID, FOTT_Parcel.parcelTimeslot(tsb.buildObject()));
+        result.putExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_TIMESLOT, FOTT_Parcel.parcelTimeslot(tsb.buildObject()));
 
         if ((tclose || tmove) && task.getName() != null) {
             handleTaskChanges();
@@ -471,7 +471,7 @@ public class FOTT_TSEditActivity extends Activity {
             FOTT_TaskBuilder newTask = new FOTT_TaskBuilder(task);
             newTask.setStatus(newTaskStatus);
             newTask.setDueDate(newTaskDueDate);
-            result.putExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_TASK_NAME,
+            result.putExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_TASK,
                     FOTT_Parcel.parcelTask(newTask.buildObject()));
         }
 

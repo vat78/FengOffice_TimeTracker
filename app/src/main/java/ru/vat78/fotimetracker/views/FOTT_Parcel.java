@@ -44,8 +44,9 @@ public class FOTT_Parcel {
             template.setStart(System.currentTimeMillis() - l);
         }
         template.setDuration(l);
-
         if (!TextUtils.isEmpty(ts[5])) template.setTaskWebId(Long.getLong(ts[5]));
+        template.setChanged(System.currentTimeMillis());
+
         return template;
     }
 
@@ -74,6 +75,7 @@ public class FOTT_Parcel {
         if (!TextUtils.isEmpty(taskData[3])) template.setStartDate(Long.getLong(taskData[3]));
         if (!TextUtils.isEmpty(taskData[4])) template.setDueDate(Long.getLong(taskData[41]));
         if (!TextUtils.isEmpty(taskData[5])) template.setStatus(Integer.getInteger(taskData[5]));
+        template.setChanged(System.currentTimeMillis());
 
         return template;
     }
