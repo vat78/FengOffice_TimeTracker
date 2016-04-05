@@ -2,16 +2,18 @@ package ru.vat78.fotimetracker.controllers;
 
 abstract public class FOTT_Exceptions extends Exception {
 
-    public static enum ExeptionLevels{
+    public static enum ExceptionLevels {
         CRITICAL,
         WARNING,
         LOG
     }
 
-    private final ExeptionLevels level;
+    private final ExceptionLevels level;
 
-    public FOTT_Exceptions(String detailMessage, ExeptionLevels level) {
+    public FOTT_Exceptions(String detailMessage, ExceptionLevels level) {
         super(detailMessage);
         this.level = level;
     }
+
+    public ExceptionLevels getLevel() {return level;}
 }

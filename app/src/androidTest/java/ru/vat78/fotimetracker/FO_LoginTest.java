@@ -21,7 +21,7 @@ public class FO_LoginTest extends ActivityInstrumentationTestCase2<FOTT_LoginAct
     public void setUp()throws Exception {
 
 
-        //this.setActivity(new FOTT_LoginActivity());
+
     }
 
     public void testLogin() throws Exception {
@@ -43,5 +43,21 @@ public class FO_LoginTest extends ActivityInstrumentationTestCase2<FOTT_LoginAct
 
         getInstrumentation().waitForIdleSync();
         TouchUtils.clickView(this, mSignInButton);
+    }
+
+    public void testNewLogin() throws Exception {
+
+        FOTT_LoginActivity la = getActivity();
+        assertNotNull(la);
+
+        Intent intent = new Intent();
+        intent.putExtra("" + FOTT_WebSyncTask.URL, "ya.ru");
+        intent.putExtra("" + FOTT_WebSyncTask.LOGIN, "");
+        intent.putExtra("" + FOTT_WebSyncTask.PASSWORD, "");
+        intent.putExtra("" + FOTT_WebSyncTask.CERTIFICATES, FOTT_WebSyncTask.ANY_CERTS);
+
+        la.startActivity(intent);
+
+        getInstrumentation().waitForIdleSync();
     }
 }

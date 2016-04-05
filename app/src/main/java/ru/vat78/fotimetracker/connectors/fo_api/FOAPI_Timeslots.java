@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.HashMap;
 
 import ru.vat78.fotimetracker.connectors.FOTT_ObjectsConnector;
+import ru.vat78.fotimetracker.controllers.FOTT_Exceptions;
 import ru.vat78.fotimetracker.model.FOTT_Object;
 import ru.vat78.fotimetracker.model.FOTT_Timeslot;
 import ru.vat78.fotimetracker.model.FOTT_TimeslotBuilder;
@@ -133,7 +134,7 @@ public class FOAPI_Timeslots implements FOTT_ObjectsConnector {
         try {
             list = data.getJSONArray(FO_API_MAIN_OBJ);
         } catch (JSONException e) {
-            throw new FOAPI_Exceptions(CLASS_NAME + "\n" + data, FOAPI_Exceptions.ECodes.JSON_ARRAY_MISMATCH, FOAPI_Exceptions.ExeptionLevels.WARNING);
+            throw new FOAPI_Exceptions(CLASS_NAME + "\n" + data, FOAPI_Exceptions.ECodes.JSON_ARRAY_MISMATCH, FOTT_Exceptions.ExceptionLevels.WARNING);
         }
 
         if (list != null) {

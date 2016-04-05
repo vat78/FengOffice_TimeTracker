@@ -128,7 +128,7 @@ public class FOTT_DBTimeslots extends FOTT_DBCommon {
 
         app.getWritableDB().insertOrUpdate(TIMESLOTS_TABLE_NAME, ts);
 
-        if (!app.getError().is_error()) {
+        if (!app.getErrorCode().is_error()) {
             String[] members = timeslot.getMembersWebIds();
             if (members.length > 0) {
                 if (timeslot.getTaskId() == 0)

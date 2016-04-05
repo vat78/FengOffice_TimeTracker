@@ -126,7 +126,7 @@ public class FOTT_DBMembers extends FOTT_DBCommon {
             }
         }
         catch (Error e){
-            app.getError().error_handler(FOTT_ErrorsHandler.ERROR_SAVE_ERROR,CLASS_NAME,e.getMessage());
+            app.getErrorCode().error_handler(FOTT_ErrorsHandler.ERROR_SAVE_ERROR,CLASS_NAME,e.getMessage());
         }
 
     }

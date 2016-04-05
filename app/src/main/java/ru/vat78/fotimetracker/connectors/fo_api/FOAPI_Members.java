@@ -28,8 +28,8 @@ public class FOAPI_Members implements FOTT_ObjectsConnector {
     public ArrayList<FOTT_Member> loadObjects() throws FOAPI_Exceptions{
 
         JSONObject jo = webService.executeAPI(FOAPI_Dictionary.FO_METHOD_MEMBERS, FOAPI_Dictionary.FO_MEMBERS_WORKSPACE);
-        //if (!webService.getError().isEmpty())
-        //    webService.error_handler(FOTT_ErrorsHandler.ERROR_SAVE_ERROR, CLASS_NAME, webService.getError());
+        //if (!webService.getErrorCode().isEmpty())
+        //    webService.error_handler(FOTT_ErrorsHandler.ERROR_SAVE_ERROR, CLASS_NAME, webService.getErrorCode());
         return convertResults(jo);
     }
 
@@ -76,7 +76,7 @@ public class FOAPI_Members implements FOTT_ObjectsConnector {
         try {
             list = data.getJSONArray(FOAPI_Dictionary.FO_API_MAIN_OBJ);
         } catch (JSONException e) {
-            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.JSON_ARRAY_MISMATCH, FOTT_Exceptions.ExeptionLevels.WARNING);
+            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.JSON_ARRAY_MISMATCH, FOTT_Exceptions.ExceptionLevels.WARNING);
         }
 
         if (list != null) {

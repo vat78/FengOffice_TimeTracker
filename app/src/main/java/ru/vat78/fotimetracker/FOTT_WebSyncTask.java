@@ -5,7 +5,6 @@ import android.os.AsyncTask;
 import android.text.TextUtils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 import ru.vat78.fotimetracker.connectors.database.FOTT_DBMembers;
 import ru.vat78.fotimetracker.connectors.database.FOTT_DBTasks;
@@ -20,16 +19,18 @@ import ru.vat78.fotimetracker.model.FOTT_Task;
 import ru.vat78.fotimetracker.model.FOTT_Timeslot;
 
 
-public class FOTT_WebSyncTask extends AsyncTask<HashMap<String,String>, Void, FOTT_Exceptions> {
+public class FOTT_WebSyncTask extends AsyncTask<String, Void, FOTT_Exceptions> {
     private static final String CLASS_NAME = "FOTT_WebSyncTask";
 
-    public static final String URL = "url";
-    public static final String LOGIN = "login";
-    public static final String PASSWORD = "pwd";
-    public static final String CERTIFICATES = "sa";
-    public static final String TOKEN = "token";
-    public static final String ONLY_TRUST = "";
+    public static final int URL = 0;
+    public static final int LOGIN = 1;
+    public static final int PASSWORD = 2;
+    public static final int CERTIFICATES = 3;
+    public static final int TOKEN = 4;
+    public static final String BOOL_TRUE = "1";
     public static final String ANY_CERTS = "any";
+    public static final int SAVE_CREDENTIALS = 5;
+    public static final int PARAM_CNT = 5;
 
     final private FOTT_App mainApp;
     final private FOTT_ActivityInterface parent;
@@ -43,9 +44,9 @@ public class FOTT_WebSyncTask extends AsyncTask<HashMap<String,String>, Void, FO
     }
 
     @Override
-    protected FOTT_Exceptions doInBackground(HashMap<String,String>... params) {
+    protected FOTT_Exceptions doInBackground(String... params) {
         fullSync = mainApp.isNeedFullSync();
-        return dataSynchronization(params[0]);
+        return dataSynchronization(params);
     }
 
     @Override
@@ -56,18 +57,18 @@ public class FOTT_WebSyncTask extends AsyncTask<HashMap<String,String>, Void, FO
         parent.onPostExecuteWebSyncing(result);
     }
 
-    private FOTT_Exceptions dataSynchronization(HashMap<String,String> params){
+    private FOTT_Exceptions dataSynchronization(String[] params){
 
         long stamp = System.currentTimeMillis();
 
         try {
             db = mainApp.getWritableDB();
-            if (TextUtils.isEmpty(params.get(TOKEN))) {
-                webService = new FOAPI_Connector(mainApp, params.get(URL), params.get(LOGIN),
-                        params.get(PASSWORD), params.get(CERTIFICATES).equals(ONLY_TRUST));
+            if (TextUtils.isEmpty(params[TOKEN])) {
+                webService = new FOAPI_Connector(mainApp, params[URL], params[LOGIN],
+                        params[PASSWORD], params[CERTIFICATES].equals(BOOL_TRUE));
             } else {
-                webService = new FOAPI_Connector(mainApp, params.get(URL),params.get(TOKEN),
-                        params.get(CERTIFICATES).equals(ONLY_TRUST));
+                webService = new FOAPI_Connector(mainApp, params[URL],params[TOKEN],
+                        params[CERTIFICATES].equals(BOOL_TRUE));
             }
 
             syncMembers();

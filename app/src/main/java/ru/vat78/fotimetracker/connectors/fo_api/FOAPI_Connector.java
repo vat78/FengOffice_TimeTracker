@@ -40,7 +40,7 @@ public class FOAPI_Connector {
 
         this.context = context;
         if (!this.isNetworkAvailable())
-            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.NO_INTERNET, FOTT_Exceptions.ExeptionLevels.WARNING);
+            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.NO_INTERNET, FOTT_Exceptions.ExceptionLevels.WARNING);
         this.onlyTrustedSSL = onlyTrustedSSL;
         this.urlOfServer = buildUrlWithCheck(url);
         if (this.onlyTrustedSSL) checkSSLCertificate();
@@ -53,7 +53,7 @@ public class FOAPI_Connector {
 
         this.context = context;
         if (!this.isNetworkAvailable())
-            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.NO_INTERNET, FOTT_Exceptions.ExeptionLevels.WARNING);
+            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.NO_INTERNET, FOTT_Exceptions.ExceptionLevels.WARNING);
         this.onlyTrustedSSL = onlyTrustedSSL;
         this.urlOfServer = buildUrlWithCheck(url);
         this.token = token;
@@ -71,7 +71,7 @@ public class FOAPI_Connector {
             return null;
         }
         if (TextUtils.isEmpty(this.token))
-            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.CREDENTIAL_ERROR, FOTT_Exceptions.ExeptionLevels.CRITICAL);
+            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.CREDENTIAL_ERROR, FOTT_Exceptions.ExceptionLevels.CRITICAL);
 
         checkVatAPIPlugin();
 
@@ -91,7 +91,7 @@ public class FOAPI_Connector {
             return null;
         }
         if (TextUtils.isEmpty(this.token))
-            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.CREDENTIAL_ERROR, FOTT_Exceptions.ExeptionLevels.CRITICAL);
+            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.CREDENTIAL_ERROR, FOTT_Exceptions.ExceptionLevels.CRITICAL);
 
         checkVatAPIPlugin();
 
@@ -128,7 +128,7 @@ public class FOAPI_Connector {
             return null;
         }
         if (TextUtils.isEmpty(this.token))
-            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.CREDENTIAL_ERROR, FOTT_Exceptions.ExeptionLevels.CRITICAL);
+            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.CREDENTIAL_ERROR, FOTT_Exceptions.ExceptionLevels.CRITICAL);
 
         checkVatAPIPlugin();
 
@@ -149,7 +149,7 @@ public class FOAPI_Connector {
             return null;
         }
         if (TextUtils.isEmpty(this.token))
-            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.CREDENTIAL_ERROR, FOTT_Exceptions.ExeptionLevels.CRITICAL);
+            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.CREDENTIAL_ERROR, FOTT_Exceptions.ExceptionLevels.CRITICAL);
 
         checkVatAPIPlugin();
 
@@ -167,7 +167,7 @@ public class FOAPI_Connector {
     private String buildUrlWithCheck(String url) throws FOAPI_Exceptions {
 
         if (TextUtils.isEmpty(url))
-            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.WRONG_URL, FOTT_Exceptions.ExeptionLevels.CRITICAL);
+            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.WRONG_URL, FOTT_Exceptions.ExceptionLevels.CRITICAL);
 
         if (!url.endsWith("/")) {
             url += "/";
@@ -179,7 +179,7 @@ public class FOAPI_Connector {
             try {
                 WebStream.getInstance().getDataFromURL(url, false);
             } catch (IOException e) {
-                throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.WRONG_URL, FOTT_Exceptions.ExeptionLevels.CRITICAL);
+                throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.WRONG_URL, FOTT_Exceptions.ExceptionLevels.CRITICAL);
             }
         }
 
@@ -200,7 +200,7 @@ public class FOAPI_Connector {
             try {
                 WebStream.getInstance().getDataFromURL(result + url, false);
             } catch (IOException e) {
-                throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.WRONG_URL, FOTT_Exceptions.ExeptionLevels.CRITICAL);
+                throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.WRONG_URL, FOTT_Exceptions.ExceptionLevels.CRITICAL);
             }
         }
 
@@ -211,7 +211,7 @@ public class FOAPI_Connector {
         try {
             WebStream.getInstance().getDataFromURL(urlOfServer, onlyTrustedSSL);
         } catch (IOException e) {
-            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.CERTIFICATE_ERROR, FOTT_Exceptions.ExeptionLevels.CRITICAL);
+            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.CERTIFICATE_ERROR, FOTT_Exceptions.ExceptionLevels.CRITICAL);
         }
     }
 
@@ -219,14 +219,14 @@ public class FOAPI_Connector {
         try {
             WebStream.getInstance().getDataFromURL(this.urlOfServer + FOAPI_Dictionary.FO_API_CHECK_FO, this.onlyTrustedSSL);
         } catch (IOException e) {
-            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.NO_FENGOFFICE, FOTT_Exceptions.ExeptionLevels.CRITICAL);
+            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.NO_FENGOFFICE, FOTT_Exceptions.ExceptionLevels.CRITICAL);
         }
     }
 
     private void checkVatAPIPlugin() throws FOAPI_Exceptions {
 
         if (this.token.isEmpty()) {
-            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.CREDENTIAL_ERROR, FOTT_Exceptions.ExeptionLevels.CRITICAL);
+            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.CREDENTIAL_ERROR, FOTT_Exceptions.ExceptionLevels.CRITICAL);
         }
 
         String request = this.urlOfServer + FOAPI_Dictionary.FO_API_CHECK_PLUGIN;
@@ -235,24 +235,24 @@ public class FOAPI_Connector {
 
         JSONObject jo = getJSONObjfromURL(request);
         if (jo == null) {
-            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.NO_VATAPI_PLUGIN, FOTT_Exceptions.ExeptionLevels.CRITICAL);
+            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.NO_VATAPI_PLUGIN, FOTT_Exceptions.ExceptionLevels.CRITICAL);
         }
 
         int pluginState;
         try {
             pluginState = jo.getInt(FOAPI_Dictionary.FO_API_FIELD_PLUGIN_STATE);
         } catch (Exception e) {
-            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.NO_VATAPI_PLUGIN, FOTT_Exceptions.ExeptionLevels.CRITICAL);
+            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.NO_VATAPI_PLUGIN, FOTT_Exceptions.ExceptionLevels.CRITICAL);
         }
 
         if (pluginState == 0)
-            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.VATAPI_PLUGIN_INACTIVE, FOTT_Exceptions.ExeptionLevels.CRITICAL);
+            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.VATAPI_PLUGIN_INACTIVE, FOTT_Exceptions.ExceptionLevels.CRITICAL);
     }
 
     private String checkFengOfficeCredentials(String user, String password) throws FOAPI_Exceptions {
 
         if (TextUtils.isEmpty(user)) {
-            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.CREDENTIAL_ERROR, FOTT_Exceptions.ExeptionLevels.CRITICAL);
+            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.CREDENTIAL_ERROR, FOTT_Exceptions.ExceptionLevels.CRITICAL);
         }
 
         String request = this.urlOfServer + FOAPI_Dictionary.FO_API_CONNECT;
@@ -262,14 +262,14 @@ public class FOAPI_Connector {
         JSONObject jo = getJSONObjfromURL(request);
 
         if (jo == null) {
-            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.CREDENTIAL_ERROR, FOTT_Exceptions.ExeptionLevels.CRITICAL);
+            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.CREDENTIAL_ERROR, FOTT_Exceptions.ExceptionLevels.CRITICAL);
         }
 
         String result;
         try {
             result = jo.getString(FOAPI_Dictionary.FO_API_FIELD_TOKEN);
         } catch (JSONException e) {
-            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.JSON_OBJECT_MISMATCH, FOTT_Exceptions.ExeptionLevels.CRITICAL);
+            throw new FOAPI_Exceptions(FOAPI_Exceptions.ECodes.JSON_OBJECT_MISMATCH, FOTT_Exceptions.ExceptionLevels.CRITICAL);
         }
         return result;
 
@@ -308,7 +308,7 @@ public class FOAPI_Connector {
         try {
             data = WebStream.getInstance().getDataFromURL(url, onlyTrustedSSL);
         } catch (IOException e) {
-            throw new FOAPI_Exceptions(url, FOAPI_Exceptions.ECodes.API_REQUEST_ERROR, FOTT_Exceptions.ExeptionLevels.WARNING);
+            throw new FOAPI_Exceptions(url, FOAPI_Exceptions.ECodes.API_REQUEST_ERROR, FOTT_Exceptions.ExceptionLevels.WARNING);
         }
 
         data = FindErrorInData(data);
@@ -317,7 +317,7 @@ public class FOAPI_Connector {
             jObj = new JSONObject(data);
 
         } catch (JSONException e) {
-            throw new FOAPI_Exceptions(url + "\n" + data, FOAPI_Exceptions.ECodes.API_WRONG_DATA, FOTT_Exceptions.ExeptionLevels.WARNING);
+            throw new FOAPI_Exceptions(url + "\n" + data, FOAPI_Exceptions.ECodes.API_WRONG_DATA, FOTT_Exceptions.ExceptionLevels.WARNING);
         }
         return jObj;
     }
@@ -330,7 +330,7 @@ public class FOAPI_Connector {
         try {
             jArr = jObj.getJSONArray("fo_obj");
         } catch (JSONException e) {
-            throw new FOAPI_Exceptions(url + "\n" + jObj.toString(), FOAPI_Exceptions.ECodes.API_WRONG_DATA, FOTT_Exceptions.ExeptionLevels.WARNING);
+            throw new FOAPI_Exceptions(url + "\n" + jObj.toString(), FOAPI_Exceptions.ECodes.API_WRONG_DATA, FOTT_Exceptions.ExceptionLevels.WARNING);
         }
 
         return jArr;
@@ -339,15 +339,15 @@ public class FOAPI_Connector {
     private String FindErrorInData(String data) throws FOAPI_Exceptions {
 
         if (TextUtils.isEmpty(data)) {
-            throw new FOAPI_Exceptions(data, FOAPI_Exceptions.ECodes.API_EMPTY_DATA, FOTT_Exceptions.ExeptionLevels.WARNING);
+            throw new FOAPI_Exceptions(data, FOAPI_Exceptions.ECodes.API_EMPTY_DATA, FOTT_Exceptions.ExceptionLevels.WARNING);
         }
 
         if (data.startsWith("Fatal error")) {
-            throw new FOAPI_Exceptions(data, FOAPI_Exceptions.ECodes.API_FATAL_ERROR, FOTT_Exceptions.ExeptionLevels.WARNING);
+            throw new FOAPI_Exceptions(data, FOAPI_Exceptions.ECodes.API_FATAL_ERROR, FOTT_Exceptions.ExceptionLevels.WARNING);
         }
 
         if (data.startsWith("API Response")) {
-            throw new FOAPI_Exceptions(data, FOAPI_Exceptions.ECodes.API_WRONG_DATA, FOTT_Exceptions.ExeptionLevels.WARNING);
+            throw new FOAPI_Exceptions(data, FOAPI_Exceptions.ECodes.API_WRONG_DATA, FOTT_Exceptions.ExceptionLevels.WARNING);
         }
 
         if (data.startsWith("[")) {
@@ -358,7 +358,7 @@ public class FOAPI_Connector {
             data = "{\"" + FOAPI_Dictionary.FO_API_FIELD_RESULT + "\":\"" + data + "\"}";
 
         if (!data.startsWith("{")) {
-            throw new FOAPI_Exceptions(data, FOAPI_Exceptions.ECodes.API_WRONG_DATA, FOTT_Exceptions.ExeptionLevels.WARNING);
+            throw new FOAPI_Exceptions(data, FOAPI_Exceptions.ECodes.API_WRONG_DATA, FOTT_Exceptions.ExceptionLevels.WARNING);
         }
 
         return data;

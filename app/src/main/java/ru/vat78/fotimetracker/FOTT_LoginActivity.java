@@ -21,8 +21,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import java.util.HashMap;
-
+import ru.vat78.fotimetracker.connectors.fo_api.FOAPI_Exceptions;
 import ru.vat78.fotimetracker.controllers.FOTT_Exceptions;
 
 /**
@@ -78,15 +77,9 @@ public class FOTT_LoginActivity extends AppCompatActivity implements FOTT_Activi
         mLoginView = (AutoCompleteTextView) findViewById(R.id.login);
         mUntrustCA = (CheckBox) findViewById(R.id.untrustCA);
         mSaveCred = (CheckBox) findViewById(R.id.save_cred);
-
-        FOTT_Preferences preferences = app.getPreferences();
-        mURLView.setText(preferences.getString(getString(R.string.pref_sync_url), ""));
-        mLoginView.setText(preferences.getString(getString(R.string.pref_sync_login), ""));
-        mUntrustCA.setChecked(preferences.getBoolean(getString(R.string.pref_sync_certs), true));
-
         mPasswordView = (EditText) findViewById(R.id.password);
-        mPasswordView.setText(preferences.getString(getString(R.string.pref_sync_password), ""));
-        mSaveCred.setChecked(preferences.getBoolean(getString(R.string.pref_sync_save_creds), false));
+
+        getInitialParams();
 
                 mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -129,14 +122,14 @@ public class FOTT_LoginActivity extends AppCompatActivity implements FOTT_Activi
         mPasswordView.setError(null);
 
         // Store values at the time of the login attempt.
-        HashMap<String, String> values = new HashMap<>(5);
-        values.put("url", mURLView.getText().toString());
-        values.put("login", mLoginView.getText().toString());
-        values.put("password", mPasswordView.getText().toString());
+        String[] values = new String[FOTT_WebSyncTask.PARAM_CNT];
+        values[FOTT_WebSyncTask.URL] = mURLView.getText().toString();
+        values[FOTT_WebSyncTask.LOGIN] = mLoginView.getText().toString();
+        values[FOTT_WebSyncTask.PASSWORD] = mPasswordView.getText().toString();
         if (mUntrustCA.isChecked()) {
-            values.put("sa", "");
+            values[FOTT_WebSyncTask.CERTIFICATES] = FOTT_WebSyncTask.ANY_CERTS;
         } else {
-            values.put("sa", null);
+            values[FOTT_WebSyncTask.CERTIFICATES] = FOTT_WebSyncTask.BOOL_TRUE;
         }
 
         boolean cancel = false;
@@ -145,7 +138,7 @@ public class FOTT_LoginActivity extends AppCompatActivity implements FOTT_Activi
         ULC = new FOTT_WebSyncTask(this);
 
         // Check for a empty url.
-        if (TextUtils.isEmpty(values.get("url"))) {
+        if (TextUtils.isEmpty(values[FOTT_WebSyncTask.URL])) {
             mURLView.setError(getString(R.string.error_field_required));
             focusView = mURLView;
             cancel = true;
@@ -154,7 +147,7 @@ public class FOTT_LoginActivity extends AppCompatActivity implements FOTT_Activi
         if (!cancel) {
 
             // Check for a valid password, if the user entered one.
-            if (TextUtils.isEmpty(values.get("password"))) {
+            if (TextUtils.isEmpty(values[FOTT_WebSyncTask.PASSWORD])) {
                 mPasswordView.setError(getString(R.string.error_invalid_password));
                 focusView = mPasswordView;
                 cancel = true;
@@ -163,7 +156,7 @@ public class FOTT_LoginActivity extends AppCompatActivity implements FOTT_Activi
 
         if (!cancel) {
             // Check for a empty login.
-            if (TextUtils.isEmpty(values.get("login"))) {
+            if (TextUtils.isEmpty(values[FOTT_WebSyncTask.LOGIN])) {
                 mLoginView.setError(getString(R.string.error_field_required));
                 focusView = mLoginView;
                 cancel = true;
@@ -220,80 +213,73 @@ public class FOTT_LoginActivity extends AppCompatActivity implements FOTT_Activi
         }
     }
 
+    private void getInitialParams() {
+
+        Intent intent = getIntent();
+
+        mURLView.setText(intent.getStringExtra("" + FOTT_WebSyncTask.URL));
+        mLoginView.setText(intent.getStringExtra("" + FOTT_WebSyncTask.LOGIN));
+        mUntrustCA.setChecked(intent.getStringExtra("" + FOTT_WebSyncTask.CERTIFICATES).equals(FOTT_WebSyncTask.ANY_CERTS));
+
+        mPasswordView.setText(intent.getStringExtra("" + FOTT_WebSyncTask.PASSWORD));
+        mSaveCred.setChecked(intent.getStringExtra("" + FOTT_WebSyncTask.SAVE_CREDENTIALS).equals(FOTT_WebSyncTask.BOOL_TRUE));
+    }
+
     private void saveResultsAndFinish() {
-        FOTT_Preferences preferences = app.getPreferences();
-        preferences.set(getString(R.string.pref_sync_url), mURLView.getText().toString());
-        preferences.set(getString(R.string.pref_sync_login), mLoginView.getText().toString());
-        preferences.set(getString(R.string.pref_sync_certs), mUntrustCA.isChecked());
-        preferences.set(getString(R.string.pref_sync_save_creds), mSaveCred.isChecked());
-        if (mSaveCred.isChecked()) {
-            preferences.set(getString(R.string.pref_sync_password), mPasswordView.getText().toString());
-        } else {
-            preferences.set(getString(R.string.pref_sync_password), "");
-        }
+
         Intent intent = new Intent();
+
+        intent.putExtra("" + FOTT_WebSyncTask.URL, mURLView.getText().toString());
+        intent.putExtra("" + FOTT_WebSyncTask.LOGIN, mLoginView.getText().toString());
+        if (mUntrustCA.isChecked()) {
+            intent.putExtra("" + FOTT_WebSyncTask.CERTIFICATES, FOTT_WebSyncTask.ANY_CERTS);
+        } else {
+            intent.putExtra("" + FOTT_WebSyncTask.CERTIFICATES, FOTT_WebSyncTask.BOOL_TRUE);
+        }
+
+        if (mSaveCred.isChecked()) {
+            intent.putExtra("" + FOTT_WebSyncTask.PASSWORD, mPasswordView.getText().toString());
+            intent.putExtra("" + FOTT_WebSyncTask.SAVE_CREDENTIALS, FOTT_WebSyncTask.BOOL_TRUE);
+        } else {
+            intent.putExtra("" + FOTT_WebSyncTask.PASSWORD, "");
+            intent.putExtra("" + FOTT_WebSyncTask.SAVE_CREDENTIALS, "");
+        }
+
         setResult(RESULT_OK, intent);
         finish();
     }
 
     private void errorHandler(FOTT_Exceptions error) {
-        mURLView.requestFocus();
-    }
 
-    /**
-     * Represents an asynchronous login/registration task used to authenticate
-     * the user.
-
-    public class UserLoginCheck extends AsyncTask<HashMap<String, String>, Void, Boolean> {
-
-
-        @Override
-        protected Boolean doInBackground(HashMap<String,String>... params) {
-
-            HashMap<String,String> param = params[0];
+        TextView focusView = null;
+        if (error.getLevel() == FOTT_Exceptions.ExceptionLevels.CRITICAL) {
+            FOAPI_Exceptions apiError = null;
             try {
-                FOApp = FOAPI_Connector.getInstance(app, param.get("url"),
-                        param.get("login"), param.get("password"), param.get("sa") == null);
-            } catch (FOAPI_Exceptions e) {
-                //ToDo: error handler here
-                mLoginView.setError(e.toString());
+                apiError = (FOAPI_Exceptions) error;
+            } catch (Exception e) {
+                focusView = mURLView;
             }
-            app.setNeedFullSync(true);
 
-            return app.dataSynchronization();
-        }
-
-        @Override
-        protected void onPostExecute(final Boolean success) {
-            ULC = null;
-            showProgress(false);
-
-            if (success) {
-                FOTT_Preferences preferences = app.getPreferences();
-                preferences.set(getString(R.string.pref_sync_url), mURLView.getText().toString());
-                preferences.set(getString(R.string.pref_sync_login), mLoginView.getText().toString());
-                preferences.set(getString(R.string.pref_sync_certs), mUntrustCA.isChecked());
-                preferences.set(getString(R.string.pref_sync_save_creds), mSaveCred.isChecked());
-                if (mSaveCred.isChecked()) {
-                    preferences.set(getString(R.string.pref_sync_password), mPasswordView.getText().toString());
-                } else {
-                    preferences.set(getString(R.string.pref_sync_password), "");
+            if (apiError != null) {
+                switch (apiError.getErrorCode()) {
+                    case CREDENTIAL_ERROR:
+                        focusView = mLoginView;
+                        break;
+                    default:
+                        focusView = mURLView;
+                        break;
                 }
-                Intent intent = new Intent();
-                setResult(RESULT_OK, intent);
-                finish();
-            } else {
-                //app.getError().error_handler(FOTT_ErrorsHandler.ERROR_SHOW_MESSAGE,CLASS_NAME,FOApp.getError());
-                mURLView.requestFocus();
             }
         }
 
-        @Override
-        protected void onCancelled() {
-            ULC = null;
-            showProgress(false);
-        }
+        if (focusView != null )
+            showErrorAlert(focusView, error.getLocalizedMessage());
     }
-     */
+
+    private void showErrorAlert(TextView errorView, String errorText) {
+        errorView.setError(errorText);
+        errorView.requestFocus();
+    }
+
 }
 
