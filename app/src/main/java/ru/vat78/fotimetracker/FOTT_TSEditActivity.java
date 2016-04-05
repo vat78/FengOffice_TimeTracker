@@ -20,42 +20,40 @@ import android.widget.TimePicker;
 import java.text.ParsePosition;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.SimpleTimeZone;
-import java.util.TimeZone;
 
-/**
- * Created by vat on 14.12.2015.
- */
+import ru.vat78.fotimetracker.model.FOTT_Task;
+import ru.vat78.fotimetracker.model.FOTT_TaskBuilder;
+import ru.vat78.fotimetracker.model.FOTT_Timeslot;
+import ru.vat78.fotimetracker.model.FOTT_TimeslotBuilder;
+import ru.vat78.fotimetracker.views.FOTT_Parcel;
+
 public class FOTT_TSEditActivity extends Activity {
 
     FOTT_App app;
 
+    private FOTT_Timeslot ts;
+    private FOTT_Task task;
+
     private long now;
-    private Spinner minutes;
-    private Spinner hours;
-    private TextView days;
-    private TextView start_date;
-    private TextView start_time;
-    private TextView end_date;
-    private TextView end_time;
+    private Spinner vMinutes;
+    private Spinner vHours;
+    private TextView vDays;
+    private TextView vStartDate;
+    private TextView vStartTime;
+    private TextView vEndDate;
+    private TextView vEndTime;
+    private TextView vTSDesc;
 
     private boolean tmove;
     private boolean tclose;
-    private String taskName;
-    private int taskComplete;
-    private long taskDue;
 
-
-    private long tsId;
-    private Date start;
-    private Date finish;
-    long duration;
     private Calendar c;
 
     private Intent result;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         app = (FOTT_App) getApplication();
 
@@ -65,41 +63,34 @@ public class FOTT_TSEditActivity extends Activity {
 
         setContentView(R.layout.activity_timeslot_edit);
 
-        Intent intent = getIntent();
-        tsId = intent.getLongExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_ID,0);
-        String s = intent.getStringExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_DESC);
-        if (!s.isEmpty()){
-            TextView desc = (TextView) findViewById(R.id.tsAddDesc);
-            desc.setText(s);
-        }
-        duration = intent.getLongExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_DURATION,15 * 60 * 1000);
-        long l = intent.getLongExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_START,now - duration);
-        start = new Date(l);
-        l += duration;
-        finish = new Date(l);
+        vMinutes = (Spinner)  findViewById(R.id.tsAddMinutes);
+        vHours = (Spinner) findViewById(R.id.tsAddHours);
+        vDays = (TextView) findViewById(R.id.tsDaysLabel);
+        vStartDate = (TextView) findViewById(R.id.tsAddStartDate);
+        vStartTime = (TextView) findViewById(R.id.tsAddStartTime);
+        vEndDate = (TextView) findViewById(R.id.tsAddEndDate);
+        vEndTime = (TextView) findViewById(R.id.tsAddEndTime);
+        vTSDesc = (TextView) findViewById(R.id.tsAddDesc);
 
-        minutes = (Spinner)  findViewById(R.id.tsAddMinutes);
-        hours = (Spinner) findViewById(R.id.tsAddHours);
-        days = (TextView) findViewById(R.id.tsDaysLabel);
-        start_date = (TextView) findViewById(R.id.tsAddStartDate);
-        start_time = (TextView) findViewById(R.id.tsAddStartTime);
-        end_date = (TextView) findViewById(R.id.tsAddEndDate);
-        end_time = (TextView) findViewById(R.id.tsAddEndTime);
+        getInitialData();
+        vTSDesc.setText(ts.getDesc());
 
-        fillFields(true);
+        fillTSFields();
+        prepareTaskArea();
 
         AdapterView.OnItemSelectedListener onSelect = new AdapterView.OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> parent,
                                        View itemSelected, int selectedItemPosition, long selectedId) {
-                setDuration();
+                getDurationFromForm();
             }
 
             public void onNothingSelected(AdapterView<?> parent) {
+                getDurationFromForm();
             }
         };
 
-        minutes.setOnItemSelectedListener(onSelect);
-        hours.setOnItemSelectedListener(onSelect);
+        vMinutes.setOnItemSelectedListener(onSelect);
+        vHours.setOnItemSelectedListener(onSelect);
 
 
         Button cancel = (Button) findViewById(R.id.tsAddCancelBtn);
@@ -117,66 +108,63 @@ public class FOTT_TSEditActivity extends Activity {
             @Override
             public void onClick(View v) {
 
-                TextView desc = (TextView) findViewById(R.id.tsAddDesc);
-
-                result = new Intent();
-                result.putExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_ID, tsId);
-                result.putExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_START, start.getTime());
-                result.putExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_DURATION, duration);
-                result.putExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_DESC, desc.getText().toString());
-                if ((tclose || tmove) && taskName != null) gotoTaskChanges();
-                else {
-                    setResult(RESULT_OK, result);
-                    finish();
-                }
+                saveMadeChanges();
             }
         });
 
-        start_date.setOnClickListener(new View.OnClickListener() {
+        vStartDate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 onDateChanges(v);
             }
         });
 
-        end_date.setOnClickListener(new View.OnClickListener() {
+        vEndDate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 onDateChanges(v);
             }
         });
 
-        start_time.setOnClickListener(new View.OnClickListener() {
+        vStartTime.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 onTimeChanges(v);
             }
         });
 
-        end_time.setOnClickListener(new View.OnClickListener() {
+        vEndTime.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 onTimeChanges(v);
             }
         });
 
-        //Area for task editing
-        tclose = app.getPreferences().getBoolean(getString(R.string.pref_can_close_task),false);
-        tmove = app.getPreferences().getBoolean(getString(R.string.pref_can_change_task), false);
-        taskComplete = intent.getIntExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_TASK_STATUS, 0);
-        if (taskComplete > 1) taskComplete = 1;
-        taskDue = intent.getLongExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_TASK_DUE, 0);
-        taskName = intent.getStringExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_TASK_NAME);
+    }
+
+    private void getInitialData() {
+
+        Intent intent = getIntent();
+        ts = FOTT_Parcel.unpackTimeslot(intent.getStringArrayExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_ID)).buildObject();
+
+        task = FOTT_Parcel.unpackTask(intent.getStringArrayExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_TASK_NAME)).buildObject();
+
+        tclose = intent.getBooleanExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_CLOSE_TASK, false);
+        tmove = intent.getBooleanExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_MOVE_TASK, false);
+    }
+
+
+    private void prepareTaskArea() {
 
         RelativeLayout vTaskEdit = (RelativeLayout) findViewById(R.id.tsAddTaskArea);
-        if ((tclose || tmove) && taskName != null) {
+        if ((tclose || tmove) && task.getName() != null) {
             vTaskEdit.setVisibility(View.VISIBLE);
             TextView vTaskCloseDesc = (TextView) findViewById(R.id.tsAddTaskCompleteDesc);
             CheckBox vTaskClose = (CheckBox) findViewById(R.id.tsAddTaskComplete);
             if (tclose) {
                 vTaskClose.setVisibility(View.VISIBLE);
                 vTaskCloseDesc.setVisibility(View.VISIBLE);
-                vTaskClose.setChecked(taskComplete != 0);
+                vTaskClose.setChecked(task.getStatus() == FOTT_Task.STATUS_COMPLETED);
             } else {
                 vTaskClose.setVisibility(View.INVISIBLE);
                 vTaskCloseDesc.setVisibility(View.INVISIBLE);
@@ -187,7 +175,7 @@ public class FOTT_TSEditActivity extends Activity {
             if (tmove) {
                 vTaskMove.setVisibility(View.VISIBLE);
                 vTaskMoveDesc.setVisibility(View.VISIBLE);
-                vTaskMove.setText(app.getDateFormat().format(new Date(taskDue)));
+                vTaskMove.setText(app.getDateFormat().format(task.getDueDate()));
                 vTaskMove.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -201,119 +189,180 @@ public class FOTT_TSEditActivity extends Activity {
             }
 
         } else vTaskEdit.setVisibility(View.GONE);
-
     }
 
-    private void gotoTaskChanges() {
-        int new_tclose = taskComplete;
-        Calendar cl = Calendar.getInstance();
-        cl.setTimeInMillis(taskDue);
-        long tzone = (long) cl.getTimeZone().getOffset(taskDue);
-        long new_tdue = taskDue;
-        CheckBox vTaskClose;
-        TextView vTaskDue = (TextView) findViewById(R.id.tsAddTaskDue);
 
+    private void saveMadeChanges() {
+
+        FOTT_TimeslotBuilder tsb = new FOTT_TimeslotBuilder(ts);
+        tsb.setDesc(vTSDesc.getText().toString());
+
+        result = new Intent();
+        result.putExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_ID, FOTT_Parcel.parcelTimeslot(tsb.buildObject()));
+
+        if ((tclose || tmove) && task.getName() != null) {
+            handleTaskChanges();
+        }
+        else {
+            setResult(RESULT_OK, result);
+            finish();
+        }
+    }
+
+    private void handleTaskChanges() {
+
+        int newTaskStatus = getTaskStatusFromForm();
+        long newTaskDueDate = getTaskDueDateFromForm();
+        Calendar cl = Calendar.getInstance();
+        cl.setTimeInMillis(newTaskDueDate);
+        long tzone = (long) cl.getTimeZone().getOffset(newTaskDueDate);
+
+        StringBuffer message = new StringBuffer();
+        if (newTaskStatus != task.getStatus()) {
+            message.append(getString(R.string.addform_close_question));
+            if (newTaskStatus == FOTT_Task.STATUS_ACTIVE) {
+                message.append(getString(R.string.addform_resume));
+            } else {
+                message.append(getString(R.string.addform_finish));
+            }
+            message.append(getString(R.string.addform_task))
+                .append(task.getName())
+                .append(getString(R.string.addform_qestion));
+        }
+        else if (newTaskDueDate != task.getDueDate().getTime() && newTaskDueDate != (task.getDueDate().getTime() - tzone)) {
+            message.append(getString(R.string.addform_move_date))
+                .append(app.getDateFormat().format(new Date(newTaskDueDate)))
+                .append(getString(R.string.addform_for_task))
+                .append(task.getName())
+                .append(getString(R.string.addform_qestion));
+        }
+        showConfirmationTaskDialog(message.toString());
+    }
+
+    private int getTaskStatusFromForm() {
+
+        int result = task.getStatus();
+
+        CheckBox vTaskClose;
         if (tclose) {
             vTaskClose = (CheckBox) findViewById(R.id.tsAddTaskComplete);
-            if (vTaskClose.isChecked()) new_tclose = 1; else new_tclose = 0;
+            if (vTaskClose.isChecked()) {
+                result = FOTT_Task.STATUS_COMPLETED;
+            } else {
+                result = FOTT_Task.STATUS_ACTIVE;
+            }
         }
-        if (tmove){
-            ParsePosition pos = new ParsePosition(0);
-            Date new_date = app.getDateFormat().parse(vTaskDue.getText().toString(), pos);
-            //tzone = new_date.getTimezoneOffset();
-            new_tdue = new_date.getTime();
-        }
-
-        String message = "";
-        if (new_tclose != taskComplete) {
-            message = getString(R.string.addform_close_question);
-            if (new_tclose == 0) message += getString(R.string.addform_resume); else message += getString(R.string.addform_finish);
-            message += getString(R.string.addform_task) + taskName + getString(R.string.addform_qestion);
-
-        } else if (new_tdue != taskDue && new_tdue != (taskDue - tzone)) {
-            message = getString(R.string.addform_move_date) + app.getDateFormat().format(new Date(new_tdue));
-            message += getString(R.string.addform_for_task) + taskName + getString(R.string.addform_qestion);
-        }
-        showTaskDialog(message);
+        return result;
     }
 
-    private void setStartAndFinish(){
-        int[] d = convertDateToArray(end_date.getText());
+    private long getTaskDueDateFromForm() {
+
+        Date result = task.getDueDate();
+        TextView vTaskDue = (TextView) findViewById(R.id.tsAddTaskDue);
+
+        if (tmove){
+            ParsePosition pos = new ParsePosition(0);
+            result = app.getDateFormat().parse(vTaskDue.getText().toString(), pos);
+        }
+        return result.getTime();
+    }
+
+    private void getStartAndFinishFromForm(){
+
+        FOTT_TimeslotBuilder newTS = new FOTT_TimeslotBuilder(ts);
+        Date start;
+        Date finish;
+
+        int[] d = convertDateToArray(vEndDate.getText());
         if (d[0] == 0){
             finish = new Date(now);
         } else {
-            int[] t = convertTimeToArray(end_time.getText());
+            int[] t = convertTimeToArray(vEndTime.getText());
             c.set(d[0],d[1],d[2],t[0],t[1]);
 
             finish = c.getTime();
         }
 
-        d = convertDateToArray(start_date.getText());
+        d = convertDateToArray(vStartDate.getText());
         if (d[0] == 0){
-            start = new Date(now - duration);
+            start = new Date(now - ts.getDuration());
         } else {
-            int[] t = convertTimeToArray(start_time.getText());
+            int[] t = convertTimeToArray(vStartTime.getText());
             c.set(d[0],d[1],d[2],t[0],t[1]);
 
             start = c.getTime();
         }
+
+        newTS.setStart(start);
+        newTS.setDuration(finish.getTime() - start.getTime());
+        ts = newTS.buildObject();
     }
 
-    private void setDuration(){
+    private void getDurationFromForm(){
+
+        Date start;
+        Date finish = new Date(ts.getStart().getTime() + ts.getDuration());
+        long duration;
 
         int d=0;
-        String s = days.getText().toString();
+        String s = vDays.getText().toString();
         if (!s.isEmpty()){
-            s = s.substring(6);
+            s = s.substring(getString(R.string.addform_days).length());
             d = Integer.valueOf(s);
         }
         int h;
-        if (hours.getSelectedItemPosition() >=0)
-            h = Integer.valueOf(hours.getSelectedItem().toString());
+        if (vHours.getSelectedItemPosition() >=0)
+            h = Integer.valueOf(vHours.getSelectedItem().toString());
         else
             h=0;
 
         int m;
-        if (minutes.getSelectedItemPosition() >=0)
-            m = Integer.valueOf(minutes.getSelectedItem().toString());
+        if (vMinutes.getSelectedItemPosition() >=0)
+            m = Integer.valueOf(vMinutes.getSelectedItem().toString());
         else
             m = 0;
 
         duration = (long) ((d * 24 + h) * 60 + m) * 60 * 1000;
-        fillFields(true);
+        start = new Date(finish.getTime() - duration);
+
+        FOTT_TimeslotBuilder newTS = new FOTT_TimeslotBuilder(ts);
+        newTS.setStart(start);
+        newTS.setDuration(duration);
+        ts = newTS.buildObject();
+        fillTSFields();
     }
 
-    private void fillFields(boolean useDuration){
+    private void fillTSFields(){
 
-        if (useDuration){
-            if (finish == null) finish = new Date(now);
-            start = new Date(finish.getTime() - duration);
-        } else {
-            duration = Math.round((finish.getTime() - start.getTime()));
-            if (duration <= 0) duration = 0;
-        }
+        Date start = ts.getStart();
+        Date finish = new Date(ts.getStart().getTime() + ts.getDuration());
 
-        long l;
+        fillDurationFields(ts.getDuration());
+
+        vStartDate.setText(app.getDateFormat().format(start));
+        vStartTime.setText(app.getTimeFormat().format(start));
+        vEndDate.setText(app.getDateFormat().format(finish));
+        vEndTime.setText(app.getTimeFormat().format(finish));
+    }
+
+    private void fillDurationFields(long duration) {
+
+        long tmp;
         if (duration >= 24 * 3600 * 1000) {
             int d = Math.round(duration / 24 / 3600 / 1000);
-            days.setText(getString(R.string.addform_days) + d);
-            l = duration - d * 24 * 3600 * 1000;
+            vDays.setText(getString(R.string.addform_days) + d);
+            tmp = duration - d * 24 * 3600 * 1000;
         } else {
-            days.setText("");
-            l = duration;
+            vDays.setText("");
+            tmp = duration;
         }
 
-        int h = Math.round(l / 3600 / 1000);
-        l = l - h * 3600 * 1000;
-        int m = Math.round(l / 60 / 1000);
+        int h = Math.round(tmp / 3600 / 1000);
+        tmp = tmp - h * 3600 * 1000;
+        int m = Math.round(tmp / 60 / 1000);
 
-        hours.setSelection(findPositionInSpinner(0,h));
-        minutes.setSelection(findPositionInSpinner(1,m));
-
-        start_date.setText(app.getDateFormat().format(start));
-        start_time.setText(app.getTimeFormat().format(start));
-        end_date.setText(app.getDateFormat().format(finish));
-        end_time.setText(app.getTimeFormat().format(finish));
+        vHours.setSelection(findPositionInSpinner(0, h));
+        vMinutes.setSelection(findPositionInSpinner(1, m));
     }
 
     private void onDateChanges(View v){
@@ -324,8 +373,8 @@ public class FOTT_TSEditActivity extends Activity {
             public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
                 c.set(year,monthOfYear,dayOfMonth);
                 date.setText(app.getDateFormat().format(c.getTime()));
-                setStartAndFinish();
-                fillFields(false);
+                getStartAndFinishFromForm();
+                fillTSFields();
             }
         },dt[0],dt[1],dt[2]).show();
     }
@@ -353,8 +402,8 @@ public class FOTT_TSEditActivity extends Activity {
                 c.set(Calendar.HOUR_OF_DAY, hour);
                 c.set(Calendar.MINUTE, minute);
                 time.setText(app.getTimeFormat().format(c.getTime()));
-                setStartAndFinish();
-                fillFields(false);
+                getStartAndFinishFromForm();
+                fillTSFields();
             }
         },dt[0],dt[1],true).show();
     }
@@ -390,7 +439,7 @@ public class FOTT_TSEditActivity extends Activity {
         return res;
     }
 
-    private void showTaskDialog(String question) {
+    private void showConfirmationTaskDialog(String question) {
 
         if (question.isEmpty()){
             dialogResultHandler(0);
@@ -413,27 +462,17 @@ public class FOTT_TSEditActivity extends Activity {
     }
 
     private void dialogResultHandler(int res){
-        int new_tclose = taskComplete;
-        long new_tdue = taskDue;
+
+        int newTaskStatus = getTaskStatusFromForm();
+        long newTaskDueDate = getTaskDueDateFromForm();
 
         if (res != 0) {
-            //ToDo: repeating code from gotoTaskChanges()
 
-            CheckBox vTaskClose;
-            TextView vTaskDue = (TextView) findViewById(R.id.tsAddTaskDue);
-
-            if (tclose) {
-                vTaskClose = (CheckBox) findViewById(R.id.tsAddTaskComplete);
-                if (vTaskClose.isChecked()) new_tclose = 1;
-                else new_tclose = 0;
-            }
-            if (tmove) {
-                ParsePosition pos = new ParsePosition(0);
-                Date new_date = app.getDateFormat().parse(vTaskDue.getText().toString(), pos);
-                new_tdue = new_date.getTime();
-            }
-            result.putExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_TASK_STATUS, new_tclose);
-            result.putExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_TASK_DUE, new_tdue);
+            FOTT_TaskBuilder newTask = new FOTT_TaskBuilder(task);
+            newTask.setStatus(newTaskStatus);
+            newTask.setDueDate(newTaskDueDate);
+            result.putExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_TASK_NAME,
+                    FOTT_Parcel.parcelTask(newTask.buildObject()));
         }
 
         setResult(RESULT_OK, result);

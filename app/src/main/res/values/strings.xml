@@ -126,7 +126,7 @@
     <string name="addform_duration">Duration</string>
     <string name="addform_task_area">Also you can:</string>
     <string name="addform_complete_task">Complete the task</string>
-    <string name="addform_change_due">Change due date:</string>
+    <string name="addform_change_due">Change task due date:</string>
     <string name="nonetwork_message">Check you network connection</string>
     <string name="error_save_record">Something was wrong. We couldn\'t save  this record.</string>
     <string name="addform_days">"Days: "</string>

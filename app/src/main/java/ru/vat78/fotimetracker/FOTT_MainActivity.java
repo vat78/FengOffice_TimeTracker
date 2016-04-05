@@ -54,6 +54,8 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
     static final String EXTRA_MESSAGE_TS_EDIT_TASK_STATUS = "ru.vat78.fotimetracker.TASKSTATUS";
     static final String EXTRA_MESSAGE_TS_EDIT_TASK_DUE = "ru.vat78.fotimetracker.TASKDUE";
     static final String EXTRA_MESSAGE_TS_EDIT_TASK_NAME = "ru.vat78.fotimetracker.TASKNAME";
+    static final String EXTRA_MESSAGE_TS_EDIT_CLOSE_TASK = "ru.vat78.fotimetracker.TASKCLOSE";
+    static final String EXTRA_MESSAGE_TS_EDIT_MOVE_TASK = "ru.vat78.fotimetracker.TASKMOVE";
 
     static final String SYNC_TIMER_NAME = "ru.vat78.fotimetracker.SYNCTIMER";
 
@@ -319,6 +321,22 @@ public class FOTT_MainActivity extends AppCompatActivity implements SharedPrefer
         if (MainApp.getPreferences().getString(getString(R.string.pref_sync_password),"").isEmpty()
                 || MainApp.isNeedFullSync()){
             Intent pickLogin = new Intent(this,FOTT_LoginActivity.class);
+
+            FOTT_Preferences pr = MainApp.getPreferences();
+            pickLogin.putExtra("" + FOTT_WebSyncTask.URL,pr.getString(getString(R.string.pref_sync_url),""));
+            pickLogin.putExtra("" + FOTT_WebSyncTask.LOGIN,pr.getString(getString(R.string.pref_sync_login),""));
+            pickLogin.putExtra("" + FOTT_WebSyncTask.PASSWORD,pr.getString(getString(R.string.pref_sync_password),""));
+            if (pr.getBoolean(getString(R.string.pref_sync_certs), false)) {
+                pickLogin.putExtra("" + FOTT_WebSyncTask.CERTIFICATES,FOTT_WebSyncTask.BOOL_TRUE);
+            } else {
+                pickLogin.putExtra("" + FOTT_WebSyncTask.CERTIFICATES,FOTT_WebSyncTask.ANY_CERTS);
+            }
+            if (pr.getBoolean(getString(R.string.pref_sync_save_creds), false)) {
+                pickLogin.putExtra("" + FOTT_WebSyncTask.SAVE_CREDENTIALS, FOTT_WebSyncTask.BOOL_TRUE);
+            } else {
+                pickLogin.putExtra("" + FOTT_WebSyncTask.SAVE_CREDENTIALS,"");
+            }
+
             startActivityForResult(pickLogin, PICK_LOGIN_REQUEST);
         }
 

@@ -102,13 +102,13 @@ public class FOTT_LoginActivity extends AppCompatActivity implements FOTT_Activi
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
 
-        if (!mPasswordView.getText().toString().isEmpty()) {attemptLogin();}
     }
 
     @Override
-    public void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
+    public void onStart() {
+        super.onStart();
         getInitialParams();
+        if (!mPasswordView.getText().toString().isEmpty()) {attemptLogin();}
     }
 
     /**
