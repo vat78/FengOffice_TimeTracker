@@ -79,7 +79,6 @@ public class FOTT_LoginActivity extends AppCompatActivity implements FOTT_Activi
         mSaveCred = (CheckBox) findViewById(R.id.save_cred);
         mPasswordView = (EditText) findViewById(R.id.password);
 
-        getInitialParams();
 
                 mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -104,6 +103,12 @@ public class FOTT_LoginActivity extends AppCompatActivity implements FOTT_Activi
         mProgressView = findViewById(R.id.login_progress);
 
         if (!mPasswordView.getText().toString().isEmpty()) {attemptLogin();}
+    }
+
+    @Override
+    public void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        getInitialParams();
     }
 
     /**

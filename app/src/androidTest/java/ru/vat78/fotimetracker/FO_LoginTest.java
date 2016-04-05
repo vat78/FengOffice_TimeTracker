@@ -1,5 +1,6 @@
 package ru.vat78.fotimetracker;
 
+import android.app.Instrumentation;
 import android.content.Intent;
 import android.test.ActivityInstrumentationTestCase2;
 import android.test.ActivityTestCase;
@@ -48,16 +49,18 @@ public class FO_LoginTest extends ActivityInstrumentationTestCase2<FOTT_LoginAct
     public void testNewLogin() throws Exception {
 
         FOTT_LoginActivity la = getActivity();
-        assertNotNull(la);
+        //assertNotNull(la);
 
-        Intent intent = new Intent();
-        intent.putExtra("" + FOTT_WebSyncTask.URL, "ya.ru");
-        intent.putExtra("" + FOTT_WebSyncTask.LOGIN, "");
-        intent.putExtra("" + FOTT_WebSyncTask.PASSWORD, "");
-        intent.putExtra("" + FOTT_WebSyncTask.CERTIFICATES, FOTT_WebSyncTask.ANY_CERTS);
+        AutoCompleteTextView mURLView = (AutoCompleteTextView) la.findViewById(R.id.fo_url);
+        AutoCompleteTextView mLoginView = (AutoCompleteTextView) la.findViewById(R.id.login);
+        EditText mPasswordView = (EditText) la.findViewById(R.id.password);
+        CheckBox mUntrustCA = (CheckBox) la.findViewById(R.id.untrustCA);
 
-        la.startActivity(intent);
+        mURLView.setText("ya.ru");
+        mLoginView.setText("user");
+        mPasswordView.setText("password");
+        mUntrustCA.setChecked(true);
 
-        getInstrumentation().waitForIdleSync();
+        getInstrumentation().waitForMonitor(new Instrumentation.ActivityMonitor(la.getLocalClassName(),null,false));
     }
 }
