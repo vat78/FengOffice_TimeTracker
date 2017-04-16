@@ -2,8 +2,8 @@ package ru.vat78.fotimetracker.database;
 
 import android.content.ContentValues;
 
-import ru.vat78.fotimetracker.FOTT_App;
-import ru.vat78.fotimetracker.model.FOTT_Object;
+import ru.vat78.fotimetracker.App;
+import ru.vat78.fotimetracker.model.Object;
 
 /**
  * Created by vat on 21.12.2015.
@@ -24,7 +24,7 @@ public class FOTT_DBMembers_Objects extends FOTT_DBContract {
     private static final String SQL_DELETE_ENTRIES =
             DROP_TABLE + TABLE_NAME + ";";
 
-    public static void addObject(FOTT_App app, FOTT_Object object, int object_type) {
+    public static void addObject(App app, Object object, int object_type) {
 
         String[] members = object.getMembersArray();
         long obj_id = object.getId();
@@ -65,7 +65,7 @@ public class FOTT_DBMembers_Objects extends FOTT_DBContract {
                 COLUMN_MEMBER_ID + " = " + parent_id;
     }
 
-    public static void rebuild(FOTT_App app) {
+    public static void rebuild(App app) {
         app.getDatabase().execSQL(SQL_DELETE_ENTRIES);
         app.getDatabase().execSQL(SQL_CREATE_ENTRIES);
     }
