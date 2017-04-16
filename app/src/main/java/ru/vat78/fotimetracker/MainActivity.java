@@ -22,16 +22,16 @@ import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import ru.vat78.fotimetracker.adapters.FOTT_MembersAdapter;
-import ru.vat78.fotimetracker.adapters.FOTT_TasksAdapter;
-import ru.vat78.fotimetracker.adapters.FOTT_TimeslotsAdapter;
-import ru.vat78.fotimetracker.model.FOTT_Member;
-import ru.vat78.fotimetracker.model.FOTT_Task;
-import ru.vat78.fotimetracker.views.FOTT_MembersFragment;
-import ru.vat78.fotimetracker.views.FOTT_TasksFragment;
-import ru.vat78.fotimetracker.views.FOTT_TimeslotsFragment;
+import ru.vat78.fotimetracker.adapters.MembersAdapter;
+import ru.vat78.fotimetracker.adapters.TasksAdapter;
+import ru.vat78.fotimetracker.adapters.TimeslotsAdapter;
+import ru.vat78.fotimetracker.model.Member;
+import ru.vat78.fotimetracker.model.Task;
+import ru.vat78.fotimetracker.views.MembersFragment;
+import ru.vat78.fotimetracker.views.TasksFragment;
+import ru.vat78.fotimetracker.views.TimeslotsFragment;
 
-public class FOTT_MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity {
 
     static final int PICK_LOGIN_REQUEST = 1;
     static final int PICK_TSEDIT_REQUEST = 2;
@@ -41,7 +41,7 @@ public class FOTT_MainActivity extends AppCompatActivity {
     static final String EXTRA_MESSAGE_TS_EDIT_START = "ru.vat78.fotimetracker.TSSTART";
     static final String EXTRA_MESSAGE_TS_EDIT_DESC = "ru.vat78.fotimetracker.TSDESC";
 
-    private FOTT_SyncTask syncTask;
+    private SyncTask syncTask;
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -59,10 +59,10 @@ public class FOTT_MainActivity extends AppCompatActivity {
     private ViewPager mViewPager;
     private Toolbar mActionBarToolbar;
 
-    private FOTT_App MainApp;
-    private FOTT_MembersAdapter members;
-    private FOTT_TasksAdapter tasks;
-    private FOTT_TimeslotsAdapter timeslots;
+    private App MainApp;
+    private MembersAdapter members;
+    private TasksAdapter tasks;
+    private TimeslotsAdapter timeslots;
 
     private Timer syncTimer;
 
@@ -70,7 +70,7 @@ public class FOTT_MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        MainApp = (FOTT_App) getApplication();
+        MainApp = (App) getApplication();
 
         setContentView(R.layout.activity_fott__main);
 
@@ -185,25 +185,25 @@ public class FOTT_MainActivity extends AppCompatActivity {
 
         if (MainApp.getPreferences().getString(getString(R.string.pref_sync_password),"").isEmpty()
                 || MainApp.isNeedFullSync()){
-            Intent pickLogin = new Intent(this,FOTT_LoginActivity.class);
+            Intent pickLogin = new Intent(this,LoginActivity.class);
             startActivityForResult(pickLogin,PICK_LOGIN_REQUEST);
         }
 
     }
 
-    public FOTT_TasksAdapter getTasks() {
+    public TasksAdapter getTasks() {
         return tasks;
     }
 
-    public void setMembers(FOTT_MembersAdapter members) {
+    public void setMembers(MembersAdapter members) {
         this.members = members;
     }
 
-    public void setTasks(FOTT_TasksAdapter tasks) {
+    public void setTasks(TasksAdapter tasks) {
         this.tasks = tasks;
     }
 
-    public void setTimeslots(FOTT_TimeslotsAdapter timeslots) {
+    public void setTimeslots(TimeslotsAdapter timeslots) {
         this.timeslots = timeslots;
     }
 
@@ -217,7 +217,7 @@ public class FOTT_MainActivity extends AppCompatActivity {
     }
 
     public void editTimeslot(long tsId, long start, long duration) {
-        Intent pickTS = new Intent(this,FOTT_TSEditActivity.class);
+        Intent pickTS = new Intent(this,TimeslotEditActivity.class);
 
         pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_ID, tsId);
         if (start != 0) pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_START, start);
@@ -229,12 +229,12 @@ public class FOTT_MainActivity extends AppCompatActivity {
     private void TimeslotsFragmentCaption() {
 
         View topArea = findViewById(R.id.tsTopContext);
-        FOTT_Member m = members.getMemberById(MainApp.getCurMember());
+        Member m = members.getMemberById(MainApp.getCurMember());
         topArea.setBackgroundColor(m.getColor());
         TextView top_title = (TextView)findViewById(R.id.tsTopTitle);
         TextView top_desc = (TextView) findViewById(R.id.tsTopDesc);
         if (MainApp.getCurTask() > 0) {
-            FOTT_Task t = getTasks().getTaskById(MainApp.getCurTask());
+            Task t = getTasks().getTaskById(MainApp.getCurTask());
             top_title.setText(t.getName());
             top_desc.setText(t.getDesc());
         } else {
@@ -312,13 +312,13 @@ public class FOTT_MainActivity extends AppCompatActivity {
 
             switch (position) {
                 case 0:
-                    res = new FOTT_MembersFragment();
+                    res = new MembersFragment();
                     return res;
                 case 1:
-                    res = new FOTT_TasksFragment();
+                    res = new TasksFragment();
                     return res;
                 default:
-                    return new FOTT_TimeslotsFragment();
+                    return new TimeslotsFragment();
             }
         }
 
@@ -350,7 +350,7 @@ public class FOTT_MainActivity extends AppCompatActivity {
                 mActionBarToolbar.setTitle(getPageTitle(fragment));
 
                 if (fragment > 0 && MainApp.getCurMember() != 0) {
-                    FOTT_Member m = members.getMemberById(MainApp.getCurMember());
+                    Member m = members.getMemberById(MainApp.getCurMember());
                     CharSequence s = getString(R.string.title_category) + ": " + m.getName();
                     mActionBarToolbar.setSubtitle(s);
                     mActionBarToolbar.setBackgroundColor(m.getColor());
@@ -399,7 +399,7 @@ public class FOTT_MainActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     if (syncTask != null) return;
-                    syncTask = new FOTT_SyncTask(MainApp);
+                    syncTask = new SyncTask(MainApp);
                     syncTask.execute();
                 }
             });

@@ -9,18 +9,18 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.TimeZone;
 
-import ru.vat78.fotimetracker.database.FOTT_DB;
-import ru.vat78.fotimetracker.database.FOTT_DBMembers;
-import ru.vat78.fotimetracker.database.FOTT_DBTasks;
-import ru.vat78.fotimetracker.database.FOTT_DBTimeslots;
-import ru.vat78.fotimetracker.fo_api.FOAPI_Connector;
-import ru.vat78.fotimetracker.fo_api.FOAPI_Members;
-import ru.vat78.fotimetracker.fo_api.FOAPI_Tasks;
-import ru.vat78.fotimetracker.fo_api.FOAPI_Timeslots;
-import ru.vat78.fotimetracker.model.FOTT_Member;
-import ru.vat78.fotimetracker.model.FOTT_Task;
-import ru.vat78.fotimetracker.model.FOTT_Timeslot;
-import ru.vat78.fotimetracker.views.FOTT_ErrorsHandler;
+import ru.vat78.fotimetracker.database.DB;
+import ru.vat78.fotimetracker.database.DaoTasks;
+import ru.vat78.fotimetracker.database.DaoTimeslots;
+import ru.vat78.fotimetracker.database.DaoMembers;
+import ru.vat78.fotimetracker.fengoffice.ApiConnector;
+import ru.vat78.fotimetracker.fengoffice.ApiMembers;
+import ru.vat78.fotimetracker.fengoffice.ApiTasks;
+import ru.vat78.fotimetracker.fengoffice.ApiTimeslots;
+import ru.vat78.fotimetracker.model.Member;
+import ru.vat78.fotimetracker.model.Task;
+import ru.vat78.fotimetracker.model.Timeslot;
+import ru.vat78.fotimetracker.views.ErrorsHandler;
 
 
 /**
@@ -28,14 +28,14 @@ import ru.vat78.fotimetracker.views.FOTT_ErrorsHandler;
  *
  * Main application
  */
-public class FOTT_App extends Application {
+public class App extends Application {
 
     private final String FOTT_DATE_FORMAT = "dd.MM.yyyy";
     private final String FOTT_TIME_FORMAT = "HH:mm";
 
 
-    private FOAPI_Connector web_service;
-    private FOTT_DB database;
+    private ApiConnector web_service;
+    private DB database;
     private boolean needFullSync;
 
     private long curMember;
@@ -47,9 +47,9 @@ public class FOTT_App extends Application {
     private SimpleDateFormat dateFormat;
     private SimpleDateFormat timeFormat;
 
-    private FOTT_Preferences preferences;
+    private Preferences preferences;
 
-    private FOTT_ErrorsHandler error;
+    private ErrorsHandler error;
 
     private boolean syncing;
 
@@ -58,19 +58,19 @@ public class FOTT_App extends Application {
         super.onCreate();
 
         //Create web-service connection
-        web_service = new FOAPI_Connector(this);
+        web_service = new ApiConnector(this);
 
         //Application preferences
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
-        preferences = new FOTT_Preferences(pref);
+        preferences = new Preferences(pref);
 
         //Create database connection
         long db_version = preferences.getLong(getString(R.string.pref_db_version),0);
-        database = new FOTT_DB(this,db_version);
+        database = new DB(this,db_version);
         preferences.set(getString(R.string.pref_db_version), database.getDb_version());
 
         //Create error handler
-        error = new FOTT_ErrorsHandler();
+        error = new ErrorsHandler();
 
         load_preferences();
     }
@@ -97,11 +97,11 @@ public class FOTT_App extends Application {
         web_service.canUseUntrustCert(preferences.getBoolean(getString(R.string.pref_sync_certs),false));
     }
 
-    public FOTT_DB getDatabase() {
+    public DB getDatabase() {
         return database;
     }
 
-    public FOTT_Preferences getPreferences() {
+    public Preferences getPreferences() {
         return preferences;
     }
 
@@ -109,7 +109,7 @@ public class FOTT_App extends Application {
         return needFullSync;
     }
 
-    public FOAPI_Connector getWeb_service() {
+    public ApiConnector getWeb_service() {
         return web_service;
     }
 
@@ -127,7 +127,7 @@ public class FOTT_App extends Application {
 
     public boolean isSyncing() {return syncing;}
 
-    public FOTT_ErrorsHandler getError() {
+    public ErrorsHandler getError() {
         return error;
     }
 
@@ -187,12 +187,12 @@ public class FOTT_App extends Application {
             Date d = (fullSync ? new Date(0) : getLastSync());
 
             //Sync members
-            ArrayList<FOTT_Member> members = FOAPI_Members.load(this);
+            ArrayList<Member> members = ApiMembers.load(this);
             if (getError().is_error()) {
                 setSyncing(false);
                 return false;
             }
-            FOTT_DBMembers.save(this, members);
+            DaoMembers.save(this, members);
             if (getError().is_error()) {
                 setSyncing(false);
                 return false;
@@ -200,21 +200,21 @@ public class FOTT_App extends Application {
             members = null;
 
             //Sync task
-            ArrayList<FOTT_Task> tasks = FOTT_DBTasks.getDeletedTasks(this);
-            for (FOTT_Task t: tasks){
-                if (FOAPI_Tasks.delete(this,t) && !fullSync) FOTT_DBTasks.deleteTask(this, t);
+            ArrayList<Task> tasks = DaoTasks.getDeletedTasks(this);
+            for (Task t: tasks){
+                if (ApiTasks.delete(this,t) && !fullSync) DaoTasks.deleteTask(this, t);
             }
-            tasks = FOTT_DBTasks.getChangedTasks(this, getLastSync());
-            for (FOTT_Task t: tasks){
-                long id = FOAPI_Tasks.save(this,t);
-                if (id !=0 && !fullSync) FOTT_DBTasks.deleteTask(this, t);
+            tasks = DaoTasks.getChangedTasks(this, getLastSync());
+            for (Task t: tasks){
+                long id = ApiTasks.save(this,t);
+                if (id !=0 && !fullSync) DaoTasks.deleteTask(this, t);
             }
-            tasks = FOAPI_Tasks.load(this, d);
+            tasks = ApiTasks.load(this, d);
             if (getError().is_error()) {
                 setSyncing(false);
                 return false;
             }
-            FOTT_DBTasks.save(this, tasks, fullSync);
+            DaoTasks.save(this, tasks, fullSync);
             if (getError().is_error()) {
                 setSyncing(false);
                 return false;
@@ -222,29 +222,29 @@ public class FOTT_App extends Application {
             tasks = null;
 
             //Sync timeslots
-            ArrayList<FOTT_Timeslot> timeslots = FOTT_DBTimeslots.getDeletedTS(this);
-            for (FOTT_Timeslot ts: timeslots){
-                if (FOAPI_Timeslots.delete(this, ts) && !fullSync) FOTT_DBTimeslots.deleteTS(this, ts);
+            ArrayList<Timeslot> timeslots = DaoTimeslots.getDeletedTS(this);
+            for (Timeslot ts: timeslots){
+                if (ApiTimeslots.delete(this, ts) && !fullSync) DaoTimeslots.deleteTS(this, ts);
             }
 
-            timeslots = FOTT_DBTimeslots.getChangedTS(this, getLastSync());
-            for (FOTT_Timeslot ts: timeslots){
-                long id = FOAPI_Timeslots.save(this, ts);
-                if (id != 0 && !fullSync) FOTT_DBTimeslots.deleteTS(this, ts);
+            timeslots = DaoTimeslots.getChangedTS(this, getLastSync());
+            for (Timeslot ts: timeslots){
+                long id = ApiTimeslots.save(this, ts);
+                if (id != 0 && !fullSync) DaoTimeslots.deleteTS(this, ts);
             }
 
-            timeslots = FOAPI_Timeslots.load(this, d);
+            timeslots = ApiTimeslots.load(this, d);
             if (getError().is_error()) {
                 setSyncing(false);
                 return false;
             }
-            FOTT_DBTimeslots.save(this, timeslots, fullSync);
+            DaoTimeslots.save(this, timeslots, fullSync);
             if (getError().is_error()) {
                 setSyncing(false);
                 return false;
             }
         } catch (Exception e) {
-            getError().error_handler(FOTT_ErrorsHandler.ERROR_SAVE_ERROR, "", e.getMessage());
+            getError().error_handler(ErrorsHandler.ERROR_SAVE_ERROR, "", e.getMessage());
             setSyncing(false);
             return false;
         }

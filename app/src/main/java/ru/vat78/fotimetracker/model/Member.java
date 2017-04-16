@@ -5,7 +5,7 @@ import android.graphics.Color;
 /**
  * Created by vat on 27.11.2015.
  */
-public class FOTT_Member extends FOTT_Object {
+public class Member extends Object {
 
     private int color;
     private int level;
@@ -23,7 +23,7 @@ public class FOTT_Member extends FOTT_Object {
             Color.argb(255,239,215,179),Color.argb(255,235,224,179),Color.argb(255,227,227,200),
             Color.argb(255,224,236,210),Color.argb(255,203,223,210)};
 
-    public FOTT_Member(long memberId, String memberName){
+    public Member(long memberId, String memberName){
         super();
         setId(memberId);
         setName(memberName);

@@ -1,33 +1,28 @@
 package ru.vat78.fotimetracker;
 
-import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.KeyEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.DatePicker;
-import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
-import java.sql.Time;
 import java.text.ParsePosition;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 
 /**
  * Created by vat on 14.12.2015.
  */
-public class FOTT_TSEditActivity extends AppCompatActivity {
+public class TimeslotEditActivity extends AppCompatActivity {
 
-    FOTT_App app;
+    App app;
 
     private long now;
     private Spinner minutes;
@@ -46,7 +41,7 @@ public class FOTT_TSEditActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        app = (FOTT_App) getApplication();
+        app = (App) getApplication();
 
         now = System.currentTimeMillis();
 
@@ -55,8 +50,8 @@ public class FOTT_TSEditActivity extends AppCompatActivity {
         setContentView(R.layout.activity_timeslot_edit);
 
         Intent intent = getIntent();
-        duration = intent.getLongExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_DURATION,15 * 60 * 1000);
-        long l = intent.getLongExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_START,now - duration);
+        duration = intent.getLongExtra(MainActivity.EXTRA_MESSAGE_TS_EDIT_DURATION,15 * 60 * 1000);
+        long l = intent.getLongExtra(MainActivity.EXTRA_MESSAGE_TS_EDIT_START,now - duration);
         start = new Date(l);
         l += duration;
         finish = new Date(l);
@@ -103,9 +98,9 @@ public class FOTT_TSEditActivity extends AppCompatActivity {
                 TextView desc = (TextView) findViewById(R.id.tsAddDesc);
 
                 Intent intent = new Intent();
-                intent.putExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_START, start.getTime());
-                intent.putExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_DURATION, duration);
-                intent.putExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_DESC, desc.getText().toString());
+                intent.putExtra(MainActivity.EXTRA_MESSAGE_TS_EDIT_START, start.getTime());
+                intent.putExtra(MainActivity.EXTRA_MESSAGE_TS_EDIT_DURATION, duration);
+                intent.putExtra(MainActivity.EXTRA_MESSAGE_TS_EDIT_DESC, desc.getText().toString());
                 setResult(RESULT_OK, intent);
 
                 finish();

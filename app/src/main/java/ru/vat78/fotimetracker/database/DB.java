@@ -3,28 +3,21 @@ package ru.vat78.fotimetracker.database;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Color;
 
-import java.util.ArrayList;
-
-import ru.vat78.fotimetracker.FOTT_App;
+import ru.vat78.fotimetracker.App;
 import ru.vat78.fotimetracker.R;
-import ru.vat78.fotimetracker.fo_api.FOAPI_Members;
-import ru.vat78.fotimetracker.fo_api.FOAPI_Tasks;
-import ru.vat78.fotimetracker.fo_api.FOAPI_Timeslots;
-import ru.vat78.fotimetracker.model.FOTT_Timeslot;
-import ru.vat78.fotimetracker.views.FOTT_ErrorsHandler;
+import ru.vat78.fotimetracker.views.ErrorsHandler;
 
 /**
  * Created by vat on 21.12.2015.
  */
-public class FOTT_DB {
-    private static final String CLASS_NAME = "FOTT_DB";
+public class DB {
+    private static final String CLASS_NAME = "DB";
 
     private SQLiteDatabase database;
-    private FOTT_App app;
+    private App app;
 
-    public FOTT_DB(FOTT_App application, long db_version) {
+    public DB(App application, long db_version) {
 
         app = application;
         FOTT_DBHelper helper = new FOTT_DBHelper(application, app);
@@ -46,13 +39,13 @@ public class FOTT_DB {
 
     public long insert(String table, ContentValues values){
         long res = database.insert(table, null, values);
-        if (res == -1) app.getError().error_handler(FOTT_ErrorsHandler.ERROR_LOG_MESSAGE, CLASS_NAME, app.getString(R.string.db_insert_empty_row));
+        if (res == -1) app.getError().error_handler(ErrorsHandler.ERROR_LOG_MESSAGE, CLASS_NAME, app.getString(R.string.db_insert_empty_row));
         return res;
     }
 
     public long insertOrUpdate(String table, ContentValues values){
         long res = database.insertWithOnConflict(table, null, values, database.CONFLICT_REPLACE);
-        if (res == -1) app.getError().error_handler(FOTT_ErrorsHandler.ERROR_LOG_MESSAGE, CLASS_NAME, app.getString(R.string.db_insert_empty_row));
+        if (res == -1) app.getError().error_handler(ErrorsHandler.ERROR_LOG_MESSAGE, CLASS_NAME, app.getString(R.string.db_insert_empty_row));
         return res;
     }
 
@@ -67,6 +60,6 @@ public class FOTT_DB {
 
     public void delete(String table,String whereClause) {
         if (database.delete(table,whereClause,null) == -1)
-            app.getError().error_handler(FOTT_ErrorsHandler.ERROR_LOG_MESSAGE,CLASS_NAME,"Errors while deleting tasks from database");
+            app.getError().error_handler(ErrorsHandler.ERROR_LOG_MESSAGE,CLASS_NAME,"Errors while deleting tasks from database");
     }
 }

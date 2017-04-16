@@ -7,15 +7,15 @@ import android.provider.BaseColumns;
 import java.util.ArrayList;
 import java.util.Date;
 
-import ru.vat78.fotimetracker.FOTT_App;
-import ru.vat78.fotimetracker.model.FOTT_Timeslot;
-import ru.vat78.fotimetracker.views.FOTT_ErrorsHandler;
+import ru.vat78.fotimetracker.App;
+import ru.vat78.fotimetracker.model.Timeslot;
+import ru.vat78.fotimetracker.views.ErrorsHandler;
 
 /**
  * Created by vat on 21.12.2015.
  */
-public class FOTT_DBTimeslots extends FOTT_DBContract {
-    private static final String CLASS_NAME = "FOTT_DBTimeslots";
+public class DaoTimeslots extends FOTT_DBContract {
+    private static final String CLASS_NAME = "DaoTimeslots";
 
     private static final String TABLE_NAME = "timeslots";
     private static final String COLUMN_NAME_START = "start";
@@ -38,12 +38,12 @@ public class FOTT_DBTimeslots extends FOTT_DBContract {
     public static final String SQL_DELETE_ENTRIES =
             DROP_TABLE + TABLE_NAME + ";";
 
-    public static void rebuild(FOTT_App app){
+    public static void rebuild(App app){
         app.getDatabase().execSQL(SQL_DELETE_ENTRIES);
         app.getDatabase().execSQL(SQL_CREATE_ENTRIES);
     }
 
-    public static void save(FOTT_App app, ArrayList<FOTT_Timeslot> ts_list, boolean fullSync) {
+    public static void save(App app, ArrayList<Timeslot> ts_list, boolean fullSync) {
 
         try {
             if (fullSync) {
@@ -59,11 +59,11 @@ public class FOTT_DBTimeslots extends FOTT_DBContract {
             }
         }
         catch (Error e){
-            app.getError().error_handler(FOTT_ErrorsHandler.ERROR_SAVE_ERROR,CLASS_NAME,e.getMessage());
+            app.getError().error_handler(ErrorsHandler.ERROR_SAVE_ERROR,CLASS_NAME,e.getMessage());
         }
     }
 
-    private static void insertOrUpdate(FOTT_App app, FOTT_Timeslot timeslot) {
+    private static void insertOrUpdate(App app, Timeslot timeslot) {
         ContentValues ts = convertToDB(timeslot);
         ts.put(COLUMN_NAME_DELETED,0);
 
@@ -94,7 +94,7 @@ public class FOTT_DBTimeslots extends FOTT_DBContract {
         }
     }
 
-    private static ContentValues convertToDB(FOTT_Timeslot ts) {
+    private static ContentValues convertToDB(Timeslot ts) {
         ContentValues res = new ContentValues();
         res.put(COLUMN_NAME_FO_ID, ts.getId());
         res.put(COLUMN_NAME_TITLE,ts.getName());
@@ -113,9 +113,9 @@ public class FOTT_DBTimeslots extends FOTT_DBContract {
         return res;
     }
 
-    public static ArrayList<FOTT_Timeslot> load(FOTT_App app, String additionConditions) {
+    public static ArrayList<Timeslot> load(App app, String additionConditions) {
 
-        ArrayList<FOTT_Timeslot> timeslots = new ArrayList<>();
+        ArrayList<Timeslot> timeslots = new ArrayList<>();
 
         String filter = additionConditions;
         //if (filter.isEmpty()) filter = COLUMN_NAME_DELETED + " = 0";
@@ -141,7 +141,7 @@ public class FOTT_DBTimeslots extends FOTT_DBContract {
                 filter, COLUMN_NAME_START + " DESC");
 
         tsCursor.moveToFirst();
-        FOTT_Timeslot el;
+        Timeslot el;
         if (!tsCursor.isAfterLast()){
             do {
                 long id = tsCursor.getLong(0);
@@ -152,7 +152,7 @@ public class FOTT_DBTimeslots extends FOTT_DBContract {
                 String author = tsCursor.getString(5);
                 long tid = tsCursor.getLong(6);
 
-                el = new FOTT_Timeslot(id, name);
+                el = new Timeslot(id, name);
                 el.setStart(start);
                 el.setDuration(dur);
                 el.setChanged(changed);
@@ -167,7 +167,7 @@ public class FOTT_DBTimeslots extends FOTT_DBContract {
         return timeslots;
     }
 
-    private static void insert (FOTT_App app, FOTT_Timeslot timeslot) {
+    private static void insert (App app, Timeslot timeslot) {
 
         ContentValues ts = convertToDB(timeslot);
         ts.put(COLUMN_NAME_DELETED,0);
@@ -183,35 +183,35 @@ public class FOTT_DBTimeslots extends FOTT_DBContract {
         }
     }
 
-    public static void save (FOTT_App app, FOTT_Timeslot timeslot) {
+    public static void save (App app, Timeslot timeslot) {
         insertOrUpdate(app, timeslot);
     }
 
-    public static void clearDeletedTS(FOTT_App app) {
+    public static void clearDeletedTS(App app) {
         app.getDatabase().delete(TABLE_NAME, COLUMN_NAME_DELETED + " > 0");
     }
 
-    public static void deleteTS(FOTT_App app, FOTT_Timeslot timeslot){
+    public static void deleteTS(App app, Timeslot timeslot){
                 app.getDatabase().delete(TABLE_NAME, COLUMN_NAME_FO_ID + " = " + timeslot.getId());
     }
 
-    public static ArrayList<FOTT_Timeslot> getDeletedTS(FOTT_App app) {
+    public static ArrayList<Timeslot> getDeletedTS(App app) {
         return load(app, COLUMN_NAME_DELETED + " > 0 AND " +
             COLUMN_NAME_FO_ID + " > 0");
     }
 
-    public static void clearNewTS(FOTT_App app) {
+    public static void clearNewTS(App app) {
         app.getDatabase().delete(TABLE_NAME, COLUMN_NAME_FO_ID + " < 0 ");
     }
 
-    public static ArrayList<FOTT_Timeslot> getChangedTS(FOTT_App app, Date lastSync) {
+    public static ArrayList<Timeslot> getChangedTS(App app, Date lastSync) {
         return load(app, "(" + COLUMN_NAME_CHANGED + " > " + String.valueOf(lastSync.getTime()) +
             " OR " + COLUMN_NAME_FO_ID + " < 0)");
     }
 
-    public static void updateSavedTS(FOTT_App app, ArrayList<FOTT_Timeslot> timeslots){
+    public static void updateSavedTS(App app, ArrayList<Timeslot> timeslots){
         //todo ???????????????????
-        for (FOTT_Timeslot ts:timeslots){
+        for (Timeslot ts:timeslots){
             if (ts.getId()>0){
                 app.getDatabase().delete(TABLE_NAME, COLUMN_NAME_FO_ID + " = " + ts.getId());
             }

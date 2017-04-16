@@ -5,14 +5,14 @@ import java.util.Date;
 /**
  * Created by vat on 27.11.2015.
  */
-public class FOTT_Task extends FOTT_Object {
+public class Task extends Object {
 
     private Date startdate;
     private Date duedate;
     private int priority;
     private int status;
 
-    public FOTT_Task(long taskId, String taskTitle){
+    public Task(long taskId, String taskTitle){
         super();
         setId(taskId);
         setName(taskTitle);

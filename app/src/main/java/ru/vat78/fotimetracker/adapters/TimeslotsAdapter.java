@@ -10,21 +10,21 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.Date;
 
-import ru.vat78.fotimetracker.FOTT_App;
+import ru.vat78.fotimetracker.App;
 import ru.vat78.fotimetracker.R;
-import ru.vat78.fotimetracker.database.FOTT_DBTimeslots;
-import ru.vat78.fotimetracker.model.FOTT_Timeslot;
+import ru.vat78.fotimetracker.database.DaoTimeslots;
+import ru.vat78.fotimetracker.model.Timeslot;
 
 /**
  * Created by vat on 04.12.2015.
  */
-public class FOTT_TimeslotsAdapter extends RecyclerView.Adapter<FOTT_TimeslotsAdapter.ViewHolder> {
+public class TimeslotsAdapter extends RecyclerView.Adapter<TimeslotsAdapter.ViewHolder> {
 
-    private ArrayList<FOTT_Timeslot> timeslots;
+    private ArrayList<Timeslot> timeslots;
     private Context context;
-    private FOTT_App app;
+    private App app;
 
-    public ArrayList<FOTT_Timeslot> getAllTimeslots() {
+    public ArrayList<Timeslot> getAllTimeslots() {
         return timeslots;
     }
 
@@ -44,7 +44,7 @@ public class FOTT_TimeslotsAdapter extends RecyclerView.Adapter<FOTT_TimeslotsAd
         }
     }
 
-    public FOTT_TimeslotsAdapter(Context context, FOTT_App application) {
+    public TimeslotsAdapter(Context context, App application) {
         super();
         this.context = context;
         this.app = application;
@@ -56,13 +56,13 @@ public class FOTT_TimeslotsAdapter extends RecyclerView.Adapter<FOTT_TimeslotsAd
         return timeslots.size();
     }
 
-    public FOTT_Timeslot getItem(int index){
+    public Timeslot getItem(int index){
         return  timeslots.get(index);
     }
 
     @Override
-    public FOTT_TimeslotsAdapter.ViewHolder onCreateViewHolder(ViewGroup parent,
-                                                   int viewType) {
+    public TimeslotsAdapter.ViewHolder onCreateViewHolder(ViewGroup parent,
+                                                          int viewType) {
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.timeslot_list_item, parent, false);
 
@@ -74,7 +74,7 @@ public class FOTT_TimeslotsAdapter extends RecyclerView.Adapter<FOTT_TimeslotsAd
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
 
-        FOTT_Timeslot objectItem = timeslots.get(position);
+        Timeslot objectItem = timeslots.get(position);
 
         holder.tsText.setText(objectItem.getName());
         holder.tsAuthor.setText(objectItem.getAuthor());
@@ -89,14 +89,14 @@ public class FOTT_TimeslotsAdapter extends RecyclerView.Adapter<FOTT_TimeslotsAd
 
     public void load() {
 
-        this.timeslots = FOTT_DBTimeslots.load(app,"");
+        this.timeslots = DaoTimeslots.load(app,"");
 
     }
 
     public boolean saveTimeslot(long id, Date start, long duration, String text){
         if (start == null || duration == 0) return false;
 
-        FOTT_Timeslot ts = new FOTT_Timeslot(id,text);
+        Timeslot ts = new Timeslot(id,text);
         ts.setStart(start);
         ts.setDuration(duration);
         ts.setTaskId(app.getCurTask());
@@ -104,7 +104,7 @@ public class FOTT_TimeslotsAdapter extends RecyclerView.Adapter<FOTT_TimeslotsAd
             ts.setMembersIDs("" + app.getCurMember());
         }
         ts.setChanged(System.currentTimeMillis());
-        FOTT_DBTimeslots.save(app,ts);
+        DaoTimeslots.save(app,ts);
         return (ts.getId() != 0);
     }
 

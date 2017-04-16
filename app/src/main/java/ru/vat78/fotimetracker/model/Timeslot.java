@@ -1,20 +1,18 @@
 package ru.vat78.fotimetracker.model;
 
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 
 /**
  * Created by vat on 27.11.2015.
  */
-public class FOTT_Timeslot extends FOTT_Object {
+public class Timeslot extends Object {
 
     private Date start;
     private long duration;
     private long task_id;
 
-    public FOTT_Timeslot(long tsId, String tsTitle){
+    public Timeslot(long tsId, String tsTitle){
         super();
         setId(tsId);
         setName(tsTitle.length() > 250 ? tsTitle.substring(0, 250) : tsTitle);

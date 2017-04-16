@@ -1,10 +1,10 @@
-package ru.vat78.fotimetracker.fo_api;
+package ru.vat78.fotimetracker.fengoffice;
 
 /**
  * Dictionary for works with FengOffice API
  */
-public final class FOAPI_Dictionary {
-    public FOAPI_Dictionary(){}
+public final class ApiDictionary {
+    public ApiDictionary(){}
 
     public static final String FO_API_CONNECT = "index.php?c=api&m=login&username=<login>&password=<password>";
     public static final String FO_API_CHECK_PLUGIN = "index.php?c=api&m=active_plugin&plugin=<plugin>&auth=<token>";

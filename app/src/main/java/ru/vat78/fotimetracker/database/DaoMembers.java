@@ -7,16 +7,16 @@ import android.provider.BaseColumns;
 
 import java.util.ArrayList;
 
-import ru.vat78.fotimetracker.FOTT_App;
+import ru.vat78.fotimetracker.App;
 import ru.vat78.fotimetracker.R;
-import ru.vat78.fotimetracker.model.FOTT_Member;
-import ru.vat78.fotimetracker.views.FOTT_ErrorsHandler;
+import ru.vat78.fotimetracker.model.Member;
+import ru.vat78.fotimetracker.views.ErrorsHandler;
 
 /**
  * Created by vat on 21.12.2015.
  */
-public class FOTT_DBMembers extends FOTT_DBContract {
-    private static final String CLASS_NAME = "FOTT_DBMembers";
+public class DaoMembers extends FOTT_DBContract {
+    private static final String CLASS_NAME = "DaoMembers";
 
     private static final String TABLE_NAME = "members";
     private static final String COLUMN_NAME_COLOR = "color";
@@ -42,12 +42,12 @@ public class FOTT_DBMembers extends FOTT_DBContract {
     public static final String SQL_DELETE_ENTRIES =
             DROP_TABLE + TABLE_NAME +";";
 
-    public static void rebuild(FOTT_App app){
+    public static void rebuild(App app){
         app.getDatabase().execSQL(SQL_DELETE_ENTRIES);
         app.getDatabase().execSQL(SQL_CREATE_ENTRIES);
     }
 
-    public static void save(FOTT_App app, ArrayList<FOTT_Member> members) {
+    public static void save(App app, ArrayList<Member> members) {
 
         if (app.getCurMember() > 0){
             //TODO: if has selected member
@@ -63,17 +63,17 @@ public class FOTT_DBMembers extends FOTT_DBContract {
             }
         }
         catch (Error e){
-            app.getError().error_handler(FOTT_ErrorsHandler.ERROR_SAVE_ERROR,CLASS_NAME,e.getMessage());
+            app.getError().error_handler(ErrorsHandler.ERROR_SAVE_ERROR,CLASS_NAME,e.getMessage());
         }
 
     }
 
-    private static void insert(FOTT_App app, FOTT_Member member) {
+    private static void insert(App app, Member member) {
         ContentValues ts = convertToDB(member);
         app.getDatabase().insertOrUpdate(TABLE_NAME, ts);
     }
 
-    private static ContentValues convertToDB(FOTT_Member member) {
+    private static ContentValues convertToDB(Member member) {
         ContentValues res = new ContentValues();
         res.put(COLUMN_NAME_FO_ID, member.getId());
         res.put(COLUMN_NAME_TITLE,member.getName());
@@ -88,15 +88,15 @@ public class FOTT_DBMembers extends FOTT_DBContract {
         return res;
     }
 
-    private static FOTT_Member generateAnyMember(FOTT_App app) {
-        FOTT_Member any = new FOTT_Member(0,app.getString(R.string.any_category));
+    private static Member generateAnyMember(App app) {
+        Member any = new Member(0,app.getString(R.string.any_category));
         any.setPath("");
         any.setColorIndex(Color.TRANSPARENT);
         return any;
     }
 
-    public static ArrayList<FOTT_Member> load (FOTT_App app){
-        ArrayList<FOTT_Member> members = new ArrayList<>();
+    public static ArrayList<Member> load (App app){
+        ArrayList<Member> members = new ArrayList<>();
 
         Cursor memberCursor = app.getDatabase().query(TABLE_NAME + " m",
                 new String[]{"m." + COLUMN_NAME_FO_ID,
@@ -110,8 +110,8 @@ public class FOTT_DBMembers extends FOTT_DBContract {
                 COLUMN_NAME_PATH + " ASC");
 
         memberCursor.moveToFirst();
-        FOTT_Member m;
-        FOTT_Member prev = new FOTT_Member(0,"");
+        Member m;
+        Member prev = new Member(0,"");
         int shownLevel = 1;
 
         if (!memberCursor.isAfterLast()){
@@ -121,7 +121,7 @@ public class FOTT_DBMembers extends FOTT_DBContract {
                 String path = memberCursor.getString(2);
                 int color = memberCursor.getInt(4);
 
-                m = new FOTT_Member(id, name);
+                m = new Member(id, name);
                 m.setPath(path);
                 m.setColorIndex(color);
                 m.setTasksCnt(memberCursor.getInt(5));
@@ -135,7 +135,7 @@ public class FOTT_DBMembers extends FOTT_DBContract {
                     shownLevel = curLevel;
                     m.setVisible(true);
                     for (int i = members.size() - 1; i>=0 && shownLevel > 1;i--) {
-                        FOTT_Member el = members.get(i);
+                        Member el = members.get(i);
                         el.setVisible(el.getLevel() <= shownLevel);
                         if (el.getLevel() <shownLevel) {
                             el.setNode(2);
@@ -152,9 +152,9 @@ public class FOTT_DBMembers extends FOTT_DBContract {
         return members;
     }
 
-    public static FOTT_Member getMemberById(FOTT_App app, long id) {
+    public static Member getMemberById(App app, long id) {
 
-        FOTT_Member res = new FOTT_Member(0, "");
+        Member res = new Member(0, "");
 
         if (id > 0) {
             String filter = " " + COLUMN_NAME_FO_ID + " = " + id;

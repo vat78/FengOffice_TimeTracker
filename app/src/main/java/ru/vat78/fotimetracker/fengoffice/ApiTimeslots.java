@@ -1,4 +1,4 @@
-package ru.vat78.fotimetracker.fo_api;
+package ru.vat78.fotimetracker.fengoffice;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -6,24 +6,24 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Date;
 
-import ru.vat78.fotimetracker.FOTT_App;
-import ru.vat78.fotimetracker.model.FOTT_Timeslot;
-import ru.vat78.fotimetracker.views.FOTT_ErrorsHandler;
+import ru.vat78.fotimetracker.App;
+import ru.vat78.fotimetracker.model.Timeslot;
+import ru.vat78.fotimetracker.views.ErrorsHandler;
 
-import static ru.vat78.fotimetracker.fo_api.FOAPI_Dictionary.*;
+import static ru.vat78.fotimetracker.fengoffice.ApiDictionary.*;
 
 /**
  * Created by vat on 04.12.2015.
  */
-public class FOAPI_Timeslots {
-    private static final String CLASS_NAME = "FOAPI_Timeslots";
+public class ApiTimeslots {
+    private static final String CLASS_NAME = "ApiTimeslots";
 
-    public static ArrayList<FOTT_Timeslot> load(FOTT_App app){
+    public static ArrayList<Timeslot> load(App app){
         JSONObject jo = app.getWeb_service().executeAPI(FO_METHOD_LISTING, FO_SERVICE_TIMESLOTS);
         return convertResults(app, jo);
     }
 
-    public static ArrayList<FOTT_Timeslot> load(FOTT_App app, Date timestamp){
+    public static ArrayList<Timeslot> load(App app, Date timestamp){
         String[] args = new String[2];
         args[0] = FO_API_ARG_LASTUPDATE;
         long l = (long) timestamp.getTime() / FO_API_DATE_CONVERTOR;
@@ -32,7 +32,7 @@ public class FOAPI_Timeslots {
         return convertResults(app,jo);
     }
 
-    public static long save(FOTT_App app, FOTT_Timeslot timeslot) {
+    public static long save(App app, Timeslot timeslot) {
         long res = 0;
         if (timeslot == null) return res;
 
@@ -47,7 +47,7 @@ public class FOAPI_Timeslots {
         return res;
     }
 
-    private static String[] convertTSForAPI(FOTT_Timeslot timeslot) {
+    private static String[] convertTSForAPI(Timeslot timeslot) {
         String[] args = new String[11];
         long l = 0;
         args[0] = FO_API_FIELD_ID;
@@ -73,22 +73,22 @@ public class FOAPI_Timeslots {
         return args;
     }
 
-    private static ArrayList<FOTT_Timeslot> convertResults(FOTT_App app, JSONObject data){
+    private static ArrayList<Timeslot> convertResults(App app, JSONObject data){
 
         if (data == null) {return null;}
         JSONArray list = null;
         JSONObject jo;
         String tmp;
-        ArrayList<FOTT_Timeslot> res = new ArrayList<>();
+        ArrayList<Timeslot> res = new ArrayList<>();
         try {
             list = data.getJSONArray(FO_API_MAIN_OBJ);
         } catch (Exception e) {
-            app.getError().error_handler(FOTT_ErrorsHandler.ERROR_SAVE_ERROR,CLASS_NAME,e.getMessage());
+            app.getError().error_handler(ErrorsHandler.ERROR_SAVE_ERROR,CLASS_NAME,e.getMessage());
         }
         if (list == null) {return null;}
 
         for (int i = 0; i < list.length(); i++) {
-            FOTT_Timeslot el = null;
+            Timeslot el = null;
             try {
                 jo = list.getJSONObject(i);
                 long id = jo.getLong(FO_API_FIELD_ID);
@@ -98,7 +98,7 @@ public class FOAPI_Timeslots {
                 } else {
                     s= jo.getString(FO_API_FIELD_TS_DESC);
                 }
-                el = new FOTT_Timeslot(id,s);
+                el = new Timeslot(id,s);
 
                 s = "";
                 if (!jo.isNull(FO_API_FIELD_MEMPATH)) {
@@ -140,7 +140,7 @@ public class FOAPI_Timeslots {
 
             }
             catch (Exception e) {
-                app.getError().error_handler(FOTT_ErrorsHandler.ERROR_LOG_MESSAGE,CLASS_NAME, e.getMessage());
+                app.getError().error_handler(ErrorsHandler.ERROR_LOG_MESSAGE,CLASS_NAME, e.getMessage());
             }
             finally {
                 if (el != null)
@@ -151,7 +151,7 @@ public class FOAPI_Timeslots {
         return res;
     }
 
-    public static boolean delete(FOTT_App app, FOTT_Timeslot timeslot) {
+    public static boolean delete(App app, Timeslot timeslot) {
         boolean res = false;
 
         if (timeslot.getId() > 0) {

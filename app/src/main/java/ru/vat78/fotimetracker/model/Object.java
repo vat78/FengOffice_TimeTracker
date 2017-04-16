@@ -6,7 +6,7 @@ import java.util.Date;
 /**
  * Created by vat on 27.11.2015.
  */
-public class FOTT_Object {
+public class Object {
 
     protected static final String MEMBER_SPLITTER = "/";
 
@@ -18,7 +18,7 @@ public class FOTT_Object {
     private String membersIds;
     private boolean deleted;
 
-    public FOTT_Object(){
+    public Object(){
         foid = 0;
         name = "";
         desc = "";

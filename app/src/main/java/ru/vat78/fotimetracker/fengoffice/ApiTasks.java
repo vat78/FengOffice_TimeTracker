@@ -1,4 +1,4 @@
-package ru.vat78.fotimetracker.fo_api;
+package ru.vat78.fotimetracker.fengoffice;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -6,25 +6,25 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.Date;
 
-import ru.vat78.fotimetracker.FOTT_App;
-import ru.vat78.fotimetracker.model.FOTT_Task;
-import ru.vat78.fotimetracker.views.FOTT_ErrorsHandler;
+import ru.vat78.fotimetracker.App;
+import ru.vat78.fotimetracker.model.Task;
+import ru.vat78.fotimetracker.views.ErrorsHandler;
 
-import static ru.vat78.fotimetracker.fo_api.FOAPI_Dictionary.*;
+import static ru.vat78.fotimetracker.fengoffice.ApiDictionary.*;
 
 /**
  * Created by vat on 30.11.2015.
  */
-public class FOAPI_Tasks {
-    private static final String CLASS_NAME = "FOAPI_Tasks";
+public class ApiTasks {
+    private static final String CLASS_NAME = "ApiTasks";
 
-    public static ArrayList<FOTT_Task> load(FOTT_App app){
+    public static ArrayList<Task> load(App app){
         JSONObject jo = app.getWeb_service().executeAPI(FO_METHOD_LISTING, FO_SERVICE_TASKS,
                 new String[] {FO_API_ARG_STATUS, "0"});
         return convertResults(app,jo,true);
     }
 
-    public static ArrayList<FOTT_Task> load(FOTT_App app, Date timestamp){
+    public static ArrayList<Task> load(App app, Date timestamp){
         String[] args = new String[4];
         args[0]= FO_API_ARG_STATUS;
         args[1] = "0";
@@ -35,11 +35,11 @@ public class FOAPI_Tasks {
         return convertResults(app,jo,(l==0));
     }
 
-    private static ArrayList<FOTT_Task> convertResults(FOTT_App app, JSONObject data,boolean checkCurrentTask){
+    private static ArrayList<Task> convertResults(App app, JSONObject data, boolean checkCurrentTask){
 
         JSONArray list = null;
         JSONObject jo;
-        ArrayList<FOTT_Task> res = new ArrayList<>();
+        ArrayList<Task> res = new ArrayList<>();
         if (data == null) {return res;}
 
         long current_task = app.getCurTask();
@@ -48,19 +48,19 @@ public class FOAPI_Tasks {
         try {
             list = data.getJSONArray(FO_API_MAIN_OBJ);
         } catch (Exception e) {
-            app.getError().error_handler(FOTT_ErrorsHandler.ERROR_SAVE_ERROR, CLASS_NAME, e.getMessage());
+            app.getError().error_handler(ErrorsHandler.ERROR_SAVE_ERROR, CLASS_NAME, e.getMessage());
         }
         if (list == null) {return null;}
 
         for (int i = 0; i < list.length(); i++) {
-            FOTT_Task el = null;
+            Task el = null;
             try {
                 jo = list.getJSONObject(i);
 
                 el = convertToTask(app, jo);
             }
             catch (Exception e) {
-                app.getError().error_handler(FOTT_ErrorsHandler.ERROR_LOG_MESSAGE, CLASS_NAME, e.getMessage());
+                app.getError().error_handler(ErrorsHandler.ERROR_LOG_MESSAGE, CLASS_NAME, e.getMessage());
             }
             finally {
                 if (el != null) {
@@ -73,7 +73,7 @@ public class FOAPI_Tasks {
         }
 
         if (current_task > 0 && !isIncludeCurrentTask){
-            FOTT_Task el = getTaskByID(app, current_task);
+            Task el = getTaskByID(app, current_task);
             if (el == null){
                 app.setCurTask(0);
             } else {
@@ -83,20 +83,20 @@ public class FOAPI_Tasks {
         return res;
     }
 
-    private static FOTT_Task getTaskByID(FOTT_App app, long id) {
+    private static Task getTaskByID(App app, long id) {
         String[] args = new String[2];
         args[0] = FO_API_FIELD_ID;
         args[1] = "" + id;
         return convertToTask(app, app.getWeb_service().executeAPI(FO_METHOD_LISTING,FO_SERVICE_TASKS,args));
     }
 
-    private static FOTT_Task convertToTask(FOTT_App app, JSONObject jsonObject) {
-        FOTT_Task el = null;
+    private static Task convertToTask(App app, JSONObject jsonObject) {
+        Task el = null;
         try {
             long id = jsonObject.getLong(FO_API_FIELD_ID);
             String s = jsonObject.getString(FO_API_FIELD_NAME);
 
-            el = new FOTT_Task(id, s);
+            el = new Task(id, s);
 
             if (jsonObject.isNull(FO_API_FIELD_DESC)) {
                 el.setDesc("");
@@ -137,27 +137,27 @@ public class FOAPI_Tasks {
                 el.setStatus(jsonObject.getInt(FO_API_FIELD_STATUS));
 
                 /*
-                if (!jo.isNull(FOAPI_Dictionary.FO_API_FIELD_ASSIGNEDBY))
-                    el.put(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_ASSIGNEDBY,jo.getString(FOAPI_Dictionary.FO_API_FIELD_ASSIGNEDBY));
-                if (!jo.isNull(FOAPI_Dictionary.FO_API_FIELD_ASSIGNEDTO))
-                    el.put(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_ASSIGNEDTO,jo.getString(FOAPI_Dictionary.FO_API_FIELD_ASSIGNEDTO));
-                if (!jo.isNull(FOAPI_Dictionary.FO_API_FIELD_PERCENT))
-                    el.put(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_PERCENT,jo.getInt(FOAPI_Dictionary.FO_API_FIELD_PERCENT));
-                if (!jo.isNull(FOAPI_Dictionary.FO_API_FIELD_WORKEDTIME))
-                    el.put(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_WORKEDTIME,jo.getLong(FOAPI_Dictionary.FO_API_FIELD_WORKEDTIME));
-                if (!jo.isNull(FOAPI_Dictionary.FO_API_FIELD_PENDINGTIME))
-                    el.put(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_PENDINGTIME,jo.getLong(FOAPI_Dictionary.FO_API_FIELD_PENDINGTIME));
-                if (!jo.isNull(FOAPI_Dictionary.FO_API_FIELD_USETIMESLOTS))
-                    el.put(FOTT_DBContract.FOTT_DBTasks.COLUMN_NAME_USETIMESLOTS,(jo.getString(FOAPI_Dictionary.FO_API_FIELD_USETIMESLOTS) == FOAPI_Dictionary.FO_API_TRUE));
+                if (!jo.isNull(ApiDictionary.FO_API_FIELD_ASSIGNEDBY))
+                    el.put(FOTT_DBContract.DaoTasks.COLUMN_NAME_ASSIGNEDBY,jo.getString(ApiDictionary.FO_API_FIELD_ASSIGNEDBY));
+                if (!jo.isNull(ApiDictionary.FO_API_FIELD_ASSIGNEDTO))
+                    el.put(FOTT_DBContract.DaoTasks.COLUMN_NAME_ASSIGNEDTO,jo.getString(ApiDictionary.FO_API_FIELD_ASSIGNEDTO));
+                if (!jo.isNull(ApiDictionary.FO_API_FIELD_PERCENT))
+                    el.put(FOTT_DBContract.DaoTasks.COLUMN_NAME_PERCENT,jo.getInt(ApiDictionary.FO_API_FIELD_PERCENT));
+                if (!jo.isNull(ApiDictionary.FO_API_FIELD_WORKEDTIME))
+                    el.put(FOTT_DBContract.DaoTasks.COLUMN_NAME_WORKEDTIME,jo.getLong(ApiDictionary.FO_API_FIELD_WORKEDTIME));
+                if (!jo.isNull(ApiDictionary.FO_API_FIELD_PENDINGTIME))
+                    el.put(FOTT_DBContract.DaoTasks.COLUMN_NAME_PENDINGTIME,jo.getLong(ApiDictionary.FO_API_FIELD_PENDINGTIME));
+                if (!jo.isNull(ApiDictionary.FO_API_FIELD_USETIMESLOTS))
+                    el.put(FOTT_DBContract.DaoTasks.COLUMN_NAME_USETIMESLOTS,(jo.getString(ApiDictionary.FO_API_FIELD_USETIMESLOTS) == ApiDictionary.FO_API_TRUE));
                 */
         }
         catch (Exception e) {
-            app.getError().error_handler(FOTT_ErrorsHandler.ERROR_LOG_MESSAGE, CLASS_NAME, e.getMessage());
+            app.getError().error_handler(ErrorsHandler.ERROR_LOG_MESSAGE, CLASS_NAME, e.getMessage());
         }
         return el;
     }
 
-    public static long save(FOTT_App app, FOTT_Task task) {
+    public static long save(App app, Task task) {
         long res = 0;
         if (task == null) return res;
             String[] args = convertTaskForAPI(task);
@@ -170,7 +170,7 @@ public class FOAPI_Tasks {
         return res;
     }
 
-    private static String[] convertTaskForAPI(FOTT_Task task) {
+    private static String[] convertTaskForAPI(Task task) {
         String[] res = new String[12];
         long l;
         res[0] = FO_API_FIELD_ID;
@@ -195,7 +195,7 @@ public class FOAPI_Tasks {
         return res;
     }
 
-    public static boolean delete(FOTT_App app, FOTT_Task task) {
+    public static boolean delete(App app, Task task) {
         boolean res = false;
 
             if (task.getId() > 0) {

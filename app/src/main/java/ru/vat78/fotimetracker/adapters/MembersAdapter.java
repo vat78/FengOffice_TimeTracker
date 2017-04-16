@@ -11,22 +11,22 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
-import ru.vat78.fotimetracker.FOTT_App;
+import ru.vat78.fotimetracker.App;
 import ru.vat78.fotimetracker.R;
-import ru.vat78.fotimetracker.database.FOTT_DBMembers;
-import ru.vat78.fotimetracker.model.FOTT_Member;
-import ru.vat78.fotimetracker.views.FOTT_MembersFragment;
+import ru.vat78.fotimetracker.database.DaoMembers;
+import ru.vat78.fotimetracker.model.Member;
+import ru.vat78.fotimetracker.views.MembersFragment;
 
 /**
  * Created by vat on 30.11.2015.
  */
-public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapter.MembersViewHolder> {
+public class MembersAdapter extends RecyclerView.Adapter <MembersAdapter.MembersViewHolder> {
 
-    private List<FOTT_Member> members;
-    private List<FOTT_Member> visibleMembers;
+    private List<Member> members;
+    private List<Member> visibleMembers;
     private Context context;
-    private FOTT_App app;
-    private FOTT_MembersFragment parent;
+    private App app;
+    private MembersFragment parent;
 
     public static class MembersViewHolder extends RecyclerView.ViewHolder {
         // each data item is just a string in this case
@@ -36,9 +36,9 @@ public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapt
         private TextView tasks;
         private ImageButton selector;
 
-        private FOTT_MembersFragment parent;
+        private MembersFragment parent;
 
-        public MembersViewHolder(View itemView, FOTT_MembersFragment parent) {
+        public MembersViewHolder(View itemView, MembersFragment parent) {
             super(itemView);
             title = (TextView) itemView.findViewById(R.id.textMemName);
             color = (TextView) itemView.findViewById(R.id.textMemColor);
@@ -61,7 +61,7 @@ public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapt
         }*/
     }
 
-    public FOTT_MembersAdapter(FOTT_App application, FOTT_MembersFragment parent) {
+    public MembersAdapter(App application, MembersFragment parent) {
         super();
         //this.context = context;
         this.app = application;
@@ -88,7 +88,7 @@ public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapt
 
     @Override
     public void onBindViewHolder(MembersViewHolder memberViewHolder, int i) {
-        final FOTT_Member objectItem;
+        final Member objectItem;
 
         objectItem = visibleMembers.get(i);
 
@@ -141,13 +141,13 @@ public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapt
         super.onAttachedToRecyclerView(recyclerView);
     }
 
-    public void onClickMember(FOTT_Member selection){
+    public void onClickMember(Member selection){
         if (parent != null) {
             parent.onMemberSelect(selection);
         }
     }
 
-    public void onClickSelector(FOTT_Member selection){
+    public void onClickSelector(Member selection){
         //???
         int position = visibleMembers.indexOf(selection);
         switch (selection.getNode()) {
@@ -161,7 +161,7 @@ public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapt
     }
 
     public void load(){
-        members = FOTT_DBMembers.load(app);
+        members = DaoMembers.load(app);
         rebuildFilteredList();
         notifyDataSetChanged();
     }
@@ -170,13 +170,13 @@ public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapt
         return visibleMembers.get(position).getId();
     }
 
-    public FOTT_Member getMemberById(long id){
-        return FOTT_DBMembers.getMemberById(app, id);
+    public Member getMemberById(long id){
+        return DaoMembers.getMemberById(app, id);
     }
 
     private void rebuildFilteredList(){
         visibleMembers = new ArrayList<>();
-        for (FOTT_Member el: members){
+        for (Member el: members){
             if (el.isVisible()) visibleMembers.add(el);
         }
     }
@@ -186,7 +186,7 @@ public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapt
         int curMem = members.indexOf(visibleMembers.get(position));
         int newItems = 0;
         for (int i = curMem+1; i < members.size(); i++) {
-            FOTT_Member el = members.get(i);
+            Member el = members.get(i);
             if (el.getLevel() <= curLevel) break;
             if (el.getLevel() == curLevel+1) {
                 el.setVisible(true);
@@ -203,7 +203,7 @@ public class FOTT_MembersAdapter extends RecyclerView.Adapter <FOTT_MembersAdapt
         int curMem = members.indexOf(visibleMembers.get(position));
         int delItems = 0;
         for (int i = curMem+1; i < members.size(); i++) {
-            FOTT_Member el = members.get(i);
+            Member el = members.get(i);
             if (el.getLevel() <= curLevel) break;
             if (el.isVisible()){
                 el.setVisible(false);

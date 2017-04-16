@@ -5,7 +5,7 @@ import android.util.Log;
 /**
  * Created by vat on 21.12.2015.
  */
-public class FOTT_ErrorsHandler {
+public class ErrorsHandler {
 
     public final static String ERROR_LOG_MESSAGE = "log";
     public final static String ERROR_SAVE_ERROR = "save";
@@ -14,7 +14,7 @@ public class FOTT_ErrorsHandler {
     private boolean isError;
     private String error_desc;
 
-    public FOTT_ErrorsHandler() {
+    public ErrorsHandler() {
         reset_error();
     }
 

@@ -13,7 +13,6 @@ import android.os.AsyncTask;
 
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.ContactsContract;
 import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.View;
@@ -25,20 +24,20 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import ru.vat78.fotimetracker.fo_api.FOAPI_Connector;
+import ru.vat78.fotimetracker.fengoffice.ApiConnector;
 
 //import static android.Manifest.permission.READ_CONTACTS;
 
 /**
  * A login screen that offers login via login/password.
  */
-public class FOTT_LoginActivity extends AppCompatActivity {
+public class LoginActivity extends AppCompatActivity {
 
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
-    private FOTT_App app;
-    private FOAPI_Connector FOApp;
+    private App app;
+    private ApiConnector FOApp;
     private UserLoginCheck ULC;
 
     // UI references.
@@ -54,7 +53,7 @@ public class FOTT_LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        app = (FOTT_App) getApplication();
+        app = (App) getApplication();
         FOApp = app.getWeb_service();
 
         setContentView(R.layout.activity_login);
@@ -66,7 +65,7 @@ public class FOTT_LoginActivity extends AppCompatActivity {
         mUntrustCA = (CheckBox) findViewById(R.id.untrustCA);
         mSaveCred = (CheckBox) findViewById(R.id.save_cred);
 
-        FOTT_Preferences preferences = app.getPreferences();
+        Preferences preferences = app.getPreferences();
         mURLView.setText(preferences.getString(getString(R.string.pref_sync_url), ""));
         mLoginView.setText(preferences.getString(getString(R.string.pref_sync_login), ""));
         mUntrustCA.setChecked(preferences.getBoolean(getString(R.string.pref_sync_certs), false));
@@ -254,7 +253,7 @@ public class FOTT_LoginActivity extends AppCompatActivity {
             showProgress(false);
 
             if (success) {
-                FOTT_Preferences preferences = app.getPreferences();
+                Preferences preferences = app.getPreferences();
                 preferences.set(getString(R.string.pref_sync_url), mURLView.getText().toString());
                 preferences.set(getString(R.string.pref_sync_login), mLoginView.getText().toString());
                 preferences.set(getString(R.string.pref_sync_certs), mUntrustCA.isChecked());

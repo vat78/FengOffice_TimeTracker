@@ -11,22 +11,22 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import ru.vat78.fotimetracker.FOTT_App;
+import ru.vat78.fotimetracker.App;
 import ru.vat78.fotimetracker.R;
-import ru.vat78.fotimetracker.database.FOTT_DBTasks;
-import ru.vat78.fotimetracker.model.FOTT_Task;
-import ru.vat78.fotimetracker.views.FOTT_TasksFragment;
+import ru.vat78.fotimetracker.database.DaoTasks;
+import ru.vat78.fotimetracker.model.Task;
+import ru.vat78.fotimetracker.views.TasksFragment;
 
 /**
  * Created by vat on 02.12.2015.
  */
-public class FOTT_TasksAdapter extends RecyclerView.Adapter<FOTT_TasksAdapter.TasksViewHolder> {
+public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TasksViewHolder> {
 
-    private List<FOTT_Task> tasks;
+    private List<Task> tasks;
     private Context context;
-    private FOTT_App app;
+    private App app;
 
-    private FOTT_TasksFragment parent;
+    private TasksFragment parent;
 
 
     public static class TasksViewHolder extends RecyclerView.ViewHolder
@@ -35,9 +35,9 @@ public class FOTT_TasksAdapter extends RecyclerView.Adapter<FOTT_TasksAdapter.Ta
         public TextView title;
         public TextView duedate;
 
-        private FOTT_TasksFragment parent;
+        private TasksFragment parent;
 
-        public TasksViewHolder(View itemView, FOTT_TasksFragment parent) {
+        public TasksViewHolder(View itemView, TasksFragment parent) {
             super(itemView);
             title = (TextView)itemView.findViewById(R.id.textTaskTitle);
             duedate = (TextView)itemView.findViewById(R.id.textDueDate);
@@ -56,7 +56,7 @@ public class FOTT_TasksAdapter extends RecyclerView.Adapter<FOTT_TasksAdapter.Ta
 
     }
 
-    public FOTT_TasksAdapter(FOTT_App application, FOTT_TasksFragment parent) {
+    public TasksAdapter(App application, TasksFragment parent) {
         //this.context = context;
         this.app = application;
         this.tasks = new ArrayList<>();
@@ -84,7 +84,7 @@ public class FOTT_TasksAdapter extends RecyclerView.Adapter<FOTT_TasksAdapter.Ta
     @Override
     public void onBindViewHolder(TasksViewHolder taskViewHolder, int i) {
 
-        FOTT_Task objectItem = tasks.get(i);
+        Task objectItem = tasks.get(i);
 
         taskViewHolder.title.setText(objectItem.getName());
         Date d = objectItem.getDueDate();
@@ -105,10 +105,10 @@ public class FOTT_TasksAdapter extends RecyclerView.Adapter<FOTT_TasksAdapter.Ta
     }
 
     public void load(){
-        this.tasks = FOTT_DBTasks.load(app,"");
+        this.tasks = DaoTasks.load(app,"");
     }
 
-    public FOTT_Task getTaskById(long id){
-        return FOTT_DBTasks.getTaskById(app, id);
+    public Task getTaskById(long id){
+        return DaoTasks.getTaskById(app, id);
     }
 }

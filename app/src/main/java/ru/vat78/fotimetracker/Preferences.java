@@ -5,10 +5,10 @@ import android.content.SharedPreferences;
 /**
  * Created by vat on 18.12.2015.
  */
-public class FOTT_Preferences {
+public class Preferences {
     SharedPreferences preferences;
 
-    public FOTT_Preferences(SharedPreferences preferences) {
+    public Preferences(SharedPreferences preferences) {
         this.preferences = preferences;
     }
 
