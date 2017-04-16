@@ -6,6 +6,7 @@ import android.provider.BaseColumns;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import ru.vat78.fotimetracker.App;
 import ru.vat78.fotimetracker.model.Timeslot;
@@ -43,7 +44,7 @@ public class DaoTimeslots extends FOTT_DBContract {
         app.getDatabase().execSQL(SQL_CREATE_ENTRIES);
     }
 
-    public static void save(App app, ArrayList<Timeslot> ts_list, boolean fullSync) {
+    public static void save(App app, List<Timeslot> ts_list, boolean fullSync) {
 
         try {
             if (fullSync) {

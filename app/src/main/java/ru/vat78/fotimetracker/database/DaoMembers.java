@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.provider.BaseColumns;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import ru.vat78.fotimetracker.App;
 import ru.vat78.fotimetracker.R;
@@ -47,7 +48,7 @@ public class DaoMembers extends FOTT_DBContract {
         app.getDatabase().execSQL(SQL_CREATE_ENTRIES);
     }
 
-    public static void save(App app, ArrayList<Member> members) {
+    public static void save(App app, List<Member> members) {
 
         if (app.getCurMember() > 0){
             //TODO: if has selected member

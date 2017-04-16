@@ -5,18 +5,16 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.TimeZone;
 
 import ru.vat78.fotimetracker.database.DB;
 import ru.vat78.fotimetracker.database.DaoTasks;
 import ru.vat78.fotimetracker.database.DaoTimeslots;
 import ru.vat78.fotimetracker.database.DaoMembers;
-import ru.vat78.fotimetracker.fengoffice.ApiConnector;
-import ru.vat78.fotimetracker.fengoffice.ApiMembers;
-import ru.vat78.fotimetracker.fengoffice.ApiTasks;
-import ru.vat78.fotimetracker.fengoffice.ApiTimeslots;
+import ru.vat78.fotimetracker.fengoffice.FengOfficeApi;
+import ru.vat78.fotimetracker.fengoffice.vatApi.*;
 import ru.vat78.fotimetracker.model.Member;
 import ru.vat78.fotimetracker.model.Task;
 import ru.vat78.fotimetracker.model.Timeslot;
@@ -33,8 +31,8 @@ public class App extends Application {
     private final String FOTT_DATE_FORMAT = "dd.MM.yyyy";
     private final String FOTT_TIME_FORMAT = "HH:mm";
 
-
-    private ApiConnector web_service;
+    private ApiConnector webService;
+    private FengOfficeApi foApi;
     private DB database;
     private boolean needFullSync;
 
@@ -58,7 +56,8 @@ public class App extends Application {
         super.onCreate();
 
         //Create web-service connection
-        web_service = new ApiConnector(this);
+        webService = new ApiConnector(this);
+        foApi = new VatApi(this);
 
         //Application preferences
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
@@ -89,12 +88,12 @@ public class App extends Application {
         timeFormat.setTimeZone(TimeZone.getDefault());
 
         s = preferences.getString(getString(R.string.pref_sync_url), "");
-        if (!s.isEmpty()) web_service.setFO_Url(s);
+        if (!s.isEmpty()) webService.setFO_Url(s);
         s = preferences.getString(getString(R.string.pref_sync_login), "");
-        if (!s.isEmpty()) web_service.setFO_User(s);
+        if (!s.isEmpty()) webService.setFO_User(s);
         s = preferences.getString(getString(R.string.pref_sync_password), "");
-        if (!s.isEmpty()) web_service.setFO_Pwd(s);
-        web_service.canUseUntrustCert(preferences.getBoolean(getString(R.string.pref_sync_certs),false));
+        if (!s.isEmpty()) webService.setFO_Pwd(s);
+        webService.canUseUntrustCert(preferences.getBoolean(getString(R.string.pref_sync_certs),false));
     }
 
     public DB getDatabase() {
@@ -109,8 +108,8 @@ public class App extends Application {
         return needFullSync;
     }
 
-    public ApiConnector getWeb_service() {
-        return web_service;
+    public ApiConnector getWebService() {
+        return webService;
     }
 
     public long getCurMember() {
@@ -178,7 +177,7 @@ public class App extends Application {
         long stamp = System.currentTimeMillis();
         try {
 
-            if (!getWeb_service().testConnection()) {
+            if (!getWebService().testConnection()) {
                 setSyncing(false);
                 return false;
             }
@@ -187,7 +186,7 @@ public class App extends Application {
             Date d = (fullSync ? new Date(0) : getLastSync());
 
             //Sync members
-            ArrayList<Member> members = ApiMembers.load(this);
+            List<Member> members = foApi.loadMembers();
             if (getError().is_error()) {
                 setSyncing(false);
                 return false;
@@ -200,16 +199,16 @@ public class App extends Application {
             members = null;
 
             //Sync task
-            ArrayList<Task> tasks = DaoTasks.getDeletedTasks(this);
+            List<Task> tasks = DaoTasks.getDeletedTasks(this);
             for (Task t: tasks){
-                if (ApiTasks.delete(this,t) && !fullSync) DaoTasks.deleteTask(this, t);
+                if (foApi.deleteTask(t) && !fullSync) DaoTasks.deleteTask(this, t);
             }
             tasks = DaoTasks.getChangedTasks(this, getLastSync());
             for (Task t: tasks){
-                long id = ApiTasks.save(this,t);
+                long id = foApi.saveTask(t);
                 if (id !=0 && !fullSync) DaoTasks.deleteTask(this, t);
             }
-            tasks = ApiTasks.load(this, d);
+            tasks = foApi.loadTasks(d);
             if (getError().is_error()) {
                 setSyncing(false);
                 return false;
@@ -222,18 +221,18 @@ public class App extends Application {
             tasks = null;
 
             //Sync timeslots
-            ArrayList<Timeslot> timeslots = DaoTimeslots.getDeletedTS(this);
+            List<Timeslot> timeslots = DaoTimeslots.getDeletedTS(this);
             for (Timeslot ts: timeslots){
-                if (ApiTimeslots.delete(this, ts) && !fullSync) DaoTimeslots.deleteTS(this, ts);
+                if (foApi.deleteTimeslot(ts) && !fullSync) DaoTimeslots.deleteTS(this, ts);
             }
 
             timeslots = DaoTimeslots.getChangedTS(this, getLastSync());
             for (Timeslot ts: timeslots){
-                long id = ApiTimeslots.save(this, ts);
+                long id = foApi.saveTimeslot(ts);
                 if (id != 0 && !fullSync) DaoTimeslots.deleteTS(this, ts);
             }
 
-            timeslots = ApiTimeslots.load(this, d);
+            timeslots = foApi.loadTimeslots(d);
             if (getError().is_error()) {
                 setSyncing(false);
                 return false;

@@ -1,4 +1,4 @@
-package ru.vat78.fotimetracker.fengoffice;
+package ru.vat78.fotimetracker.fengoffice.vatApi;
 
 /**
  * Dictionary for works with FengOffice API

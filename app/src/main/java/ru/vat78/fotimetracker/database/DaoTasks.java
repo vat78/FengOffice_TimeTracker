@@ -6,6 +6,7 @@ import android.provider.BaseColumns;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import ru.vat78.fotimetracker.App;
 import ru.vat78.fotimetracker.model.Task;
@@ -58,7 +59,7 @@ public class DaoTasks extends FOTT_DBContract {
         app.getDatabase().execSQL(SQL_CREATE_ENTRIES);
     }
 
-    public static void save(App app, ArrayList<Task> tasks_list, boolean fullSync) {
+    public static void save(App app, List<Task> tasks_list, boolean fullSync) {
 
         try {
             if (fullSync) {

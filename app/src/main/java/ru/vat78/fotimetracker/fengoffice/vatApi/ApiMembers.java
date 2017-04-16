@@ -1,4 +1,4 @@
-package ru.vat78.fotimetracker.fengoffice;
+package ru.vat78.fotimetracker.fengoffice.vatApi;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -15,13 +15,13 @@ import ru.vat78.fotimetracker.views.ErrorsHandler;
 public class ApiMembers {
     private static final String CLASS_NAME = "ApiMembers";
 
-    public static ArrayList<Member> load(App app){
+    public ArrayList<Member> load(App app){
 
-        JSONObject jo = app.getWeb_service().executeAPI(ApiDictionary.FO_METHOD_MEMBERS, ApiDictionary.FO_MEMBERS_WORKSPACE);
+        JSONObject jo = app.getWebService().executeAPI(ApiDictionary.FO_METHOD_MEMBERS, ApiDictionary.FO_MEMBERS_WORKSPACE);
         return convertResults(app,jo);
     }
 
-    private static ArrayList<Member> convertResults(App app, JSONObject data){
+    private ArrayList<Member> convertResults(App app, JSONObject data){
 
         if (data == null) {return null;}
         JSONArray list = null;

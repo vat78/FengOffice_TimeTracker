@@ -24,7 +24,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import ru.vat78.fotimetracker.fengoffice.ApiConnector;
+import ru.vat78.fotimetracker.fengoffice.vatApi.ApiConnector;
 
 //import static android.Manifest.permission.READ_CONTACTS;
 
@@ -54,7 +54,7 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         app = (App) getApplication();
-        FOApp = app.getWeb_service();
+        FOApp = app.getWebService();
 
         setContentView(R.layout.activity_login);
         // Set up the login form.
