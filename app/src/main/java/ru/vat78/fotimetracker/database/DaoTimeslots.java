@@ -67,6 +67,7 @@ public class DaoTimeslots extends FOTT_DBContract {
     private static void insertOrUpdate(App app, Timeslot timeslot) {
         ContentValues ts = convertToDB(timeslot);
         ts.put(COLUMN_NAME_DELETED,0);
+        app.getError().reset_error();
 
         if (timeslot.getId() != 0) {
             Cursor cursor = app.getDatabase().query(TABLE_NAME, new String[]{BaseColumns._ID},
@@ -138,7 +139,8 @@ public class DaoTimeslots extends FOTT_DBContract {
                         COLUMN_NAME_CHANGED,
                         COLUMN_NAME_CHANGED_BY,
                         COLUMN_NAME_TASK_ID,
-                        COLUMN_NAME_DESC},
+                        COLUMN_NAME_DESC,
+                        COLUMN_NAME_MEMBERS_IDS},
                 filter, COLUMN_NAME_START + " DESC");
 
         tsCursor.moveToFirst();
@@ -160,6 +162,7 @@ public class DaoTimeslots extends FOTT_DBContract {
                 el.setAuthor(author);
                 el.setTaskId(tid);
                 el.setDesc(tsCursor.getString(7));
+                el.setMembersIDs(tsCursor.getString(8));
 
                 timeslots.add(el);
             } while (tsCursor.moveToNext());
