@@ -29,12 +29,15 @@ import ru.vat78.fotimetracker.views.ErrorsHandler;
 public class App extends Application {
 
     private final String FOTT_DATE_FORMAT = "dd.MM.yyyy";
-    private final String FOTT_TIME_FORMAT = "HH:mm";
+    private final String FOTT_TIME_FORMAT_24H = "HH:mm";
+    private final String FOTT_TIME_FORMAT_AMPMH = "K:mm a";
 
     private ApiConnector webService;
     private FengOfficeApi foApi;
     private DB database;
     private boolean needFullSync;
+    
+    private MainActivity mainActivity;
 
     private long curMember;
     private long curTask;
@@ -69,7 +72,7 @@ public class App extends Application {
         preferences.set(getString(R.string.pref_db_version), database.getDb_version());
 
         //Create error handler
-        error = new ErrorsHandler();
+        error = new ErrorsHandler(this);
 
         load_preferences();
     }
@@ -77,23 +80,28 @@ public class App extends Application {
     private void load_preferences() {
         curMember = preferences.getLong(getString(R.string.pref_stored_member), 0);
         curTask = preferences.getLong(getString(R.string.pref_stored_task), 0);
+        curTimeslot = preferences.getLong(getString(R.string.pref_stored_ts), 0);
         lastSync = new Date(preferences.getLong(getString(R.string.pref_stored_last_sync),0));
 
-        String s = preferences.getString("date_format", FOTT_DATE_FORMAT);
-        dateFormat = new SimpleDateFormat(s);
-        dateFormat.setTimeZone(TimeZone.getDefault());
+        setDateTimeFormat();
 
-        s = preferences.getString("time_format", FOTT_TIME_FORMAT);
-        timeFormat = new SimpleDateFormat(s);
-        timeFormat.setTimeZone(TimeZone.getDefault());
-
-        s = preferences.getString(getString(R.string.pref_sync_url), "");
+        String s = preferences.getString(getString(R.string.pref_sync_url), "");
         if (!s.isEmpty()) webService.setFO_Url(s);
         s = preferences.getString(getString(R.string.pref_sync_login), "");
         if (!s.isEmpty()) webService.setFO_User(s);
         s = preferences.getString(getString(R.string.pref_sync_password), "");
         if (!s.isEmpty()) webService.setFO_Pwd(s);
         webService.canUseUntrustCert(preferences.getBoolean(getString(R.string.pref_sync_certs),false));
+    }
+    
+    public void setDateTimeFormat() {
+        String s = preferences.getString(getString(R.string.pref_date_format), FOTT_DATE_FORMAT);
+        dateFormat = new SimpleDateFormat(s);
+        dateFormat.setTimeZone(TimeZone.getDefault());
+
+        if (preferences.getBoolean(getString(R.string.pref_time_format), false)) s = FOTT_TIME_FORMAT_24H; else s = FOTT_TIME_FORMAT_AMPMH;
+        timeFormat = new SimpleDateFormat(s);
+        timeFormat.setTimeZone(TimeZone.getDefault());
     }
 
     public DB getDatabase() {
@@ -137,21 +145,29 @@ public class App extends Application {
     public SimpleDateFormat getTimeFormat() {
         return timeFormat;
     }
+    
+    public MainActivity getMainActivity() {
+        return mainActivity;
+    }
 
     public void setCurMember(long curMember) {
         //ToDo check cur task and timeslot
+        curTimeslot = 0;
+        setCurTask(0);
         this.curMember = curMember;
         preferences.set(getString(R.string.pref_stored_member), curMember);
     }
 
     public void setCurTask(long curTask) {
         //ToDo check current timeslot
+        curTimeslot = 0;
         this.curTask = curTask;
         preferences.set(getString(R.string.pref_stored_task), curTask);
     }
 
     public void setCurTimeslot(long time) {
         curTimeslot = time;
+        preferences.set(getString(R.string.pref_stored_ts), curTimeslot);
     }
 
     public void setLastSync(long lastSync) {
@@ -171,10 +187,15 @@ public class App extends Application {
     public void setNeedFullSync(boolean value) {
         this.needFullSync = value;
     }
+    
+    public void setMainActivity(    MainActivity mainActivity) {
+        this.mainActivity = mainActivity;
+    }
 
     public boolean dataSynchronization() {
 
         long stamp = System.currentTimeMillis();
+        error.reset_error();
         try {
 
             if (!getWebService().testConnection()) {
@@ -182,7 +203,7 @@ public class App extends Application {
                 return false;
             }
 
-            boolean fullSync = isNeedFullSync();
+            boolean fullSync = isNeedFullSync() || mainActivity == null;
             Date d = (fullSync ? new Date(0) : getLastSync());
 
             //Sync members
@@ -252,5 +273,26 @@ public class App extends Application {
         setSyncing(false);
         setNeedFullSync(false);
         return true;
+    }
+    
+    public void redrawMainActivity() {
+        int shift = 0;
+        if (curMember != 0)
+            if (!FOTT_DBMembers.isExistInDB(this, curMember)) {
+                setCurMember(0);
+                shift = 1;
+            }
+        if (curTask != 0)
+            if (!FOTT_DBTasks.isExistInDB(this, curTask)) {
+                setCurTask(0);
+                shift = 2;
+            }
+
+        if (mainActivity != null) {
+            if (shift == 0)
+                mainActivity.redraw();
+            else
+                mainActivity.setCurrentFragment(shift - 1);
+        }
     }
 }
