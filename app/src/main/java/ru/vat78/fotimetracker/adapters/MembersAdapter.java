@@ -24,7 +24,6 @@ public class MembersAdapter extends RecyclerView.Adapter <MembersAdapter.Members
 
     private List<Member> members;
     private List<Member> visibleMembers;
-    private Context context;
     private App app;
     private MembersFragment parent;
 
@@ -36,29 +35,14 @@ public class MembersAdapter extends RecyclerView.Adapter <MembersAdapter.Members
         private TextView tasks;
         private ImageButton selector;
 
-        private MembersFragment parent;
-
-        public MembersViewHolder(View itemView, MembersFragment parent) {
+        public MembersViewHolder(View itemView) {
             super(itemView);
             title = (TextView) itemView.findViewById(R.id.textMemName);
             color = (TextView) itemView.findViewById(R.id.textMemColor);
             margine = (TextView) itemView.findViewById(R.id.textMargin);
             tasks = (TextView) itemView.findViewById(R.id.textMemTasks);
             selector = (ImageButton) itemView.findViewById(R.id.imageMemSymbol);
-            this.parent = parent;
-
-            //selector.setOnClickListener(this);
-            //itemView.setOnClickListener(this);
         }
-/*
-        @Override
-        public void onClick(View v) {
-
-            if (parent != null) {
-                parent.onMemberSelect(getAdapterPosition());
-            }
-
-        }*/
     }
 
     public MembersAdapter(App application, MembersFragment parent) {
@@ -82,8 +66,7 @@ public class MembersAdapter extends RecyclerView.Adapter <MembersAdapter.Members
     @Override
     public MembersViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
         View v = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.member_list_item, viewGroup, false);
-        MembersViewHolder vh = new MembersViewHolder(v, parent);
-        return vh;
+        return new MembersViewHolder(v);
     }
 
     @Override
@@ -92,7 +75,8 @@ public class MembersAdapter extends RecyclerView.Adapter <MembersAdapter.Members
 
         objectItem = visibleMembers.get(i);
 
-        memberViewHolder.title.setText("   " + objectItem.getName());
+        String s = "   " + objectItem.getName();
+        memberViewHolder.title.setText(s);
         memberViewHolder.tasks.setText(String.valueOf(objectItem.getTasksCnt()));
         memberViewHolder.color.setBackgroundColor(objectItem.getColor());
 
