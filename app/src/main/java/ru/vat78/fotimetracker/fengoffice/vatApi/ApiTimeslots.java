@@ -27,6 +27,8 @@ public class ApiTimeslots {
         long l = (long) timestamp.getTime() / ApiDictionary.FO_API_DATE_CONVERTOR;
         args[1] = "" + l;
         JSONObject jo = app.getWebService().executeAPI(ApiDictionary.FO_METHOD_LISTING, ApiDictionary.FO_SERVICE_TIMESLOTS, args);
+        if (!app.getWeb_service().getError().isEmpty())
+            app.getError().error_handler(FOTT_ErrorsHandler.ERROR_SAVE_ERROR, CLASS_NAME, app.getWeb_service().getError());
         return convertResults(app,jo);
     }
 
@@ -46,8 +48,8 @@ public class ApiTimeslots {
     }
 
     private String[] convertTSForAPI(Timeslot timeslot) {
-        String[] args = new String[11];
-        long l = 0;
+        String[] args = new String[12];
+        long l;
         args[0] = ApiDictionary.FO_API_FIELD_ID;
         args[1] = "";
         if (timeslot.getId() > 0) args[1] = "" + timeslot.getId();
@@ -66,7 +68,7 @@ public class ApiTimeslots {
             args[11] = "[";
             String[] members = timeslot.getMembersArray();
             for (String member : members) args[11] += "\"" + member + "\",";
-            args[11] += "]";
+            args[11] += "\"\"]";
         }
         return args;
     }
@@ -117,7 +119,7 @@ public class ApiTimeslots {
                 tmp = ApiDictionary.FO_API_FALSE;
                 if (!jo.isNull(ApiDictionary.FO_API_FIELD_TS_DATE))
                     tmp = jo.getString(ApiDictionary.FO_API_FIELD_TS_DATE);
-                if (tmp == ApiDictionary.FO_API_FALSE) {
+                if (tmp.equalsIgnoreCase(FO_API_FALSE)) {
                     el.setStart(0);
                 } else {
                     el.setStart(jo.getLong(ApiDictionary.FO_API_FIELD_TS_DATE)* ApiDictionary.FO_API_DATE_CONVERTOR);
@@ -163,7 +165,7 @@ public class ApiTimeslots {
         if (timeslot.getId() > 0) {
             JSONObject jo = app.getWebService().executeAPI(ApiDictionary.FO_METHOD_DELETE_OBJ, timeslot.getId());
             try {
-                res = (jo.getString(ApiDictionary.FO_API_FIELD_RESULT) != ApiDictionary.FO_API_TRUE);
+                res = (!jo.getString(ApiDictionary.FO_API_FIELD_RESULT).equalsIgnoreCase(FO_API_TRUE));
             } catch (Exception e) {
             }
         }
