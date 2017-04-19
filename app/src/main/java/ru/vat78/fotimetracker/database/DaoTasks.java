@@ -67,9 +67,18 @@ public class DaoTasks extends FOTT_DBContract {
                 FOTT_DBMembers_Objects.rebuild(app);
             }
 
-
-            for (int i = 0; i < tasks_list.size(); i++) {
-                insert(app, tasks_list.get(i));
+            for (FOTT_Task t : tasks_list) {
+                if (t.canAddTimeslots() && t.getStatus() == 0) {
+                    save(app, t);
+                } else {
+                    if (!fullSync) {
+                        if (t.getId() == app.getCurTask()) {
+                            t.setDeleted(true);
+                        } else {
+                            deleteTask(app,t);
+                        }
+                    }
+                }
             }
         }
         catch (Error e){
@@ -97,8 +106,13 @@ public class DaoTasks extends FOTT_DBContract {
         return res;
     }
 
-    private static void insert(App app, Task task){
+    private static void save(App app, Task task){
         ContentValues data = convertToDB(task);
+        if (task.getId() != 0 ) {
+            Cursor cursor = app.getDatabase().query(TABLE_NAME, new String[]{BaseColumns._ID},
+                    COLUMN_NAME_FO_ID + " = " + task.getId(),"");
+            if (cursor.moveToFirst()) data.put(BaseColumns._ID, cursor.getLong(0));
+        }
         app.getDatabase().insertOrUpdate(TABLE_NAME, data);
 
         if (!app.getError().is_error()) {
@@ -191,5 +205,10 @@ public class DaoTasks extends FOTT_DBContract {
 
     public static void deleteTask(App app, Task task) {
         app.getDatabase().delete(TABLE_NAME, COLUMN_NAME_FO_ID + " == " + task.getId());
+    }
+    
+    public static boolean isExistInDB(App app, long taskID) {
+        Task res = getTaskById(app,taskID);
+        return (res.getId() == taskID);
     }
 }
