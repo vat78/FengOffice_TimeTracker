@@ -14,6 +14,7 @@ import ru.vat78.fotimetracker.App;
 import ru.vat78.fotimetracker.R;
 import ru.vat78.fotimetracker.database.DaoTimeslots;
 import ru.vat78.fotimetracker.model.Timeslot;
+import ru.vat78.fotimetracker.views.TimeslotsFragment;
 
 /**
  * Created by vat on 04.12.2015.
@@ -23,6 +24,7 @@ public class TimeslotsAdapter extends RecyclerView.Adapter<TimeslotsAdapter.View
     private ArrayList<Timeslot> timeslots;
     private Context context;
     private App app;
+    private TimeslotsFragment parent;
 
     public ArrayList<Timeslot> getAllTimeslots() {
         return timeslots;
@@ -44,11 +46,12 @@ public class TimeslotsAdapter extends RecyclerView.Adapter<TimeslotsAdapter.View
         }
     }
 
-    public TimeslotsAdapter(Context context, App application) {
+    public TimeslotsAdapter(App application, TimeslotsFragment parent) {
         super();
         this.context = context;
         this.app = application;
         this.timeslots = new ArrayList<>();
+        this.parent = parent;
     }
 
     @Override
@@ -66,20 +69,27 @@ public class TimeslotsAdapter extends RecyclerView.Adapter<TimeslotsAdapter.View
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.timeslot_list_item, parent, false);
 
-        ViewHolder vh = new ViewHolder(v);
-        return vh;
+        return new ViewHolder(v);
     }
 
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
 
-        Timeslot objectItem = timeslots.get(position);
+        final Timeslot objectItem = timeslots.get(position);
 
         holder.tsText.setText(objectItem.getName());
         holder.tsAuthor.setText(objectItem.getAuthor());
-        holder.tsStart.setText(app.getDateFormat().format(objectItem.getStart()) + " " + app.getTimeFormat().format(objectItem.getStart()));
+        String s = app.getDateFormat().format(objectItem.getStart()) + " " + app.getTimeFormat().format(objectItem.getStart());
+        holder.tsStart.setText(s);
         holder.tsDuration.setText(objectItem.getDurationString());
+        
+        holder.tsText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onClickTS(objectItem);
+            }
+        });
     }
 
     @Override
@@ -100,12 +110,15 @@ public class TimeslotsAdapter extends RecyclerView.Adapter<TimeslotsAdapter.View
         ts.setStart(start);
         ts.setDuration(duration);
         ts.setTaskId(app.getCurTask());
-        if (ts.getTaskId() == 0) {
-            ts.setMembersIDs("" + app.getCurMember());
-        }
+        ts.setMembersIDs("" + app.getCurMember());
         ts.setChanged(System.currentTimeMillis());
         DaoTimeslots.save(app,ts);
         return (ts.getId() != 0);
     }
 
+    public void onClickTS(FOTT_Timeslot selection){
+        if (parent != null) {
+            parent.showTSDetails(selection);
+        }
+    }
 }
