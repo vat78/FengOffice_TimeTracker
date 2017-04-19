@@ -6,18 +6,20 @@
     <string name="pref_sync_login">fo_login</string>
     <string name="pref_sync_password">fo_password</string>
     <string name="pref_sync_save_creds">fo_save</string>
-
-    <string name="pref_title_system_sync_settings">System sync settings</string>
+    <string name="pref_sync_frequency">sync_frequency</string>
 
     <!-- Example settings for Notifications -->
     <string name="pref_header_notifications">Notifications</string>
 
-    <string name="pref_title_new_message_notifications">New message notifications</string>
+    <string name="pref_alert_frequency">alerts</string>
 
-    <string name="pref_title_ringtone">Ringtone</string>
+
+    <string name="pref_ringtone">ringtone</string>
+
     <string name="pref_ringtone_silent">Silent</string>
 
-    <string name="pref_title_vibrate">Vibrate</string>
+    <string name="pref_vibrate">vibrate</string>
+
 
     <string name="pref_stored_member">cur_member_id</string>
     <string name="pref_stored_task">cur_task_id</string>
@@ -26,4 +28,7 @@
 
     <string name="pref_date_format">date_format</string>
     <string name="pref_time_format">time_format</string>
+
+    <string name="pref_can_close_task">close_task</string>
+    <string name="pref_can_change_task">change_task</string>
 </resources>
