@@ -31,7 +31,7 @@ import ru.vat78.fotimetracker.views.MembersFragment;
 import ru.vat78.fotimetracker.views.TasksFragment;
 import ru.vat78.fotimetracker.views.TimeslotsFragment;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     static final int PICK_LOGIN_REQUEST = 1;
     static final int PICK_TSEDIT_REQUEST = 2;
@@ -40,6 +40,11 @@ public class MainActivity extends AppCompatActivity {
     static final String EXTRA_MESSAGE_TS_EDIT_DURATION = "ru.vat78.fotimetracker.TSDURATION";
     static final String EXTRA_MESSAGE_TS_EDIT_START = "ru.vat78.fotimetracker.TSSTART";
     static final String EXTRA_MESSAGE_TS_EDIT_DESC = "ru.vat78.fotimetracker.TSDESC";
+    static final String EXTRA_MESSAGE_TS_EDIT_TASK_STATUS = "ru.vat78.fotimetracker.TASKSTATUS";
+    static final String EXTRA_MESSAGE_TS_EDIT_TASK_DUE = "ru.vat78.fotimetracker.TASKDUE";
+    static final String EXTRA_MESSAGE_TS_EDIT_TASK_NAME = "ru.vat78.fotimetracker.TASKNAME";
+
+    static final String SYNC_TIMER_NAME = "ru.vat78.fotimetracker.SYNCTIMER";
 
     private SyncTask syncTask;
 
@@ -65,12 +70,16 @@ public class MainActivity extends AppCompatActivity {
     private TimeslotsAdapter timeslots;
 
     private Timer syncTimer;
+    
+    private FOTT_BroadcastReceiver alarm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         MainApp = (App) getApplication();
+        MainApp.setMainActivity(this);
+        MainApp.getPreferences().registerOnSharedPreferenceChangeListener(this);
 
         setContentView(R.layout.activity_fott__main);
 
@@ -84,10 +93,26 @@ public class MainActivity extends AppCompatActivity {
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
-        CheckLogin();
+        checkLogin();
 
-        syncTimer = new Timer(true);
-        syncTimer.schedule(new SyncTimerTask(), 60000, 600000);
+        setSyncTimer();
+
+        alarm = new FOTT_BroadcastReceiver();
+
+    }
+
+    private void setSyncTimer() {
+        if (syncTimer != null){
+            syncTimer.cancel();
+        }
+        syncTimer = new Timer(SYNC_TIMER_NAME, true);
+        long freq = Long.valueOf(MainApp.getPreferences().getString(getString(R.string.pref_sync_frequency),"180")) ;
+        if (freq > 0) {
+            freq = freq * 60 * 1000;
+            syncTimer.schedule(new SyncTimerTask(), 1000, freq);
+        } else {
+            syncTimer.schedule(new SyncTimerTask(), 1000);
+        }
     }
 
     @Override
@@ -104,34 +129,104 @@ public class MainActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
+        int fragment = mViewPager.getCurrentItem();
         if (MainApp != null)
         {
-            int fragment = mViewPager.getCurrentItem();
             if (MainApp.getCurTimeslot() != 0 && fragment != 2) {
-                //ToDo add question
-                startStopTimer();
+                cancelTimerDialog();
             }
         }
 
         //noinspection SimplifiableIfStatement
+        if (id == android.R.id.home && fragment > 0) {
+            setCurrentFragment(fragment - 1);
+        }
+
         if (id == R.id.action_settings) {
             Intent i = new Intent(this, SettingsActivity.class);
             startActivity(i);
         }
+        if (id == R.id.action_fullsync) {
+            if (MainApp != null) MainApp.setNeedFullSync(true);
+            setSyncTimer();
+        }
+
         if (id == R.id.action_exit) {
             finish();
         }
 
         return super.onOptionsItemSelected(item);
     }
+    
+    public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+        if (key.equals(getString(R.string.pref_sync_url)) ||
+                key.equals(getString(R.string.pref_sync_login)) ||
+                key.equals(getString(R.string.pref_sync_password)) ||
+                key.equals(getString(R.string.pref_sync_certs))){
+            MainApp.setNeedFullSync(true);
+            //checkLogin();
+        }
+        if (key.equals(getString(R.string.pref_sync_save_creds))){
+            if (!MainApp.getPreferences().getBoolean(key,false))
+                MainApp.getPreferences().set(getString(R.string.pref_sync_password),"");
+        }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        redraw();
+        if (key.equals(getString(R.string.pref_sync_frequency))) {
+            setSyncTimer();
+        }
+        if (key.equals(getString(R.string.pref_alert_frequency))) {
+            alarm.setOnetimeTimer(MainApp);
+        }
+        if (key.equals(getString(R.string.pref_date_format)) ||
+            key.equals(getString(R.string.pref_time_format))) {
+            MainApp.setDateTimeFormat();
+        }
     }
 
-    private void redraw() {
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        MainApp.setMainActivity(this);
+        if (MainApp.getCurTimeslot() != 0){
+            setCurrentFragment(2);
+        } else {
+            redraw();
+        }
+        if (MainApp.isNeedFullSync()) checkLogin();
+    }
+
+    @Override
+    protected void onStop() {
+        //MainApp.setMainActivity(null);
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        MainApp.setMainActivity(null);
+        super.onDestroy();
+    }
+
+    @Override
+    public void onBackPressed() {
+        int fragment = mViewPager.getCurrentItem();
+        if (fragment > 0) {
+            setCurrentFragment(fragment - 1);
+        } else {
+            super.onBackPressed();
+        }
+
+    }
+
+    @Override
+    protected  void onNewIntent(Intent intent){
+        super.onNewIntent(intent);
+        String c = intent.getStringExtra(FOTT_BroadcastReceiver.BCommand);
+        if (c==null) return;
+        if (c.equals(FOTT_BroadcastReceiver.BC_TimerAlarm)) alarmDialogShow();
+    }
+
+    public void redraw() {
         int fragment = mViewPager.getCurrentItem();
         switch (fragment) {
             case 0:
@@ -170,23 +265,45 @@ public class MainActivity extends AppCompatActivity {
                 l = data.getLongExtra(EXTRA_MESSAGE_TS_EDIT_DURATION, 0);
                 long id = data.getLongExtra(EXTRA_MESSAGE_TS_EDIT_ID,0);
                 String s = data.getStringExtra(EXTRA_MESSAGE_TS_EDIT_DESC);
+                if (MainApp.getCurTask() > 0) taskChangesHandler(data);
 
                 if (timeslots.saveTimeslot(id,d,l,s)){
-                    timeslots.load();
+                    setSyncTimer();
                 } else {
-                    //Todo: save error
+                    MainApp.getError().error_handler(FOTT_ErrorsHandler.ERROR_SHOW_MESSAGE,"",getString(R.string.error_save_record));
                 }
 
             }
         }
     }
 
-    private void CheckLogin(){
+    private void taskChangesHandler(Intent intent) {
+        boolean tclose = MainApp.getPreferences().getBoolean(getString(R.string.pref_can_close_task), false);
+        boolean tmove = MainApp.getPreferences().getBoolean(getString(R.string.pref_can_change_task), false);
+
+        if (MainApp.getCurTask() > 0)
+        {
+            FOTT_Task t = tasks.getTaskById(MainApp.getCurTask());
+            int status = intent.getIntExtra(EXTRA_MESSAGE_TS_EDIT_TASK_STATUS, t.getStatus());
+            long duedate = intent.getLongExtra(EXTRA_MESSAGE_TS_EDIT_TASK_DUE, t.getDueDate().getTime());
+            if (tclose && status != t.getStatus()) {
+                t.setStatus(status);
+                t.setChanged(System.currentTimeMillis());
+                FOTT_DBTasks.save(MainApp,t);
+            } else if (tmove && duedate != t.getDueDate().getTime()) {
+                t.setDuedate(duedate);
+                t.setChanged(System.currentTimeMillis());
+                FOTT_DBTasks.save(MainApp, t);
+            }
+        }
+    }
+
+    private void checkLogin(){
 
         if (MainApp.getPreferences().getString(getString(R.string.pref_sync_password),"").isEmpty()
                 || MainApp.isNeedFullSync()){
             Intent pickLogin = new Intent(this,LoginActivity.class);
-            startActivityForResult(pickLogin,PICK_LOGIN_REQUEST);
+            startActivityForResult(pickLogin, PICK_LOGIN_REQUEST);
         }
 
     }
@@ -212,59 +329,76 @@ public class MainActivity extends AppCompatActivity {
         redraw();
     }
 
-    public void syncWithFO(){
-
-    }
-
-    public void editTimeslot(long tsId, long start, long duration) {
-        Intent pickTS = new Intent(this,TimeslotEditActivity.class);
+    public void editTimeslot(long tsId, long start, long duration, String text) {
+        Intent pickTS = new Intent(this,FOTT_TSEditActivity.class);
 
         pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_ID, tsId);
+        pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_DESC, text);
         if (start != 0) pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_START, start);
         if (duration !=0) pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_DURATION, duration);
+        if (MainApp.getCurTask() != 0){
+            FOTT_Task t = tasks.getTaskById(MainApp.getCurTask());
+            pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_TASK_NAME, t.getName());
+            pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_TASK_STATUS, t.getStatus());
+            pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_TASK_DUE, t.getDueDate().getTime());
+        }
 
         startActivityForResult(pickTS, PICK_TSEDIT_REQUEST);
     }
 
-    private void TimeslotsFragmentCaption() {
+    private void timeslotsFragmentCaption() {
 
         View topArea = findViewById(R.id.tsTopContext);
-        Member m = members.getMemberById(MainApp.getCurMember());
-        topArea.setBackgroundColor(m.getColor());
-        TextView top_title = (TextView)findViewById(R.id.tsTopTitle);
-        TextView top_desc = (TextView) findViewById(R.id.tsTopDesc);
-        if (MainApp.getCurTask() > 0) {
-            Task t = getTasks().getTaskById(MainApp.getCurTask());
-            top_title.setText(t.getName());
-            top_desc.setText(t.getDesc());
-        } else {
-            if (MainApp.getCurMember() > 0) {
-                top_title.setText(R.string.title_no_tasks);
-                top_desc.setText(R.string.title_category_description);
+        if (topArea != null) {
+            FOTT_Member m = members.getMemberById(MainApp.getCurMember());
+            topArea.setBackgroundColor(m.getColor());
+            TextView top_title = (TextView) findViewById(R.id.tsTopTitle);
+            TextView top_desc = (TextView) findViewById(R.id.tsTopDesc);
+            if (MainApp.getCurTask() > 0) {
+                FOTT_Task t = getTasks().getTaskById(MainApp.getCurTask());
+                top_title.setText(t.getName());
+                String s = Html.fromHtml(t.getDesc()).toString();
+                top_desc.setText(s);
             } else {
-                top_title.setText(R.string.title_no_active_task_and_category);
-                top_desc.setText("");
+                if (MainApp.getCurMember() > 0) {
+                    top_title.setText(R.string.title_no_tasks);
+                    top_desc.setText(R.string.title_category_description);
+                } else {
+                    top_title.setText(R.string.title_no_active_task_and_category);
+                    top_desc.setText("");
+                }
             }
         }
     }
 
+    public void continueTimer(){
+        ImageButton timer = (ImageButton) findViewById(R.id.tsTimerBtn);
+        if (timer != null)
+            timer.setBackground(getResources().getDrawable(android.R.drawable.ic_media_pause, getTheme()));
+        //alarm.setOnetimeTimer(MainApp);
+        TimeslotMinuteTimer newTimer = new TimeslotMinuteTimer();
+        newTimer.start();
+    }
+
     public void startStopTimer() {
         ImageButton timer = (ImageButton) findViewById(R.id.tsTimerBtn);
-        if (MainApp.getCurTimeslot() == 0){
+        alarm.CancelAlarm(this.getApplicationContext());
+        if (MainApp.getCurTimeslot() == 0) {
             MainApp.setCurTimeslot(System.currentTimeMillis());
-            timer.setBackground(getResources().getDrawable(android.R.drawable.ic_media_pause,getTheme()));
+            timer.setBackground(getResources().getDrawable(android.R.drawable.ic_media_pause, getTheme()));
+            alarm.setOnetimeTimer(MainApp);
             oneMinuteTimer();
         } else {
             long dur = System.currentTimeMillis() - MainApp.getCurTimeslot();
             timer.setBackground(getResources().getDrawable(android.R.drawable.ic_media_play, getTheme()));
             MainApp.setCurTimeslot(0);
             oneMinuteTimer();
-            editTimeslot(0, 0, dur);
+            editTimeslot(0, 0, dur, "");
         }
     }
 
     public void oneMinuteTimer() {
-        //ToDo: add reminder
+        if (MainApp.getMainActivity() == null) return;
         if (MainApp.getCurTimeslot() != 0 ){
             long dur = System.currentTimeMillis() - MainApp.getCurTimeslot();
             showTimeslotDuration(dur);
@@ -294,12 +428,60 @@ public class MainActivity extends AppCompatActivity {
         mTextDuration.setText(res);
         mTextDuration.setVisibility(View.VISIBLE);
     }
+    
+    public void alarmDialogShow() {
+        if (MainApp.getCurTimeslot() == 0) return;
+
+        AlertDialog.Builder ad = new AlertDialog.Builder(this);
+        String message = getString(R.string.alert_working);
+        if (MainApp.getCurTask() != 0 ) {
+            message += getString(R.string.alert_on_task) + tasks.getTaskById(MainApp.getCurTask()).getName() + "'";
+        }
+        if (MainApp.getCurMember() != 0) {
+            message += getString(R.string.alert_in_category) + members.getMemberById(MainApp.getCurMember()).getName() + "'";
+        }
+        message += getString(R.string.alert_stop_it);
+        ad.setMessage(message);
+        ad.setPositiveButton(R.string.alert_yes, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int arg1) {
+                startStopTimer();
+            }
+        });
+        ad.setNegativeButton(R.string.alert_no, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int arg1) {
+                alarm.setOnetimeTimer(MainApp);
+            }
+        });
+        ad.setCancelable(false);
+        ad.show();
+    }
+
+    private void cancelTimerDialog(){
+        if (MainApp.getCurTimeslot() == 0) return;
+
+        AlertDialog.Builder ad = new AlertDialog.Builder(this);
+        String message = getString(R.string.alert_stop_timer);
+        ad.setMessage(message);
+        ad.setPositiveButton(R.string.alert_yes, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int arg1) {
+                startStopTimer();
+            }
+        });
+        ad.setNegativeButton(R.string.alert_no, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int arg1) {
+                setCurrentFragment(2);
+            }
+        });
+        ad.setCancelable(false);
+        ad.show();
+    }
 
     /**
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
      * one of the sections/tabs/pages.
      */
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
+        private int previousFragment = 0;
 
         public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
@@ -345,9 +527,17 @@ public class MainActivity extends AppCompatActivity {
         public void startUpdate(ViewGroup container){
             super.startUpdate(container);
             int fragment = mViewPager.getCurrentItem();
+            if (fragment == previousFragment) return;
+            if (MainApp != null && previousFragment == 2) {
+                if (MainApp.getCurTimeslot() != 0 && fragment != 2) {
+                    cancelTimerDialog();
+                }
+            }
+            previousFragment = fragment;
 
             if (mActionBarToolbar != null) {
                 mActionBarToolbar.setTitle(getPageTitle(fragment));
+                getSupportActionBar().setDisplayHomeAsUpEnabled(fragment > 0);
 
                 if (fragment > 0 && MainApp.getCurMember() != 0) {
                     Member m = members.getMemberById(MainApp.getCurMember());
@@ -358,14 +548,7 @@ public class MainActivity extends AppCompatActivity {
                 else {
                     mActionBarToolbar.setSubtitle("");
                 }
-                if (fragment == 2) TimeslotsFragmentCaption();
-            }
-            if (MainApp != null)
-            {
-                if (MainApp.getCurTimeslot() != 0 && fragment != 2) {
-                    //ToDo add question
-                    startStopTimer();
-                }
+                if (fragment == 2) timeslotsFragmentCaption();
             }
         }
     }
@@ -378,12 +561,19 @@ public class MainActivity extends AppCompatActivity {
 
         public void onTick(long millisUntilFinished) {
             TextView mTextDuration = (TextView) findViewById(R.id.tsCurDuration);
-            String s = mTextDuration.getText().toString();
-            if (s.endsWith("."))
-                s = s.substring(0,s.length()-1) + ":";
-            else
-                s = s.substring(0,s.length()-1) + ".";
-            mTextDuration.setText(s);
+            if (mTextDuration != null) {
+                String s = mTextDuration.getText().toString();
+                if (s.isEmpty()) {
+                    this.cancel();
+                    oneMinuteTimer();
+                } else {
+                    if (s.endsWith("."))
+                        s = s.substring(0, s.length() - 1) + ":";
+                    else
+                        s = s.substring(0, s.length() - 1) + ".";
+                    mTextDuration.setText(s);
+                }
+            }
         }
 
         public void onFinish() {
@@ -398,9 +588,12 @@ public class MainActivity extends AppCompatActivity {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    if (syncTask != null) return;
-                    syncTask = new SyncTask(MainApp);
-                    syncTask.execute();
+                    if (syncTask != null)
+                        if (syncTask.getStatus() != AsyncTask.Status.RUNNING && !MainApp.isSyncing()) syncTask = null;
+                    if (syncTask == null) {
+                        syncTask = new FOTT_SyncTask(MainApp);
+                        syncTask.execute();
+                    }
                 }
             });
         }
