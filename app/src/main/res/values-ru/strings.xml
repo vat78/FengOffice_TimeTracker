@@ -7,14 +7,10 @@
     <string name="prompt_password">Пароль</string>
     <string name="action_sign_in">Вход</string>
     <string name="action_sign_in_short">Вход</string>
-    <string name="error_invalid_email">This email address is invalid</string>
-    <string name="error_invalid_password">This password is too short</string>
-    <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="error_invalid_password">Пароль слишком короткий</string>
+    <string name="error_incorrect_password">Пароль не подходит</string>
     <string name="error_field_required">Обязательное поле</string>
-    <string name="permission_rationale">"Contacts permissions are needed for providing email
-    completions."
-    </string>
-    <string name="prompt_login">Имя входя</string>
+    <string name="prompt_login">Имя входа</string>
     <string name="prompt_url">Адрес FengOffice</string>
     <string name="error_incorrect_value">Поле заполнено не верно</string>
     <string name="error_no_internet">Проверьте подключение к интернет</string>
@@ -22,4 +18,93 @@
     <string name="GlobalFOObj">fo_obj</string>
     <string name="Save_credentials">Сохранить параметры входа</string>
 
+    <string name="title_activity_fott__main">FengOffice TimeTracker</string>
+    <string name="action_settings">Настройки</string>
+    <string name="action_fullsync">Синхронизировать</string>
+    <string name="action_exit">Выход</string>
+    <string name="any_category">Все категории</string>
+
+    <string name="title_activity_settings">Настройки</string>
+
+    <string name="ts_button_edit">Изменить</string>
+    <string name="addform_duration">Длительность</string>
+    <string name="addform_task_area">А еще вы можете:</string>
+    <string name="addform_complete_task">Задача выполнена</string>
+    <string name="addform_change_due">Перенести срок задачи:</string>
+    <string name="addform_description">Описание</string>
+    <string name="addform_hours">Ч.:</string>
+    <string name="addform_minutes_short">М.:</string>
+    <string name="addform_start">Начато:</string>
+    <string name="addform_end">Завершено:</string>
+    <string name="addform_save">Сохр.</string>
+    <string name="addform_cancel">Отмена</string>
+    <string name="nonetwork_message">Проверьте подключение к интернету</string>
+    <string name="error_save_record">Упс! Мы не смогли сохранить эту запись</string>
+    <string name="addform_days">"Дн.: "</string>
+    <string name="addform_close_question">"Вы уверены, что хотите "</string>
+    <string name="addform_resume">" возобновить "</string>
+    <string name="addform_finish">" завершить "</string>
+    <string name="addform_task">задачу \'</string>
+    <string name="addform_for_task">" для задачи \'"</string>
+    <string name="addform_move_date">"Передвинуть дату завершения на "</string>
+    <string name="addform_yes">Да</string>
+    <string name="addform_no">Нет</string>
+
+    <string name="pref_header_general">Общие</string>
+
+    <string name="pref_title_can_close_task">Завершать задачи</string>
+    <string name="pref_description_can_close_task">При выполнении работ разрешить завершать задачи
+    </string>
+
+    <string name="pref_title_can_change_task">Перенос сроков</string>
+    <string name="pref_description_can_change_task">При выполнении работ разрешить перенос сроков выполнения задач
+    </string>
+
+    <string name="pref_header_data_sync">Data &amp; sync</string>
+
+    <string name="pref_title_sync_frequency">Синхронизация каждые</string>
+    <string-array name="pref_sync_frequency_titles">
+        <item>15 мин</item>
+        <item>30 мин</item>
+        <item>1 час</item>
+        <item>3 часа</item>
+        <item>6 часов</item>
+        <item>Нет</item>
+    </string-array>
+
+    <string-array name="pref_alert_frequency_titles">
+        <item>15 мин</item>
+        <item>30 мин</item>
+        <item>45 мин</item>
+        <item>1 час</item>
+        <item>1.5 часа</item>
+        <item>2 часа</item>
+        <item>4 часа</item>
+        <item>Нет</item>
+    </string-array>
+
+    <string name="pref_title_date_format">Формат дат</string>
+    <string name="pref_title_time_format">Формат времени</string>
+    <string name="pref_description_time_format">Использовать 24-часовой формат?</string>
+
+    <string name="title_category">Категория</string>
+    <string name="title_categories">Категории</string>
+    <string name="title_tasks">Задачи</string>
+    <string name="title_timeslots">Работы</string>
+    <string name="title_no_tasks">Нет задач</string>
+    <string name="title_category_description">Работы в выбранной категории</string>
+    <string name="title_no_active_task_and_category">Выберите сначала категорию или задачу</string>
+    <string name="alert_title">Оповещение</string>
+
+    <string name="pref_title_vibrate">Вибрация</string>
+    <string name="pref_title_ringtone">Звук сигнала</string>
+    <string name="pref_title_alert_frequency">Частота оповещений</string>
+    <string name="pref_title_system_sync_settings">Настройки синхронизации</string>
+    <string name="alert_working">Вы работаете</string>
+    <string name="alert_on_task">" над задачей '"</string>
+    <string name="alert_in_category">" в категории '"</string>
+    <string name="alert_stop_it">. Завершить работу?</string>
+    <string name="alert_yes">Да</string>
+    <string name="alert_no">Нет</string>
+    <string name="alert_stop_timer">You have run timer. This action will stop it. Are you agree?</string>
 </resources>
