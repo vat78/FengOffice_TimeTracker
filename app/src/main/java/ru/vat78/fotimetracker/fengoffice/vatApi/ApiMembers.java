@@ -18,6 +18,8 @@ public class ApiMembers {
     public ArrayList<Member> load(App app){
 
         JSONObject jo = app.getWebService().executeAPI(ApiDictionary.FO_METHOD_MEMBERS, ApiDictionary.FO_MEMBERS_WORKSPACE);
+        if (!app.getWeb_service().getError().isEmpty())
+            app.getError().error_handler(FOTT_ErrorsHandler.ERROR_SAVE_ERROR, CLASS_NAME, app.getWeb_service().getError());
         return convertResults(app,jo);
     }
 
