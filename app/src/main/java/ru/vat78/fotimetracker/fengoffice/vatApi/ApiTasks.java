@@ -23,13 +23,20 @@ public class ApiTasks {
     }
 
     public ArrayList<Task> load(App app, Date timestamp){
-        String[] args = new String[4];
-        args[0]= ApiDictionary.FO_API_ARG_STATUS;
-        args[1] = "0";
-        args[2] = ApiDictionary.FO_API_ARG_LASTUPDATE;
-        long l = (long) timestamp.getTime() / ApiDictionary.FO_API_DATE_CONVERTOR;
-        args[3] = "" + l;
-        JSONObject jo = app.getWebService().executeAPI(ApiDictionary.FO_METHOD_LISTING, ApiDictionary.FO_SERVICE_TASKS, args);
+        String[] args = new String[2];
+        long l = (long) timestamp.getTime() / FO_API_DATE_CONVERTOR;
+        if (l != 0) {
+            args[0] = FO_API_ARG_LASTUPDATE;
+            args[1] = "" + l;
+        } else {
+            //Select only active tasks (not completed, not deleted, not archived and start date < now)
+            args[0]= FO_API_ARG_STATUS;
+            args[1] = "10";
+        }
+        JSONObject jo = app.getWeb_service().executeAPI(FO_METHOD_LISTING,FO_SERVICE_TASKS, args);
+        if (!app.getWeb_service().getError().isEmpty())
+            app.getError().error_handler(FOTT_ErrorsHandler.ERROR_SAVE_ERROR, CLASS_NAME, app.getWeb_service().getError());
+
         return convertResults(app,jo,(l==0));
     }
 
@@ -121,7 +128,7 @@ public class ApiTasks {
             String tmp = ApiDictionary.FO_API_FALSE;
             if (!jsonObject.isNull(ApiDictionary.FO_API_FIELD_STARTDATE))
                 tmp = jsonObject.getString(ApiDictionary.FO_API_FIELD_STARTDATE);
-            if (tmp == ApiDictionary.FO_API_FALSE) {
+            if (tmp.equalsIgnoreCase(FO_API_FALSE)) {
                 el.setStartDate(0);
             } else {
                 el.setStartDate(jsonObject.getLong(ApiDictionary.FO_API_FIELD_STARTDATE) * ApiDictionary.FO_API_DATE_CONVERTOR);
@@ -130,7 +137,7 @@ public class ApiTasks {
             tmp = ApiDictionary.FO_API_FALSE;
             if (!jsonObject.isNull(ApiDictionary.FO_API_FIELD_DUEDATE))
                 tmp = jsonObject.getString(ApiDictionary.FO_API_FIELD_DUEDATE);
-            if (tmp == ApiDictionary.FO_API_FALSE) {
+            if (tmp.equalsIgnoreCase(FO_API_FALSE)) {
                 el.setDueDate(0);
             } else {
                 el.setDueDate(jsonObject.getLong(ApiDictionary.FO_API_FIELD_DUEDATE) * ApiDictionary.FO_API_DATE_CONVERTOR);
@@ -141,6 +148,9 @@ public class ApiTasks {
 
             if (!jsonObject.isNull(ApiDictionary.FO_API_FIELD_STATUS))
                 el.setStatus(jsonObject.getInt(ApiDictionary.FO_API_FIELD_STATUS));
+
+            if (!jsonObject.isNull(ApiDictionary.FO_API_FIELD_USETIMESLOTS))
+                el.setCanAddTimeslots(jsonObject.getString(FOAPI_Dictionary.FO_API_FIELD_USETIMESLOTS).equalsIgnoreCase(FO_API_TRUE));
 
                 /*
                 if (!jo.isNull(ApiDictionary.FO_API_FIELD_ASSIGNEDBY))
@@ -165,14 +175,23 @@ public class ApiTasks {
 
     public long save(App app, Task task) {
         long res = 0;
+        JSONObject jo;
         if (task == null) return res;
             String[] args = convertTaskForAPI(task);
-            JSONObject jo = app.getWebService().executeAPI(ApiDictionary.FO_METHOD_SAVE_OBJ, ApiDictionary.FO_SERVICE_TASKS, args);
+            jo = app.getWebService().executeAPI(ApiDictionary.FO_METHOD_SAVE_OBJ, ApiDictionary.FO_SERVICE_TASKS, args);
         try {
             res = jo.getLong(ApiDictionary.FO_API_FIELD_ID);
         } catch (Exception e) {}
 
-        //ToDo: check completing tasks by save operation
+        if (res !=0 ) {
+            try {
+                if (task.getStatus() == 0) {
+                    jo = app.getWeb_service().executeAPI(FO_METHOD_COMPLETE_TASK, res, FO_ACTION_OPEN_TASK);
+                } else {
+                    jo = app.getWeb_service().executeAPI(FO_METHOD_COMPLETE_TASK, res, FO_ACTION_COMPLETE_TASK);
+                }
+            } catch (Exception e) {}
+        }
         return res;
     }
 
@@ -191,7 +210,10 @@ public class ApiTasks {
         res[7] = "" + l;
         res[8] = ApiDictionary.FO_API_FIELD_STATUS;
         res[9] = "" + task.getStatus();
-        if (!task.getMembersIds().isEmpty()) {
+        if (task.getMembersIds().isEmpty()) {
+            res[10] = "";
+            res[11] = "";
+        } else {
             res[10] = ApiDictionary.FO_API_FIELD_MEMBERS;
             res[11] = "[";
             String[] members = task.getMembersArray();
@@ -210,7 +232,7 @@ public class ApiTasks {
                     res = false;
                 } else {
                     try {
-                        res = (jo.getString(ApiDictionary.FO_API_FIELD_RESULT) == ApiDictionary.FO_API_TRUE);
+                        res = (jo.getString(ApiDictionary.FO_API_FIELD_RESULT).equals(FO_API_TRUE));
                     } catch (Exception e){
                     }
                 }
