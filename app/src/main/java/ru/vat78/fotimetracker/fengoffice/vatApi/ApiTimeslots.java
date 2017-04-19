@@ -101,8 +101,16 @@ public class ApiTimeslots {
                 s = "";
                 if (!jo.isNull(ApiDictionary.FO_API_FIELD_MEMPATH)) {
                     JSONArray ja = jo.getJSONArray(ApiDictionary.FO_API_FIELD_MEMPATH);
-                    for (int j = 0; j < ja.length(); j++)
-                        s = s + ja.getString(j) + "/";
+                    for (int j = 0; j < ja.length(); j++) {
+                        String mem = ja.getString(j);
+                        if (mem != null && mem.length() > 0) {
+                            if (mem.getBytes()[0] == '{') {
+                                JSONObject memObj = new JSONObject(mem);
+                                mem = memObj.getString("member_id");
+                            }
+                            s = s + mem +el.getMemberSplitter();
+                        }
+                    }
                 }
                 el.setMembersIDs(s);
 
