@@ -11,6 +11,10 @@ public class Preferences {
     public Preferences(SharedPreferences preferences) {
         this.preferences = preferences;
     }
+    
+    public void registerOnSharedPreferenceChangeListener(SharedPreferences.OnSharedPreferenceChangeListener listener){
+        preferences.registerOnSharedPreferenceChangeListener(listener);
+    }
 
     public int getInt(String key, int default_value) {
         return preferences.getInt(key, default_value);
