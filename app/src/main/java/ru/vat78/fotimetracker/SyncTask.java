@@ -19,7 +19,10 @@ public class SyncTask extends AsyncTask<Void, Void, Boolean> {
 
     @Override
     protected Boolean doInBackground(Void... params) {
+        appIsFree = !MainApp.isSyncing();
+        MainApp.setSyncing(true);
         if (!appIsFree) return false;
+        if (MainApp.getMainActivity() == null) MainApp.setNeedFullSync(true);
         return MainApp.dataSynchronization();
     }
 
@@ -27,6 +30,7 @@ public class SyncTask extends AsyncTask<Void, Void, Boolean> {
     protected void onPostExecute(final Boolean success) {
         if (success) {
             MainApp.setNeedFullSync(false);
+            MainApp.redrawMainActivity();
         }
         if (appIsFree) MainApp.setSyncing(false);
     }
