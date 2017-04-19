@@ -90,7 +90,7 @@ public class DaoMembers extends FOTT_DBContract {
     }
 
     private static Member generateAnyMember(App app) {
-        Member any = new Member(0,app.getString(R.string.any_category));
+        Member any = new Member(-1,app.getString(R.string.any_category));
         any.setPath("");
         any.setColorIndex(Color.TRANSPARENT);
         return any;
@@ -98,7 +98,8 @@ public class DaoMembers extends FOTT_DBContract {
 
     public static ArrayList<Member> load (App app){
         ArrayList<Member> members = new ArrayList<>();
-
+        int taskCnt = 0;
+        
         Cursor memberCursor = app.getDatabase().query(TABLE_NAME + " m",
                 new String[]{"m." + COLUMN_NAME_FO_ID,
                         "m." + COLUMN_NAME_TITLE,
@@ -111,6 +112,7 @@ public class DaoMembers extends FOTT_DBContract {
                 COLUMN_NAME_PATH + " ASC");
 
         memberCursor.moveToFirst();
+        Member any = null;
         Member m;
         Member prev = new Member(0,"");
         int shownLevel = 1;
@@ -123,10 +125,12 @@ public class DaoMembers extends FOTT_DBContract {
                 int color = memberCursor.getInt(4);
 
                 m = new Member(id, name);
+                if (id == -1) any = m;
                 m.setPath(path);
                 m.setColorIndex(color);
                 m.setTasksCnt(memberCursor.getInt(5));
                 int curLevel = m.getLevel();
+                if (curLevel == 1) taskCnt += memberCursor.getInt(5);
                 if (curLevel > prev.getLevel()) {prev.setNode(1);}
                 m.setVisible(curLevel <= shownLevel);
                 if (curLevel < shownLevel) shownLevel = curLevel;
@@ -150,6 +154,7 @@ public class DaoMembers extends FOTT_DBContract {
                 prev = m;
             } while (memberCursor.moveToNext());
         }
+        if (any != null) any.setTasksCnt(taskCnt);
         return members;
     }
 
@@ -178,5 +183,10 @@ public class DaoMembers extends FOTT_DBContract {
             }
         }
         return res;
+    }
+    
+    public static boolean isExistInDB(FOTT_App app, long memberID) {
+        FOTT_Member res = getMemberById(app, memberID);
+        return (res.getId() == memberID);
     }
 }
