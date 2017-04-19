@@ -32,11 +32,20 @@ public class TimeslotEditActivity extends AppCompatActivity {
     private TextView start_time;
     private TextView end_date;
     private TextView end_time;
+    
+    private boolean tmove;
+    private boolean tclose;
+    private String taskName;
+    private int taskComplete;
+    private long taskDue;
 
+    private long tsId;
     private Date start;
     private Date finish;
     long duration;
     private Calendar c;
+    
+    private Intent result;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +59,12 @@ public class TimeslotEditActivity extends AppCompatActivity {
         setContentView(R.layout.activity_timeslot_edit);
 
         Intent intent = getIntent();
+        tsId = intent.getLongExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_ID,0);
+        String s = intent.getStringExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_DESC);
+        if (!s.isEmpty()){
+            TextView desc = (TextView) findViewById(R.id.tsAddDesc);
+            desc.setText(s);
+        }
         duration = intent.getLongExtra(MainActivity.EXTRA_MESSAGE_TS_EDIT_DURATION,15 * 60 * 1000);
         long l = intent.getLongExtra(MainActivity.EXTRA_MESSAGE_TS_EDIT_START,now - duration);
         start = new Date(l);
@@ -97,13 +112,16 @@ public class TimeslotEditActivity extends AppCompatActivity {
 
                 TextView desc = (TextView) findViewById(R.id.tsAddDesc);
 
-                Intent intent = new Intent();
-                intent.putExtra(MainActivity.EXTRA_MESSAGE_TS_EDIT_START, start.getTime());
-                intent.putExtra(MainActivity.EXTRA_MESSAGE_TS_EDIT_DURATION, duration);
-                intent.putExtra(MainActivity.EXTRA_MESSAGE_TS_EDIT_DESC, desc.getText().toString());
-                setResult(RESULT_OK, intent);
-
-                finish();
+                result = new Intent();
+                result.putExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_ID, tsId);
+                result.putExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_START, start.getTime());
+                result.putExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_DURATION, duration);
+                result.putExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_DESC, desc.getText().toString());
+                if ((tclose || tmove) && taskName != null) gotoTaskChanges();
+                else {
+                    setResult(RESULT_OK, result);
+                    finish();
+                }
             }
         });
 
@@ -134,6 +152,82 @@ public class TimeslotEditActivity extends AppCompatActivity {
                 onTimeChanges(v);
             }
         });
+        
+        //Area for task editing
+        tclose = app.getPreferences().getBoolean(getString(R.string.pref_can_close_task),false);
+        tmove = app.getPreferences().getBoolean(getString(R.string.pref_can_change_task), false);
+        taskComplete = intent.getIntExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_TASK_STATUS, 0);
+        if (taskComplete > 1) taskComplete = 1;
+        taskDue = intent.getLongExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_TASK_DUE, 0);
+        taskName = intent.getStringExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_TASK_NAME);
+
+        RelativeLayout vTaskEdit = (RelativeLayout) findViewById(R.id.tsAddTaskArea);
+        if ((tclose || tmove) && taskName != null) {
+            vTaskEdit.setVisibility(View.VISIBLE);
+            TextView vTaskCloseDesc = (TextView) findViewById(R.id.tsAddTaskCompleteDesc);
+            CheckBox vTaskClose = (CheckBox) findViewById(R.id.tsAddTaskComplete);
+            if (tclose) {
+                vTaskClose.setVisibility(View.VISIBLE);
+                vTaskCloseDesc.setVisibility(View.VISIBLE);
+                vTaskClose.setChecked(taskComplete != 0);
+            } else {
+                vTaskClose.setVisibility(View.INVISIBLE);
+                vTaskCloseDesc.setVisibility(View.INVISIBLE);
+            }
+
+            TextView vTaskMove = (TextView) findViewById(R.id.tsAddTaskDue);
+            TextView vTaskMoveDesc = (TextView) findViewById(R.id.tsAddTaskDueDesc);
+            if (tmove) {
+                vTaskMove.setVisibility(View.VISIBLE);
+                vTaskMoveDesc.setVisibility(View.VISIBLE);
+                vTaskMove.setText(app.getDateFormat().format(new Date(taskDue)));
+                vTaskMove.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        onDateChanges(v);
+                    }
+                });
+
+            } else {
+                vTaskMove.setVisibility(View.GONE);
+                vTaskMoveDesc.setVisibility(View.GONE);
+            }
+
+        } else vTaskEdit.setVisibility(View.GONE);
+
+    }
+
+    private void gotoTaskChanges() {
+        int new_tclose = taskComplete;
+        Calendar cl = Calendar.getInstance();
+        cl.setTimeInMillis(taskDue);
+        long tzone = (long) cl.getTimeZone().getOffset(taskDue);
+        long new_tdue = taskDue;
+        CheckBox vTaskClose;
+        TextView vTaskDue = (TextView) findViewById(R.id.tsAddTaskDue);
+
+        if (tclose) {
+            vTaskClose = (CheckBox) findViewById(R.id.tsAddTaskComplete);
+            if (vTaskClose.isChecked()) new_tclose = 1; else new_tclose = 0;
+        }
+        if (tmove){
+            ParsePosition pos = new ParsePosition(0);
+            Date new_date = app.getDateFormat().parse(vTaskDue.getText().toString(), pos);
+            //tzone = new_date.getTimezoneOffset();
+            new_tdue = new_date.getTime();
+        }
+
+        String message = "";
+        if (new_tclose != taskComplete) {
+            message = getString(R.string.addform_close_question);
+            if (new_tclose == 0) message += getString(R.string.addform_resume); else message += getString(R.string.addform_finish);
+            message += getString(R.string.addform_task) + taskName + getString(R.string.addform_qestion);
+
+        } else if (new_tdue != taskDue && new_tdue != (taskDue - tzone)) {
+            message = getString(R.string.addform_move_date) + app.getDateFormat().format(new Date(new_tdue));
+            message += getString(R.string.addform_for_task) + taskName + getString(R.string.addform_qestion);
+        }
+        showTaskDialog(message);
     }
 
     private void setStartAndFinish(){
@@ -195,7 +289,7 @@ public class TimeslotEditActivity extends AppCompatActivity {
         long l;
         if (duration >= 24 * 3600 * 1000) {
             int d = Math.round(duration / 24 / 3600 / 1000);
-            days.setText("Days: " + d);
+            days.setText(getString(R.string.addform_days) + d);
             l = duration - d * 24 * 3600 * 1000;
         } else {
             days.setText("");
@@ -206,7 +300,7 @@ public class TimeslotEditActivity extends AppCompatActivity {
         l = l - h * 3600 * 1000;
         int m = Math.round(l / 60 / 1000);
 
-        hours.setSelection(findPositionInSpinner(0,h));;
+        hours.setSelection(findPositionInSpinner(0,h));
         minutes.setSelection(findPositionInSpinner(1,m));
 
         start_date.setText(app.getDateFormat().format(start));
@@ -287,5 +381,55 @@ public class TimeslotEditActivity extends AppCompatActivity {
             res++;
         }
         return res;
+    }
+    
+    private void showTaskDialog(String question) {
+
+        if (question.isEmpty()){
+            dialogResultHandler(0);
+        } else {
+            AlertDialog.Builder ad = new AlertDialog.Builder(this);
+            ad.setMessage(question);
+            ad.setPositiveButton(R.string.addform_yes, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int arg1) {
+                    dialogResultHandler(1);
+                }
+            });
+            ad.setNegativeButton(R.string.addform_no, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int arg1) {
+                    dialogResultHandler(0);
+                }
+            });
+            ad.setCancelable(false);
+            ad.show();
+        }
+    }
+
+    private void dialogResultHandler(int res){
+        int new_tclose = taskComplete;
+        long new_tdue = taskDue;
+
+        if (res != 0) {
+            //ToDo: repeating code from gotoTaskChanges()
+
+            CheckBox vTaskClose;
+            TextView vTaskDue = (TextView) findViewById(R.id.tsAddTaskDue);
+
+            if (tclose) {
+                vTaskClose = (CheckBox) findViewById(R.id.tsAddTaskComplete);
+                if (vTaskClose.isChecked()) new_tclose = 1;
+                else new_tclose = 0;
+            }
+            if (tmove) {
+                ParsePosition pos = new ParsePosition(0);
+                Date new_date = app.getDateFormat().parse(vTaskDue.getText().toString(), pos);
+                new_tdue = new_date.getTime();
+            }
+            result.putExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_TASK_STATUS, new_tclose);
+            result.putExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_TASK_DUE, new_tdue);
+        }
+
+        setResult(RESULT_OK, result);
+        finish();
     }
 }
