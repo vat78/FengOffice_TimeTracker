@@ -35,6 +35,7 @@ public class ApiConnector {
     public ApiConnector(App application){
         app = application;
         FO_Token = "";
+        FO_Pwd = "";
         jsonClient = new HttpJsonClient();
     }
 
@@ -42,7 +43,7 @@ public class ApiConnector {
 
     public boolean setFO_Url(String foUrl) {
         foUrl = foUrl.trim();
-        if (foUrl.length() <1){ return false;}
+        if (foUrl.length() <3){ return false;}
 
         if (!foUrl.startsWith("http://") && !foUrl.startsWith("https://")) {
             foUrl = "https://" + foUrl;
@@ -83,6 +84,9 @@ public class ApiConnector {
         return this.ErrorMsg;
     }
 
+    public void setError(String error) {
+        this.ErrorMsg = error;
+    }
 
     //This function try to login FengOffice web-application
     public boolean testConnection() {
@@ -175,9 +179,11 @@ public class ApiConnector {
             JSONObject jsargs = new JSONObject();
             try {
                 for (int i = 1; i < args.length; i += 2) {
-                    jsargs.put(args[i-1], args[i]);
+                    if (args[i] != null) jsargs.put(args[i-1], args[i]);
                 }
                 argStr = jsargs.toString();
+                argStr = argStr.replaceAll("\"%5b","%5b");
+                argStr = argStr.replaceAll("%5d\"","%5d");
             }
             catch (Exception e) {
                 Log.e("log_tag", "Error parsing data " + e.toString());
@@ -217,6 +223,36 @@ public class ApiConnector {
         requestParams.setProperty(ApiDictionary.FO_API_TOKEN,FO_Token);
         requestParams.setProperty(ApiDictionary.FO_API_METHOD,method);
         requestParams.setProperty(ApiDictionary.FO_API_OBJECT_ID,"" + id);
+        requestParams.setProperty(ApiDictionary.FO_API_ACTION,"" + 0);
+
+        try {
+            jo = jsonClient.getJsonObject(request, requestParams, this.UseUntrustCA);
+        } catch (HttpJsonError e) {
+            this.ErrorMsg = e.getMessage();
+        }
+
+        return jo;
+    }
+    
+    //Execute API operation for complet task and so on
+    public JSONObject executeAPI(String method, long id, String action) {
+        if (method.isEmpty()) {return null;}
+        if (this.FO_Token.isEmpty())
+            if (!testConnection()) {return null;}
+
+        resetError();
+
+        JSONObject jo;
+
+        if (!checkPlugin(FOAPI_Dictionary.FO_PLUGIN_NAME)) {return null;}
+        resetError();
+
+        String request = this.FO_URL + FOAPI_Dictionary.FO_VAPI_REQUEST_BY_ID;
+        Properties requestParams = new Properties();
+        requestParams.setProperty(ApiDictionary.FO_API_TOKEN,FO_Token);
+        requestParams.setProperty(ApiDictionary.FO_API_METHOD,method);
+        requestParams.setProperty(ApiDictionary.FO_API_OBJECT_ID,"" + id);
+        requestParams.setProperty(ApiDictionary.FO_API_ACTION,action);
 
         try {
             jo = jsonClient.getJsonObject(request, requestParams, this.UseUntrustCA);
