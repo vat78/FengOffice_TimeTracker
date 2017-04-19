@@ -13,6 +13,7 @@ import ru.vat78.fotimetracker.App;
 import ru.vat78.fotimetracker.MainActivity;
 import ru.vat78.fotimetracker.R;
 import ru.vat78.fotimetracker.adapters.TasksAdapter;
+import ru.vat78.fotimetracker.model.Task;
 
 /**
  * Created by vat on 02.12.2015.
@@ -45,13 +46,13 @@ public class TasksFragment extends Fragment {
 
         tasksAdapter.load();
         mList.setAdapter(tasksAdapter);
-
+        if (MainApp.getCurTimeslot()>0) mainActivity.setCurrentFragment(2);
         return rootView;
     }
 
 
-    public void onItemClicked(int position) {
-        MainApp.setCurTask(tasksAdapter.getTaskId(position));
+    public void onItemClicked(Task task) {
+        MainApp.setCurTask(task.getId());
         mainActivity.setCurrentFragment(2);
     }
 
