@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 
 import android.os.AsyncTask;
@@ -25,6 +26,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import ru.vat78.fotimetracker.fengoffice.vatApi.ApiConnector;
+import ru.vat78.fotimetracker.views.ErrorsHandler;
 
 //import static android.Manifest.permission.READ_CONTACTS;
 
@@ -36,6 +38,8 @@ public class LoginActivity extends AppCompatActivity {
     /**
      * Keep track of the login task to ensure we can cancel it if requested.
      */
+    private static final String CLASS_NAME = "FOTT_LoginActivity";
+    
     private App app;
     private ApiConnector FOApp;
     private UserLoginCheck ULC;
@@ -52,14 +56,20 @@ public class LoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        //hide back button on action bar
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(false);
+        }
 
+        //get web-connector
         app = (App) getApplication();
         FOApp = app.getWebService();
-
-        setContentView(R.layout.activity_login);
+        
         // Set up the login form.
-        //TODO russian translate?
-        //TODO save credentials
+        setContentView(R.layout.activity_login);
+        
         mURLView = (AutoCompleteTextView) findViewById(R.id.fo_url);
         mLoginView = (AutoCompleteTextView) findViewById(R.id.login);
         mUntrustCA = (CheckBox) findViewById(R.id.untrustCA);
@@ -72,8 +82,8 @@ public class LoginActivity extends AppCompatActivity {
 
         mPasswordView = (EditText) findViewById(R.id.password);
         mPasswordView.setText(preferences.getString(getString(R.string.pref_sync_password), ""));
-        boolean passwordEntered = !preferences.getString(getString(R.string.pref_sync_password), "").isEmpty();
-        mSaveCred.setChecked(passwordEntered);
+        mPasswordView.setText(preferences.getString(getString(R.string.pref_sync_password), FOApp.getFO_Pwd()));
+        mSaveCred.setChecked(preferences.getBoolean(getString(R.string.pref_sync_save_creds), false));
 
                 mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
@@ -97,7 +107,7 @@ public class LoginActivity extends AppCompatActivity {
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
 
-        if (passwordEntered) {attemptLogin();}
+        if (!mPasswordView.getText().toString().isEmpty()) {attemptLogin();}
     }
 
     /**
@@ -120,7 +130,7 @@ public class LoginActivity extends AppCompatActivity {
         String login = mLoginView.getText().toString();
         String password = mPasswordView.getText().toString();
 
-        boolean cancel = false;
+        boolean cancel;
         View focusView = null;
 
         ULC = new UserLoginCheck();
@@ -137,39 +147,45 @@ public class LoginActivity extends AppCompatActivity {
                 focusView = mURLView;
             }
         }
-        FOApp.canUseUntrustCert(mUntrustCA.isChecked());
+        
+        if (!cancel) {
+            FOApp.canUseUntrustCert(mUntrustCA.isChecked());
 
-        //TODO empty password?
-        // Check for a valid password, if the user entered one.
-        if (TextUtils.isEmpty(password)) {
-            mPasswordView.setError(getString(R.string.error_invalid_password));
-            focusView = mPasswordView;
-            cancel = true;
-        } else {
-            cancel = !FOApp.setFO_Pwd(password);
-            if (cancel) {
-                mPasswordView.setError(getString(R.string.error_incorrect_value));
+            // Check for a valid password, if the user entered one.
+            if (TextUtils.isEmpty(password)) {
+                mPasswordView.setError(getString(R.string.error_invalid_password));
                 focusView = mPasswordView;
+                cancel = true;
+            } else {
+                cancel = !FOApp.setFO_Pwd(password);
+                if (cancel) {
+                    mPasswordView.setError(getString(R.string.error_incorrect_value));
+                    focusView = mPasswordView;
+                }
             }
         }
 
-        // Check for a empty login.
-        if (TextUtils.isEmpty(login)) {
-            mLoginView.setError(getString(R.string.error_field_required));
-            focusView = mLoginView;
-            cancel = true;
-        } else {
-            cancel = !FOApp.setFO_User(login);
-            if (cancel) {
-                mLoginView.setError(getString(R.string.error_incorrect_value));
+        if (!cancel) {
+            // Check for a empty login.
+            if (TextUtils.isEmpty(login)) {
+                mLoginView.setError(getString(R.string.error_field_required));
                 focusView = mLoginView;
+                cancel = true;
+            } else {
+                cancel = !FOApp.setFO_User(login);
+                if (cancel) {
+                    mLoginView.setError(getString(R.string.error_incorrect_value));
+                    focusView = mLoginView;
+                }
             }
         }
 
-        cancel = !isNetworkAvailable();
-        if (cancel){
-            mURLView.setError(getString(R.string.error_no_internet));
-            focusView = mURLView;
+        if (!cancel) {
+            cancel = !isNetworkAvailable();
+            if (cancel) {
+                app.getError().error_handler(FOTT_ErrorsHandler.ERROR_SHOW_MESSAGE,CLASS_NAME,getString(R.string.nonetwork_message));
+                focusView = mURLView;
+            }
         }
 
         if (cancel) {
@@ -243,8 +259,7 @@ public class LoginActivity extends AppCompatActivity {
 
             if (!FOApp.testConnection()) { return false;}
             app.setNeedFullSync(true);
-            app.dataSynchronization();
-            return true;
+            return app.dataSynchronization();
         }
 
         @Override
@@ -257,6 +272,7 @@ public class LoginActivity extends AppCompatActivity {
                 preferences.set(getString(R.string.pref_sync_url), mURLView.getText().toString());
                 preferences.set(getString(R.string.pref_sync_login), mLoginView.getText().toString());
                 preferences.set(getString(R.string.pref_sync_certs), mUntrustCA.isChecked());
+                preferences.set(getString(R.string.pref_sync_save_creds), mSaveCred.isChecked());
                 if (mSaveCred.isChecked()) {
                     preferences.set(getString(R.string.pref_sync_password), mPasswordView.getText().toString());
                 } else {
@@ -266,7 +282,7 @@ public class LoginActivity extends AppCompatActivity {
                 setResult(RESULT_OK, intent);
                 finish();
             } else {
-                mURLView.setError(FOApp.getError());
+                app.getError().error_handler(ErrorsHandler.ERROR_SHOW_MESSAGE,CLASS_NAME,FOApp.getError());
                 mURLView.requestFocus();
             }
         }
