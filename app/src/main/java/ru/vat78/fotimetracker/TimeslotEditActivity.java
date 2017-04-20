@@ -1,17 +1,14 @@
 package ru.vat78.fotimetracker;
 
+import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.Button;
-import android.widget.DatePicker;
-import android.widget.Spinner;
-import android.widget.TextView;
-import android.widget.TimePicker;
+import android.widget.*;
 
 import java.text.ParsePosition;
 import java.util.Calendar;
@@ -59,8 +56,8 @@ public class TimeslotEditActivity extends AppCompatActivity {
         setContentView(R.layout.activity_timeslot_edit);
 
         Intent intent = getIntent();
-        tsId = intent.getLongExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_ID,0);
-        String s = intent.getStringExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_DESC);
+        tsId = intent.getLongExtra(MainActivity.EXTRA_MESSAGE_TS_EDIT_ID,0);
+        String s = intent.getStringExtra(MainActivity.EXTRA_MESSAGE_TS_EDIT_DESC);
         if (!s.isEmpty()){
             TextView desc = (TextView) findViewById(R.id.tsAddDesc);
             desc.setText(s);
@@ -113,10 +110,10 @@ public class TimeslotEditActivity extends AppCompatActivity {
                 TextView desc = (TextView) findViewById(R.id.tsAddDesc);
 
                 result = new Intent();
-                result.putExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_ID, tsId);
-                result.putExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_START, start.getTime());
-                result.putExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_DURATION, duration);
-                result.putExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_DESC, desc.getText().toString());
+                result.putExtra(MainActivity.EXTRA_MESSAGE_TS_EDIT_ID, tsId);
+                result.putExtra(MainActivity.EXTRA_MESSAGE_TS_EDIT_START, start.getTime());
+                result.putExtra(MainActivity.EXTRA_MESSAGE_TS_EDIT_DURATION, duration);
+                result.putExtra(MainActivity.EXTRA_MESSAGE_TS_EDIT_DESC, desc.getText().toString());
                 if ((tclose || tmove) && taskName != null) gotoTaskChanges();
                 else {
                     setResult(RESULT_OK, result);
@@ -156,10 +153,10 @@ public class TimeslotEditActivity extends AppCompatActivity {
         //Area for task editing
         tclose = app.getPreferences().getBoolean(getString(R.string.pref_can_close_task),false);
         tmove = app.getPreferences().getBoolean(getString(R.string.pref_can_change_task), false);
-        taskComplete = intent.getIntExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_TASK_STATUS, 0);
+        taskComplete = intent.getIntExtra(MainActivity.EXTRA_MESSAGE_TS_EDIT_TASK_STATUS, 0);
         if (taskComplete > 1) taskComplete = 1;
-        taskDue = intent.getLongExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_TASK_DUE, 0);
-        taskName = intent.getStringExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_TASK_NAME);
+        taskDue = intent.getLongExtra(MainActivity.EXTRA_MESSAGE_TS_EDIT_TASK_DUE, 0);
+        taskName = intent.getStringExtra(MainActivity.EXTRA_MESSAGE_TS_EDIT_TASK_NAME);
 
         RelativeLayout vTaskEdit = (RelativeLayout) findViewById(R.id.tsAddTaskArea);
         if ((tclose || tmove) && taskName != null) {
@@ -425,8 +422,8 @@ public class TimeslotEditActivity extends AppCompatActivity {
                 Date new_date = app.getDateFormat().parse(vTaskDue.getText().toString(), pos);
                 new_tdue = new_date.getTime();
             }
-            result.putExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_TASK_STATUS, new_tclose);
-            result.putExtra(FOTT_MainActivity.EXTRA_MESSAGE_TS_EDIT_TASK_DUE, new_tdue);
+            result.putExtra(MainActivity.EXTRA_MESSAGE_TS_EDIT_TASK_STATUS, new_tclose);
+            result.putExtra(MainActivity.EXTRA_MESSAGE_TS_EDIT_TASK_DUE, new_tdue);
         }
 
         setResult(RESULT_OK, result);

@@ -67,7 +67,7 @@ public class DaoTasks extends FOTT_DBContract {
                 FOTT_DBMembers_Objects.rebuild(app);
             }
 
-            for (FOTT_Task t : tasks_list) {
+            for (Task t : tasks_list) {
                 if (t.canAddTimeslots() && t.getStatus() == 0) {
                     save(app, t);
                 } else {
@@ -106,7 +106,7 @@ public class DaoTasks extends FOTT_DBContract {
         return res;
     }
 
-    private static void save(App app, Task task){
+    public static void save(App app, Task task){
         ContentValues data = convertToDB(task);
         if (task.getId() != 0 ) {
             Cursor cursor = app.getDatabase().query(TABLE_NAME, new String[]{BaseColumns._ID},

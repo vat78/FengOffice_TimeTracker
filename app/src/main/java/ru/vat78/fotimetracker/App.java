@@ -278,12 +278,12 @@ public class App extends Application {
     public void redrawMainActivity() {
         int shift = 0;
         if (curMember != 0)
-            if (!FOTT_DBMembers.isExistInDB(this, curMember)) {
+            if (!DaoMembers.isExistInDB(this, curMember)) {
                 setCurMember(0);
                 shift = 1;
             }
         if (curTask != 0)
-            if (!FOTT_DBTasks.isExistInDB(this, curTask)) {
+            if (!DaoTasks.isExistInDB(this, curTask)) {
                 setCurTask(0);
                 shift = 2;
             }

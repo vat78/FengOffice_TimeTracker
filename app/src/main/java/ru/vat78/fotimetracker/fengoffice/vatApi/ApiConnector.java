@@ -242,12 +242,12 @@ public class ApiConnector {
 
         resetError();
 
-        JSONObject jo;
+        JSONObject jo =null;
 
-        if (!checkPlugin(FOAPI_Dictionary.FO_PLUGIN_NAME)) {return null;}
+        if (!checkPlugin(ApiDictionary.FO_PLUGIN_NAME)) {return null;}
         resetError();
 
-        String request = this.FO_URL + FOAPI_Dictionary.FO_VAPI_REQUEST_BY_ID;
+        String request = this.FO_URL + ApiDictionary.FO_VAPI_REQUEST_BY_ID;
         Properties requestParams = new Properties();
         requestParams.setProperty(ApiDictionary.FO_API_TOKEN,FO_Token);
         requestParams.setProperty(ApiDictionary.FO_API_METHOD,method);
