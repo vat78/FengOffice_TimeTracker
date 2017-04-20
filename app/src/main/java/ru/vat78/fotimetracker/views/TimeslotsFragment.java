@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 
+import android.widget.TextView;
 import ru.vat78.fotimetracker.App;
 import ru.vat78.fotimetracker.MainActivity;
 import ru.vat78.fotimetracker.R;

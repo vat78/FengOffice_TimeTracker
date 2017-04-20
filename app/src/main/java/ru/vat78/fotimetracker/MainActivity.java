@@ -1,6 +1,10 @@
 package ru.vat78.fotimetracker;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.CountDownTimer;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -10,6 +14,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.text.Html;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -25,8 +30,10 @@ import java.util.TimerTask;
 import ru.vat78.fotimetracker.adapters.MembersAdapter;
 import ru.vat78.fotimetracker.adapters.TasksAdapter;
 import ru.vat78.fotimetracker.adapters.TimeslotsAdapter;
+import ru.vat78.fotimetracker.database.DaoTasks;
 import ru.vat78.fotimetracker.model.Member;
 import ru.vat78.fotimetracker.model.Task;
+import ru.vat78.fotimetracker.views.ErrorsHandler;
 import ru.vat78.fotimetracker.views.MembersFragment;
 import ru.vat78.fotimetracker.views.TasksFragment;
 import ru.vat78.fotimetracker.views.TimeslotsFragment;
@@ -71,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     private Timer syncTimer;
     
-    private FOTT_BroadcastReceiver alarm;
+    private MyBroadcastReceiver alarm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,7 +104,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
         setSyncTimer();
 
-        alarm = new FOTT_BroadcastReceiver();
+        alarm = new MyBroadcastReceiver();
 
     }
 
@@ -221,9 +228,9 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     @Override
     protected  void onNewIntent(Intent intent){
         super.onNewIntent(intent);
-        String c = intent.getStringExtra(FOTT_BroadcastReceiver.BCommand);
+        String c = intent.getStringExtra(MyBroadcastReceiver.BCommand);
         if (c==null) return;
-        if (c.equals(FOTT_BroadcastReceiver.BC_TimerAlarm)) alarmDialogShow();
+        if (c.equals(MyBroadcastReceiver.BC_TimerAlarm)) alarmDialogShow();
     }
 
     public void redraw() {
@@ -270,7 +277,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 if (timeslots.saveTimeslot(id,d,l,s)){
                     setSyncTimer();
                 } else {
-                    MainApp.getError().error_handler(FOTT_ErrorsHandler.ERROR_SHOW_MESSAGE,"",getString(R.string.error_save_record));
+                    MainApp.getError().error_handler(ErrorsHandler.ERROR_SHOW_MESSAGE,"",getString(R.string.error_save_record));
                 }
 
             }
@@ -283,17 +290,17 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
         if (MainApp.getCurTask() > 0)
         {
-            FOTT_Task t = tasks.getTaskById(MainApp.getCurTask());
+            Task t = tasks.getTaskById(MainApp.getCurTask());
             int status = intent.getIntExtra(EXTRA_MESSAGE_TS_EDIT_TASK_STATUS, t.getStatus());
             long duedate = intent.getLongExtra(EXTRA_MESSAGE_TS_EDIT_TASK_DUE, t.getDueDate().getTime());
             if (tclose && status != t.getStatus()) {
                 t.setStatus(status);
                 t.setChanged(System.currentTimeMillis());
-                FOTT_DBTasks.save(MainApp,t);
+                DaoTasks.save(MainApp,t);
             } else if (tmove && duedate != t.getDueDate().getTime()) {
                 t.setDuedate(duedate);
                 t.setChanged(System.currentTimeMillis());
-                FOTT_DBTasks.save(MainApp, t);
+                DaoTasks.save(MainApp, t);
             }
         }
     }
@@ -330,14 +337,14 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     }
 
     public void editTimeslot(long tsId, long start, long duration, String text) {
-        Intent pickTS = new Intent(this,FOTT_TSEditActivity.class);
+        Intent pickTS = new Intent(this,TimeslotEditActivity.class);
 
         pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_ID, tsId);
         pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_DESC, text);
         if (start != 0) pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_START, start);
         if (duration !=0) pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_DURATION, duration);
         if (MainApp.getCurTask() != 0){
-            FOTT_Task t = tasks.getTaskById(MainApp.getCurTask());
+            Task t = tasks.getTaskById(MainApp.getCurTask());
             pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_TASK_NAME, t.getName());
             pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_TASK_STATUS, t.getStatus());
             pickTS.putExtra(EXTRA_MESSAGE_TS_EDIT_TASK_DUE, t.getDueDate().getTime());
@@ -350,12 +357,12 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
         View topArea = findViewById(R.id.tsTopContext);
         if (topArea != null) {
-            FOTT_Member m = members.getMemberById(MainApp.getCurMember());
+            Member m = members.getMemberById(MainApp.getCurMember());
             topArea.setBackgroundColor(m.getColor());
             TextView top_title = (TextView) findViewById(R.id.tsTopTitle);
             TextView top_desc = (TextView) findViewById(R.id.tsTopDesc);
             if (MainApp.getCurTask() > 0) {
-                FOTT_Task t = getTasks().getTaskById(MainApp.getCurTask());
+                Task t = getTasks().getTaskById(MainApp.getCurTask());
                 top_title.setText(t.getName());
                 String s = Html.fromHtml(t.getDesc()).toString();
                 top_desc.setText(s);
@@ -591,7 +598,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                     if (syncTask != null)
                         if (syncTask.getStatus() != AsyncTask.Status.RUNNING && !MainApp.isSyncing()) syncTask = null;
                     if (syncTask == null) {
-                        syncTask = new FOTT_SyncTask(MainApp);
+                        syncTask = new SyncTask(MainApp);
                         syncTask.execute();
                     }
                 }

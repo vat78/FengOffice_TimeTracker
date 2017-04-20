@@ -183,7 +183,7 @@ public class LoginActivity extends AppCompatActivity {
         if (!cancel) {
             cancel = !isNetworkAvailable();
             if (cancel) {
-                app.getError().error_handler(FOTT_ErrorsHandler.ERROR_SHOW_MESSAGE,CLASS_NAME,getString(R.string.nonetwork_message));
+                app.getError().error_handler(ErrorsHandler.ERROR_SHOW_MESSAGE,CLASS_NAME,getString(R.string.nonetwork_message));
                 focusView = mURLView;
             }
         }

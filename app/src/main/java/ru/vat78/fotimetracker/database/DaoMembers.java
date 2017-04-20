@@ -185,8 +185,8 @@ public class DaoMembers extends FOTT_DBContract {
         return res;
     }
     
-    public static boolean isExistInDB(FOTT_App app, long memberID) {
-        FOTT_Member res = getMemberById(app, memberID);
+    public static boolean isExistInDB(App app, long memberID) {
+        Member res = getMemberById(app, memberID);
         return (res.getId() == memberID);
     }
 }

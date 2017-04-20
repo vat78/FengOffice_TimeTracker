@@ -1,6 +1,5 @@
 package ru.vat78.fotimetracker.adapters;
 
-import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,7 +21,6 @@ import ru.vat78.fotimetracker.views.TimeslotsFragment;
 public class TimeslotsAdapter extends RecyclerView.Adapter<TimeslotsAdapter.ViewHolder> {
 
     private ArrayList<Timeslot> timeslots;
-    private Context context;
     private App app;
     private TimeslotsFragment parent;
 
@@ -48,7 +46,6 @@ public class TimeslotsAdapter extends RecyclerView.Adapter<TimeslotsAdapter.View
 
     public TimeslotsAdapter(App application, TimeslotsFragment parent) {
         super();
-        this.context = context;
         this.app = application;
         this.timeslots = new ArrayList<>();
         this.parent = parent;
@@ -116,7 +113,7 @@ public class TimeslotsAdapter extends RecyclerView.Adapter<TimeslotsAdapter.View
         return (ts.getId() != 0);
     }
 
-    public void onClickTS(FOTT_Timeslot selection){
+    public void onClickTS(Timeslot selection){
         if (parent != null) {
             parent.showTSDetails(selection);
         }

@@ -24,18 +24,18 @@ public class ApiTasks {
 
     public ArrayList<Task> load(App app, Date timestamp){
         String[] args = new String[2];
-        long l = (long) timestamp.getTime() / FO_API_DATE_CONVERTOR;
+        long l = (long) timestamp.getTime() / ApiDictionary.FO_API_DATE_CONVERTOR;
         if (l != 0) {
-            args[0] = FO_API_ARG_LASTUPDATE;
+            args[0] = ApiDictionary.FO_API_ARG_LASTUPDATE;
             args[1] = "" + l;
         } else {
             //Select only active tasks (not completed, not deleted, not archived and start date < now)
-            args[0]= FO_API_ARG_STATUS;
+            args[0]= ApiDictionary.FO_API_ARG_STATUS;
             args[1] = "10";
         }
-        JSONObject jo = app.getWeb_service().executeAPI(FO_METHOD_LISTING,FO_SERVICE_TASKS, args);
-        if (!app.getWeb_service().getError().isEmpty())
-            app.getError().error_handler(FOTT_ErrorsHandler.ERROR_SAVE_ERROR, CLASS_NAME, app.getWeb_service().getError());
+        JSONObject jo = app.getWebService().executeAPI(ApiDictionary.FO_METHOD_LISTING,ApiDictionary.FO_SERVICE_TASKS, args);
+        if (!app.getWebService().getError().isEmpty())
+            app.getError().error_handler(ErrorsHandler.ERROR_SAVE_ERROR, CLASS_NAME, app.getWebService().getError());
 
         return convertResults(app,jo,(l==0));
     }
@@ -128,7 +128,7 @@ public class ApiTasks {
             String tmp = ApiDictionary.FO_API_FALSE;
             if (!jsonObject.isNull(ApiDictionary.FO_API_FIELD_STARTDATE))
                 tmp = jsonObject.getString(ApiDictionary.FO_API_FIELD_STARTDATE);
-            if (tmp.equalsIgnoreCase(FO_API_FALSE)) {
+            if (tmp.equalsIgnoreCase(ApiDictionary.FO_API_FALSE)) {
                 el.setStartDate(0);
             } else {
                 el.setStartDate(jsonObject.getLong(ApiDictionary.FO_API_FIELD_STARTDATE) * ApiDictionary.FO_API_DATE_CONVERTOR);
@@ -137,7 +137,7 @@ public class ApiTasks {
             tmp = ApiDictionary.FO_API_FALSE;
             if (!jsonObject.isNull(ApiDictionary.FO_API_FIELD_DUEDATE))
                 tmp = jsonObject.getString(ApiDictionary.FO_API_FIELD_DUEDATE);
-            if (tmp.equalsIgnoreCase(FO_API_FALSE)) {
+            if (tmp.equalsIgnoreCase(ApiDictionary.FO_API_FALSE)) {
                 el.setDueDate(0);
             } else {
                 el.setDueDate(jsonObject.getLong(ApiDictionary.FO_API_FIELD_DUEDATE) * ApiDictionary.FO_API_DATE_CONVERTOR);
@@ -150,7 +150,7 @@ public class ApiTasks {
                 el.setStatus(jsonObject.getInt(ApiDictionary.FO_API_FIELD_STATUS));
 
             if (!jsonObject.isNull(ApiDictionary.FO_API_FIELD_USETIMESLOTS))
-                el.setCanAddTimeslots(jsonObject.getString(FOAPI_Dictionary.FO_API_FIELD_USETIMESLOTS).equalsIgnoreCase(FO_API_TRUE));
+                el.setCanAddTimeslots(jsonObject.getString(ApiDictionary.FO_API_FIELD_USETIMESLOTS).equalsIgnoreCase(ApiDictionary.FO_API_TRUE));
 
                 /*
                 if (!jo.isNull(ApiDictionary.FO_API_FIELD_ASSIGNEDBY))
@@ -186,9 +186,9 @@ public class ApiTasks {
         if (res !=0 ) {
             try {
                 if (task.getStatus() == 0) {
-                    jo = app.getWeb_service().executeAPI(FO_METHOD_COMPLETE_TASK, res, FO_ACTION_OPEN_TASK);
+                    jo = app.getWebService().executeAPI(ApiDictionary.FO_METHOD_COMPLETE_TASK, res, ApiDictionary.FO_ACTION_OPEN_TASK);
                 } else {
-                    jo = app.getWeb_service().executeAPI(FO_METHOD_COMPLETE_TASK, res, FO_ACTION_COMPLETE_TASK);
+                    jo = app.getWebService().executeAPI(ApiDictionary.FO_METHOD_COMPLETE_TASK, res, ApiDictionary.FO_ACTION_COMPLETE_TASK);
                 }
             } catch (Exception e) {}
         }
@@ -232,7 +232,7 @@ public class ApiTasks {
                     res = false;
                 } else {
                     try {
-                        res = (jo.getString(ApiDictionary.FO_API_FIELD_RESULT).equals(FO_API_TRUE));
+                        res = (jo.getString(ApiDictionary.FO_API_FIELD_RESULT).equalsIgnoreCase(ApiDictionary.FO_API_TRUE));
                     } catch (Exception e){
                     }
                 }

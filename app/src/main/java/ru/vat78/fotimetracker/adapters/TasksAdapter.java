@@ -1,6 +1,6 @@
 package ru.vat78.fotimetracker.adapters;
 
-import android.content.Context;
+import android.graphics.Paint;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -108,7 +108,7 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TasksViewHol
         return DaoTasks.getTaskById(app, id);
     }
     
-    public void onClickTask(FOTT_Task selection){
+    public void onClickTask(Task selection){
         if (parent != null) {
             parent.onItemClicked(selection);
         }
