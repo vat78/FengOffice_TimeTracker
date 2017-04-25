@@ -2,6 +2,7 @@ package ru.vat78.fotimetracker;
 
 import android.app.Application;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.preference.PreferenceManager;
 
 import java.text.SimpleDateFormat;
@@ -212,6 +213,7 @@ public class App extends Application {
                 setSyncing(false);
                 return false;
             }
+            members.add(generateAnyMember());
             DaoMembers.save(this, members);
             if (getError().is_error()) {
                 setSyncing(false);
@@ -294,5 +296,12 @@ public class App extends Application {
             else
                 mainActivity.setCurrentFragment(shift - 1);
         }
+    }
+
+    private Member generateAnyMember() {
+        Member any = new Member(-1,getString(R.string.any_category));
+        any.setPath("");
+        any.setColorIndex(Color.TRANSPARENT);
+        return any;
     }
 }

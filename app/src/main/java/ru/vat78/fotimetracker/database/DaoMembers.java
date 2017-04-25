@@ -2,191 +2,143 @@ package ru.vat78.fotimetracker.database;
 
 import android.content.ContentValues;
 import android.database.Cursor;
-import android.graphics.Color;
-import android.provider.BaseColumns;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
-import ru.vat78.fotimetracker.App;
-import ru.vat78.fotimetracker.R;
+import android.provider.BaseColumns;
+import android.support.annotation.NonNull;
 import ru.vat78.fotimetracker.model.Member;
-import ru.vat78.fotimetracker.views.ErrorsHandler;
+
+import static ru.vat78.fotimetracker.database.DBContract.COLUMN_NAME_FO_ID;
+import static ru.vat78.fotimetracker.database.DBContract.COLUMN_NAME_TITLE;
+import static ru.vat78.fotimetracker.database.DBContract.MembersTable.*;
 
 /**
  * Created by vat on 21.12.2015.
  */
-public class DaoMembers extends FOTT_DBContract {
-    private static final String CLASS_NAME = "DaoMembers";
+public class DaoMembers implements IDao<Member> {
+    private IDbConnect database;
 
-    private static final String TABLE_NAME = "members";
-    private static final String COLUMN_NAME_COLOR = "color";
-    private static final String COLUMN_NAME_TYPE = "type";
-    private static final String COLUMN_NAME_PATH = "path";
-    private static final String COLUMN_NAME_PARENT = "parentid";
-    private static final String COLUMN_NAME_LEVEL = "level";
-    private static final String COLUMN_NAME_TASKS = "tasks_cnt";
-
-    public static final String SQL_CREATE_ENTRIES =
-            CREATE_TABLE + TABLE_NAME + " (" +
-                    BaseColumns._ID + INTEGER_TYPE + PRIMARY_KEY + COMMA_SEP +
-                    COLUMN_NAME_FO_ID + INTEGER_TYPE + UNIQUE_FIELD + COMMA_SEP +
-                    COLUMN_NAME_TITLE + TEXT_TYPE + COMMA_SEP +
-                    COLUMN_NAME_COLOR + INTEGER_TYPE + COMMA_SEP +
-                    COLUMN_NAME_TYPE + TEXT_TYPE + COMMA_SEP +
-                    COLUMN_NAME_PATH + TEXT_TYPE + COMMA_SEP +
-                    COLUMN_NAME_PARENT + TEXT_TYPE + COMMA_SEP +
-                    COLUMN_NAME_LEVEL + INTEGER_TYPE + COMMA_SEP +
-                    COLUMN_NAME_TASKS + INTEGER_TYPE + COMMA_SEP +
-                    COLUMN_NAME_CHANGED + NUMERIC_TYPE +
-                    " );";
-    public static final String SQL_DELETE_ENTRIES =
-            DROP_TABLE + TABLE_NAME +";";
-
-    public static void rebuild(App app){
-        app.getDatabase().execSQL(SQL_DELETE_ENTRIES);
-        app.getDatabase().execSQL(SQL_CREATE_ENTRIES);
+    public DaoMembers(IDbConnect database) {
+        this.database = database;
     }
 
-    public static void save(App app, List<Member> members) {
-
-        if (app.getCurMember() > 0){
-            //TODO: if has selected member
-        }
-
-        try {
-            rebuild(app);
-
-            members.add(generateAnyMember(app));
-
-            for (int i = 0; i < members.size(); i++) {
-                if (members.get(i).getId() != 0) insert(app, members.get(i));
-            }
-        }
-        catch (Error e){
-            app.getError().error_handler(ErrorsHandler.ERROR_SAVE_ERROR,CLASS_NAME,e.getMessage());
-        }
-
+    public void rebuildTable(){
+        database.execSql(SQL_DELETE_ENTRIES);
+        database.execSql(SQL_CREATE_TABLE);
     }
 
-    private static void insert(App app, Member member) {
-        ContentValues ts = convertToDB(member);
-        app.getDatabase().insertOrUpdate(TABLE_NAME, ts);
-    }
-
-    private static ContentValues convertToDB(Member member) {
-        ContentValues res = new ContentValues();
-        res.put(COLUMN_NAME_FO_ID, member.getId());
-        res.put(COLUMN_NAME_TITLE,member.getName());
-
-        res.put(COLUMN_NAME_PATH,member.getPath());
-        res.put(COLUMN_NAME_LEVEL, member.getLevel());
-        res.put(COLUMN_NAME_COLOR, member.getColorIndex());
-
-        res.put(COLUMN_NAME_TASKS, member.getTasksCnt());
-        //res.put(COLUMN_NAME_CHANGED,member.getChanged().getTime());
-
+    @Override
+    public long save(@NonNull Member member) {
+        database.beginTransaction();
+        ContentValues ts = convertForDB(member);
+        long res = database.insertOrUpdate(TABLE_NAME, ts);
+        if (res != 0 ) member.setId(res);
+        database.endTransaction();
         return res;
     }
 
-    private static Member generateAnyMember(App app) {
-        Member any = new Member(-1,app.getString(R.string.any_category));
-        any.setPath("");
-        any.setColorIndex(Color.TRANSPARENT);
-        return any;
-    }
-
-    public static ArrayList<Member> load (App app){
-        ArrayList<Member> members = new ArrayList<>();
-        int taskCnt = 0;
-        
-        Cursor memberCursor = app.getDatabase().query(TABLE_NAME + " m",
-                new String[]{"m." + COLUMN_NAME_FO_ID,
-                        "m." + COLUMN_NAME_TITLE,
-                        "m." + COLUMN_NAME_PATH,
-                        "m." + COLUMN_NAME_LEVEL,
-                        "m." + COLUMN_NAME_COLOR,
-                        "(" + FOTT_DBMembers_Objects.getSQLObectsCnt("m." +
-                                COLUMN_NAME_FO_ID) + ") AS TaskCnt"},
-                null,
-                COLUMN_NAME_PATH + " ASC");
-
-        memberCursor.moveToFirst();
-        Member any = null;
-        Member m;
-        Member prev = new Member(0,"");
-        int shownLevel = 1;
-
-        if (!memberCursor.isAfterLast()){
-            do {
-                long id = memberCursor.getLong(0);
-                String name = memberCursor.getString(1);
-                String path = memberCursor.getString(2);
-                int color = memberCursor.getInt(4);
-
-                m = new Member(id, name);
-                if (id == -1) any = m;
-                m.setPath(path);
-                m.setColorIndex(color);
-                m.setTasksCnt(memberCursor.getInt(5));
-                int curLevel = m.getLevel();
-                if (curLevel == 1) taskCnt += memberCursor.getInt(5);
-                if (curLevel > prev.getLevel()) {prev.setNode(1);}
-                m.setVisible(curLevel <= shownLevel);
-                if (curLevel < shownLevel) shownLevel = curLevel;
-
-                if (id == app.getCurMember()){
-                    //Make visible branch with selected member
-                    shownLevel = curLevel;
-                    m.setVisible(true);
-                    for (int i = members.size() - 1; i>=0 && shownLevel > 1;i--) {
-                        Member el = members.get(i);
-                        el.setVisible(el.getLevel() <= shownLevel);
-                        if (el.getLevel() <shownLevel) {
-                            el.setNode(2);
-                            shownLevel = el.getLevel();
-                        }
-                    }
-                    shownLevel = curLevel;
-                }
-                members.add(m);
-
-                prev = m;
-            } while (memberCursor.moveToNext());
+    @Override
+    public long save(@NonNull List<Member> members) {
+        long cntr = 0;
+        for (Member m : members) {
+            if (m.getUid() != 0) {
+                if (save(m) != 0) cntr++;
+            }
         }
-        if (any != null) any.setTasksCnt(taskCnt);
-        return members;
+        return cntr;
     }
 
-    public static Member getMemberById(App app, long id) {
-
+    @Override
+    public Member getByUid(long uid) {
         Member res = new Member(0, "");
-
-        if (id > 0) {
-            String filter = " " + COLUMN_NAME_FO_ID + " = " + id;
-            Cursor memberCursor = app.getDatabase().query(TABLE_NAME + " m",
-                    new String[]{"m." + COLUMN_NAME_FO_ID,
-                            "m." + COLUMN_NAME_TITLE,
-                            "m." + COLUMN_NAME_PATH,
-                            "m." + COLUMN_NAME_LEVEL,
-                            "m." + COLUMN_NAME_COLOR,
-                            "(" + FOTT_DBMembers_Objects.getSQLObectsCnt(String.valueOf(id)) +
-                                    ") AS TaskCnt"},
+        database.beginTransaction();
+        if (uid > 0) {
+            String filter = " " + COLUMN_NAME_FO_ID + " = " + uid;
+            Cursor memberCursor = database.query(TABLE_NAME,
+                    getColumnForSelect(),
                     filter,
                     COLUMN_NAME_PATH);
             memberCursor.moveToFirst();
             if (!memberCursor.isAfterLast()) {
                 res.setId(memberCursor.getLong(0));
-                res.setName(memberCursor.getString(1));
-                res.setColorIndex(memberCursor.getInt(4));
-                res.setTasksCnt(memberCursor.getInt(5));
+                res.setUid(memberCursor.getLong(1));
+                res.setName(memberCursor.getString(2));
+                res.setColorIndex(memberCursor.getInt(5));
+                res.setTasksCnt(memberCursor.getInt(6));
             }
         }
+        database.endTransaction();
         return res;
     }
-    
-    public static boolean isExistInDB(App app, long memberID) {
-        Member res = getMemberById(app, memberID);
-        return (res.getId() == memberID);
+
+    @Override
+    public boolean isExistInDB(long uid) {
+        Member res = getByUid(uid);
+        return (res.getUid() == uid);
+    }
+
+    @Override
+    public List<Member> load (){
+        List<Member> members = new LinkedList<>();
+        int taskCnt = 0;
+
+        database.beginTransaction();
+        Cursor data = database.query(TABLE_NAME,
+                getColumnForSelect(),
+                null,
+                COLUMN_NAME_PATH + " ASC");
+
+        data.moveToFirst();
+        Member any = null;
+
+        if (!data.isAfterLast()){
+            do {
+                long uid = data.getLong(1);
+                Member m = new Member(uid, data.getString(2));
+                m.setId(data.getLong(0));
+                m.setPath(data.getString(3));
+                m.setColorIndex(data.getInt(5));
+                m.setTasksCnt(data.getInt(6));
+                if (uid == -1) {
+                    any = m;
+                } else {
+                    int curLevel = m.getLevel();
+                    if (curLevel == 1) taskCnt += data.getInt(6);
+                    members.add(m);
+                }
+            } while (data.moveToNext());
+        }
+        if (any != null) {
+            any.setTasksCnt(taskCnt);
+            members.add(0,any);
+        }
+        database.endTransaction();
+        return members;
+    }
+
+    private ContentValues convertForDB(Member member) {
+        ContentValues res = new ContentValues();
+        res.put(BaseColumns._ID, member.getId());
+        res.put(COLUMN_NAME_FO_ID, member.getUid());
+        res.put(COLUMN_NAME_TITLE,member.getName());
+        res.put(COLUMN_NAME_PATH,member.getPath());
+        res.put(COLUMN_NAME_LEVEL, member.getLevel());
+        res.put(COLUMN_NAME_COLOR, member.getColorIndex());
+        res.put(COLUMN_NAME_TASKS, member.getTasksCnt());
+        return res;
+    }
+
+    private String[] getColumnForSelect() {
+        return new String[]{
+                BaseColumns._ID,
+                DBContract.COLUMN_NAME_FO_ID,
+                DBContract.COLUMN_NAME_TITLE,
+                COLUMN_NAME_PATH,
+                COLUMN_NAME_LEVEL,
+                COLUMN_NAME_COLOR,
+                "(" + FOTT_DBMembers_Objects.getSQLObectsCnt(COLUMN_NAME_FO_ID) +
+                        ") AS TaskCnt"};
     }
 }

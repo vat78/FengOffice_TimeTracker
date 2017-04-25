@@ -81,7 +81,7 @@ public class MembersAdapter extends RecyclerView.Adapter <MembersAdapter.Members
 
         memberViewHolder.margine.setWidth(36 * objectItem.getLevel());
 
-        if (app.getCurMember() == objectItem.getId()) {
+        if (app.getCurMember() == objectItem.getUid()) {
             memberViewHolder.title.setBackgroundColor(objectItem.getColor());
             memberViewHolder.tasks.setBackgroundColor(objectItem.getColor());
             memberViewHolder.selector.setBackgroundColor(objectItem.getColor());
@@ -150,11 +150,11 @@ public class MembersAdapter extends RecyclerView.Adapter <MembersAdapter.Members
     }
 
     public long getMemberId(int position){
-        return visibleMembers.get(position).getId();
+        return visibleMembers.get(position).getUid();
     }
 
     public Member getMemberById(long id){
-        return DaoMembers.getMemberById(app, id);
+        return DaoMembers.getByUid(app, id);
     }
 
     private void rebuildFilteredList(){
@@ -193,7 +193,7 @@ public class MembersAdapter extends RecyclerView.Adapter <MembersAdapter.Members
                 delItems++;
             }
             if (el.getNode() == 2)el.setNode(1);
-            //if (el.getId() == app.getCurMember()) app.setCurMember(0);
+            //if (el.getUid() == app.getCurMember()) app.setCurMember(0);
         }
         members.get(curMem).setNode(1);
         rebuildFilteredList();

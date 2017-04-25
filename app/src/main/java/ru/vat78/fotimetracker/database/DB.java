@@ -8,10 +8,12 @@ import ru.vat78.fotimetracker.App;
 import ru.vat78.fotimetracker.R;
 import ru.vat78.fotimetracker.views.ErrorsHandler;
 
+import java.io.IOException;
+
 /**
  * Created by vat on 21.12.2015.
  */
-public class DB {
+public class DB implements IDbConnect {
     private static final String CLASS_NAME = "DB";
 
     private SQLiteDatabase database;
@@ -20,7 +22,7 @@ public class DB {
     public DB(App application, long db_version) {
 
         app = application;
-        FOTT_DBHelper helper = new FOTT_DBHelper(application, app);
+        DBHelper helper = new DBHelper(application, app);
         database = helper.getWritableDatabase();
         if (db_version != helper.getDB_version()) {
             //DB structure was changed and all records were deleted
@@ -30,11 +32,21 @@ public class DB {
     }
 
     public long getDb_version() {
-        return FOTT_DBContract.DATABASE_VERSION;
+        return DBContract.DATABASE_VERSION;
     }
 
-    public void execSQL(String sql){
+    public void execSql(String sql){
         database.execSQL(sql);
+    }
+
+    @Override
+    public void beginTransaction() {
+        database.beginTransaction();
+    }
+
+    @Override
+    public void endTransaction() {
+        database.endTransaction();
     }
 
     public long insert(String table, ContentValues values){
@@ -61,5 +73,9 @@ public class DB {
     public void delete(String table,String whereClause) {
         if (database.delete(table,whereClause,null) == -1)
             app.getError().error_handler(ErrorsHandler.ERROR_LOG_MESSAGE,CLASS_NAME,"Errors while deleting tasks from database");
+    }
+
+    public void close() throws IOException {
+        database.close();
     }
 }

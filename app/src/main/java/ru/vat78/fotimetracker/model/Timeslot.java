@@ -12,9 +12,9 @@ public class Timeslot extends Object {
     private long duration;
     private long task_id;
 
-    public Timeslot(long tsId, String tsTitle){
+    public Timeslot(long tsUid, String tsTitle){
         super();
-        setId(tsId);
+        setUid(tsUid);
         setName(tsTitle.length() > 250 ? tsTitle.substring(0, 250) : tsTitle);
         setDesc(tsTitle);
         setTaskId(0);

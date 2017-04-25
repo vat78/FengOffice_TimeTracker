@@ -52,7 +52,7 @@ public class ApiTimeslots {
         long l;
         args[0] = ApiDictionary.FO_API_FIELD_ID;
         args[1] = "";
-        if (timeslot.getId() > 0) args[1] = "" + timeslot.getId();
+        if (timeslot.getUid() > 0) args[1] = "" + timeslot.getUid();
         args[2] = ApiDictionary.FO_API_FIELD_DESC;
         args[3] = timeslot.getDesc();
         args[4] = ApiDictionary.FO_API_FIELD_TS_DATE;
@@ -162,8 +162,8 @@ public class ApiTimeslots {
     public boolean delete(App app, Timeslot timeslot) {
         boolean res = false;
 
-        if (timeslot.getId() > 0) {
-            JSONObject jo = app.getWebService().executeAPI(ApiDictionary.FO_METHOD_DELETE_OBJ, timeslot.getId());
+        if (timeslot.getUid() > 0) {
+            JSONObject jo = app.getWebService().executeAPI(ApiDictionary.FO_METHOD_DELETE_OBJ, timeslot.getUid());
             try {
                 res = (!jo.getString(ApiDictionary.FO_API_FIELD_RESULT).equalsIgnoreCase(ApiDictionary.FO_API_TRUE));
             } catch (Exception e) {

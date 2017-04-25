@@ -13,9 +13,9 @@ public class Task extends Object {
     private int status;
     private boolean can_add_timeslots;
 
-    public Task(long taskId, String taskTitle){
+    public Task(long taskUid, String taskTitle){
         super();
-        setId(taskId);
+        setUid(taskUid);
         setName(taskTitle);
         status = 0;
         can_add_timeslots = true;

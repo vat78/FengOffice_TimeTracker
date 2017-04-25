@@ -76,8 +76,8 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TasksViewHol
         Date d = objectItem.getDueDate();
         taskViewHolder.duedate.setText(app.getDateFormat().format(d));
 
-        taskViewHolder.title.setSelected(app.getCurTask() == objectItem.getId());
-        taskViewHolder.duedate.setSelected(app.getCurTask() == objectItem.getId());
+        taskViewHolder.title.setSelected(app.getCurTask() == objectItem.getUid());
+        taskViewHolder.duedate.setSelected(app.getCurTask() == objectItem.getUid());
         
         if (objectItem.isDeleted() || objectItem.getStatus() == 1){
             taskViewHolder.title.setPaintFlags(taskViewHolder.title.getPaintFlags() | Paint.STRIKE_THRU_TEXT_FLAG);
@@ -97,7 +97,7 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TasksViewHol
     }
 
     public long getTaskId(int position){
-        return tasks.get(position).getId();
+        return tasks.get(position).getUid();
     }
 
     public void load(){

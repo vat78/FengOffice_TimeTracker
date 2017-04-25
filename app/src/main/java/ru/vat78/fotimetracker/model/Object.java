@@ -1,6 +1,5 @@
 package ru.vat78.fotimetracker.model;
 
-import java.util.ArrayList;
 import java.util.Date;
 
 /**
@@ -10,7 +9,8 @@ public class Object {
 
     protected static final String MEMBER_SPLITTER = "/";
 
-    private long foid;
+    private long id;
+    private long uid;
     private String name;
     private String desc;
     private String author;
@@ -19,7 +19,7 @@ public class Object {
     private boolean deleted;
 
     public Object(){
-        foid = 0;
+        uid = 0;
         name = "";
         desc = "";
         author = "";
@@ -28,8 +28,8 @@ public class Object {
         deleted = false;
     }
 
-    public long getId() {
-        return foid;
+    public long getUid() {
+        return uid;
     }
 
     public String getName() {
@@ -42,8 +42,8 @@ public class Object {
 
     public String getMembersIds() { return membersIds;}
 
-    public void setId(long foid) {
-        this.foid = foid;
+    public void setUid(long uid) {
+        this.uid = uid;
     }
 
     public Date getChanged() {
@@ -89,4 +89,17 @@ public class Object {
     public String getMemberSplitter() { return MEMBER_SPLITTER;}
 
     public boolean isDeleted() { return deleted;}
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
+
+    @Override
+    public int hashCode() {
+        return new Long(uid).intValue();
+    }
 }

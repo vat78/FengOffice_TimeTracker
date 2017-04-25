@@ -72,7 +72,7 @@ public class ApiTasks {
                     if (!res.add(el)) {
                         break;
                     }
-                    isIncludeCurrentTask = isIncludeCurrentTask || (current_task == el.getId());
+                    isIncludeCurrentTask = isIncludeCurrentTask || (current_task == el.getUid());
                 }
             }
         }
@@ -154,17 +154,17 @@ public class ApiTasks {
 
                 /*
                 if (!jo.isNull(ApiDictionary.FO_API_FIELD_ASSIGNEDBY))
-                    el.put(FOTT_DBContract.DaoTasks.COLUMN_NAME_ASSIGNEDBY,jo.getString(ApiDictionary.FO_API_FIELD_ASSIGNEDBY));
+                    el.put(DBContract.DaoTasks.COLUMN_NAME_ASSIGNEDBY,jo.getString(ApiDictionary.FO_API_FIELD_ASSIGNEDBY));
                 if (!jo.isNull(ApiDictionary.FO_API_FIELD_ASSIGNEDTO))
-                    el.put(FOTT_DBContract.DaoTasks.COLUMN_NAME_ASSIGNEDTO,jo.getString(ApiDictionary.FO_API_FIELD_ASSIGNEDTO));
+                    el.put(DBContract.DaoTasks.COLUMN_NAME_ASSIGNEDTO,jo.getString(ApiDictionary.FO_API_FIELD_ASSIGNEDTO));
                 if (!jo.isNull(ApiDictionary.FO_API_FIELD_PERCENT))
-                    el.put(FOTT_DBContract.DaoTasks.COLUMN_NAME_PERCENT,jo.getInt(ApiDictionary.FO_API_FIELD_PERCENT));
+                    el.put(DBContract.DaoTasks.COLUMN_NAME_PERCENT,jo.getInt(ApiDictionary.FO_API_FIELD_PERCENT));
                 if (!jo.isNull(ApiDictionary.FO_API_FIELD_WORKEDTIME))
-                    el.put(FOTT_DBContract.DaoTasks.COLUMN_NAME_WORKEDTIME,jo.getLong(ApiDictionary.FO_API_FIELD_WORKEDTIME));
+                    el.put(DBContract.DaoTasks.COLUMN_NAME_WORKEDTIME,jo.getLong(ApiDictionary.FO_API_FIELD_WORKEDTIME));
                 if (!jo.isNull(ApiDictionary.FO_API_FIELD_PENDINGTIME))
-                    el.put(FOTT_DBContract.DaoTasks.COLUMN_NAME_PENDINGTIME,jo.getLong(ApiDictionary.FO_API_FIELD_PENDINGTIME));
+                    el.put(DBContract.DaoTasks.COLUMN_NAME_PENDINGTIME,jo.getLong(ApiDictionary.FO_API_FIELD_PENDINGTIME));
                 if (!jo.isNull(ApiDictionary.FO_API_FIELD_USETIMESLOTS))
-                    el.put(FOTT_DBContract.DaoTasks.COLUMN_NAME_USETIMESLOTS,(jo.getString(ApiDictionary.FO_API_FIELD_USETIMESLOTS) == ApiDictionary.FO_API_TRUE));
+                    el.put(DBContract.DaoTasks.COLUMN_NAME_USETIMESLOTS,(jo.getString(ApiDictionary.FO_API_FIELD_USETIMESLOTS) == ApiDictionary.FO_API_TRUE));
                 */
         }
         catch (Exception e) {
@@ -200,7 +200,7 @@ public class ApiTasks {
         long l;
         res[0] = ApiDictionary.FO_API_FIELD_ID;
         res[1] = "";
-        if (task.getId() > 0) res[1] = "" + task.getId();
+        if (task.getUid() > 0) res[1] = "" + task.getUid();
         res[2] = ApiDictionary.FO_API_FIELD_NAME;
         res[3] = task.getName();
         res[4] = ApiDictionary.FO_API_FIELD_DESC;
@@ -226,8 +226,8 @@ public class ApiTasks {
     public boolean delete(App app, Task task) {
         boolean res = false;
 
-            if (task.getId() > 0) {
-                JSONObject jo = app.getWebService().executeAPI(ApiDictionary.FO_METHOD_DELETE_OBJ, task.getId());
+            if (task.getUid() > 0) {
+                JSONObject jo = app.getWebService().executeAPI(ApiDictionary.FO_METHOD_DELETE_OBJ, task.getUid());
                 if (jo == null) {
                     res = false;
                 } else {

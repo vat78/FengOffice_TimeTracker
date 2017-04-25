@@ -52,7 +52,7 @@ public class TasksFragment extends Fragment {
 
 
     public void onItemClicked(Task task) {
-        MainApp.setCurTask(task.getId());
+        MainApp.setCurTask(task.getUid());
         mainActivity.setCurrentFragment(2);
     }
 
