@@ -34,7 +34,7 @@ public class Task extends Object {
     }
 
     public Date getDueDate(){
-        return duedate;
+        return duedate == null ? new Date(0) : duedate;
     }
 
     public void setDuedate(long duedate) {

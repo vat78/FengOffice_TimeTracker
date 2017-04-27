@@ -101,11 +101,11 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TasksViewHol
     }
 
     public void load(){
-        this.tasks = DaoTasks.load(app,"");
+        //this.tasks = DaoTasks.load(app,"");
     }
 
     public Task getTaskById(long id){
-        return DaoTasks.getTaskById(app, id);
+        return null; // DaoTasks.getTaskById(app, id);
     }
     
     public void onClickTask(Task selection){

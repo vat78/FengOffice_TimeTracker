@@ -144,7 +144,7 @@ public class MembersAdapter extends RecyclerView.Adapter <MembersAdapter.Members
     }
 
     public void load(){
-        members = DaoMembers.load(app);
+        //members = DaoMembers.load(app);
         rebuildFilteredList();
         notifyDataSetChanged();
     }
@@ -154,7 +154,7 @@ public class MembersAdapter extends RecyclerView.Adapter <MembersAdapter.Members
     }
 
     public Member getMemberById(long id){
-        return DaoMembers.getByUid(app, id);
+        return null;// DaoMembers.getByUid(app, id);
     }
 
     private void rebuildFilteredList(){

@@ -21,7 +21,7 @@ public class Timeslot extends Object {
     }
 
     public Date getStart() {
-        return start;
+        return start == null ? new Date(0) : start;
     }
 
     public long getDuration() {

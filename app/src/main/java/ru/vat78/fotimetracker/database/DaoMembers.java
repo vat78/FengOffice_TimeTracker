@@ -1,10 +1,11 @@
 package ru.vat78.fotimetracker.database;
 
-import android.content.ContentValues;
 import android.database.Cursor;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import android.provider.BaseColumns;
 import android.support.annotation.NonNull;
@@ -32,7 +33,7 @@ public class DaoMembers implements IDao<Member> {
     @Override
     public long save(@NonNull Member member) {
         database.beginTransaction();
-        ContentValues ts = convertForDB(member);
+        Map ts = convertForDB(member);
         long res = database.insertOrUpdate(TABLE_NAME, ts);
         if (res != 0 ) member.setId(res);
         database.endTransaction();
@@ -60,11 +61,12 @@ public class DaoMembers implements IDao<Member> {
                     getColumnForSelect(),
                     filter,
                     COLUMN_NAME_PATH);
-            memberCursor.moveToFirst();
-            if (!memberCursor.isAfterLast()) {
+
+            if (memberCursor.moveToFirst()) {
                 res.setId(memberCursor.getLong(0));
                 res.setUid(memberCursor.getLong(1));
                 res.setName(memberCursor.getString(2));
+                res.setPath(memberCursor.getString(3));
                 res.setColorIndex(memberCursor.getInt(5));
                 res.setTasksCnt(memberCursor.getInt(6));
             }
@@ -90,22 +92,21 @@ public class DaoMembers implements IDao<Member> {
                 null,
                 COLUMN_NAME_PATH + " ASC");
 
-        data.moveToFirst();
         Member any = null;
 
-        if (!data.isAfterLast()){
+        if (data.moveToFirst()){
             do {
                 long uid = data.getLong(1);
                 Member m = new Member(uid, data.getString(2));
                 m.setId(data.getLong(0));
                 m.setPath(data.getString(3));
                 m.setColorIndex(data.getInt(5));
-                m.setTasksCnt(data.getInt(6));
                 if (uid == -1) {
                     any = m;
                 } else {
-                    int curLevel = m.getLevel();
-                    if (curLevel == 1) taskCnt += data.getInt(6);
+                    int t = data.getInt(6);
+                    m.setTasksCnt(t);
+                    if (m.getLevel() == 1) taskCnt += t;
                     members.add(m);
                 }
             } while (data.moveToNext());
@@ -118,8 +119,8 @@ public class DaoMembers implements IDao<Member> {
         return members;
     }
 
-    private ContentValues convertForDB(Member member) {
-        ContentValues res = new ContentValues();
+    private Map<String, Object> convertForDB(Member member) {
+        Map<String, Object> res = new HashMap<>();
         res.put(BaseColumns._ID, member.getId());
         res.put(COLUMN_NAME_FO_ID, member.getUid());
         res.put(COLUMN_NAME_TITLE,member.getName());
@@ -138,7 +139,7 @@ public class DaoMembers implements IDao<Member> {
                 COLUMN_NAME_PATH,
                 COLUMN_NAME_LEVEL,
                 COLUMN_NAME_COLOR,
-                "(" + FOTT_DBMembers_Objects.getSQLObectsCnt(COLUMN_NAME_FO_ID) +
+                "(" + DBContract.MemberObjectsTable.SQL_QUERY_COUNT_OBJECTS + COLUMN_NAME_FO_ID +
                         ") AS TaskCnt"};
     }
 }

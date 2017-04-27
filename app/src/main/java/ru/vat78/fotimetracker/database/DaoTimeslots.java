@@ -1,19 +1,14 @@
 package ru.vat78.fotimetracker.database;
 
-import android.content.ContentValues;
 import android.database.Cursor;
 import android.provider.BaseColumns;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import android.support.annotation.NonNull;
 import ru.vat78.fotimetracker.App;
 import ru.vat78.fotimetracker.model.Timeslot;
-import ru.vat78.fotimetracker.views.ErrorsHandler;
 
-import static ru.vat78.fotimetracker.database.DBContract.TasksTable.TABLE_NAME;
 import static ru.vat78.fotimetracker.database.DBContract.TimeslotsTable.*;
 
 /**
@@ -36,7 +31,7 @@ public class DaoTimeslots implements IDao<Timeslot> {
     @Override
     public long save(@NonNull Timeslot entity) {
         database.beginTransaction();
-        ContentValues ts = convertForDB(entity);
+        Map ts = convertForDB(entity);
 
         if (entity.getUid() != 0) {
             Cursor cursor = database.query(TABLE_NAME, new String[]{BaseColumns._ID},
@@ -46,6 +41,7 @@ public class DaoTimeslots implements IDao<Timeslot> {
         long id = database.insertOrUpdate(TABLE_NAME, ts);
 
         if (id != 0) {
+            entity.setId(id);
             for (String member: entity.getMembersArray()) {
                 saveLinkWithMember(id, member);
             }
@@ -69,9 +65,11 @@ public class DaoTimeslots implements IDao<Timeslot> {
         Timeslot res = new Timeslot(0, "");
         if (uid > 0){
             database.beginTransaction();
-            String filter = " " + DBContract.COLUMN_NAME_FO_ID + " = " + uid;
+            String filter = DBContract.COLUMN_NAME_FO_ID + " = " + uid;
             Cursor tsCursor = database.query(TABLE_NAME,
-                    new String[]{DBContract.COLUMN_NAME_FO_ID,
+                    new String[]{
+                            BaseColumns._ID,
+                            DBContract.COLUMN_NAME_FO_ID,
                             DBContract.COLUMN_NAME_TITLE,
                             COLUMN_NAME_START,
                             COLUMN_NAME_DURATION,
@@ -82,17 +80,18 @@ public class DaoTimeslots implements IDao<Timeslot> {
                             DBContract.COLUMN_NAME_MEMBERS_IDS},
                     filter,
                     COLUMN_NAME_START);
-            tsCursor.moveToFirst();
-            if (!tsCursor.isAfterLast()){
-                res.setUid(tsCursor.getLong(0));
-                res.setName(tsCursor.getString(1));
-                res.setStart(tsCursor.getLong(2));
-                res.setDuration(tsCursor.getLong(3));
-                res.setChanged(tsCursor.getLong(4));
-                res.setAuthor(tsCursor.getString(5));
-                res.setTaskId(tsCursor.getLong(6));
-                res.setDesc(tsCursor.getString(7));
-                res.setMembersIDs(tsCursor.getString(8));
+
+            if (tsCursor.moveToFirst()) {
+                res.setId(tsCursor.getLong(0));
+                res.setUid(tsCursor.getLong(1));
+                res.setName(tsCursor.getString(2));
+                res.setStart(tsCursor.getLong(3));
+                res.setDuration(tsCursor.getLong(4));
+                res.setChanged(tsCursor.getLong(5));
+                res.setAuthor(tsCursor.getString(6));
+                res.setTaskId(tsCursor.getLong(7));
+                res.setDesc(tsCursor.getString(8));
+                res.setMembersIDs(tsCursor.getString(9));
             }
             database.endTransaction();
         }
@@ -117,7 +116,9 @@ public class DaoTimeslots implements IDao<Timeslot> {
         database.beginTransaction();
 
         Cursor tsCursor = database.query(TABLE_NAME,
-                new String[]{DBContract.COLUMN_NAME_FO_ID,
+                new String[]{
+                        BaseColumns._ID,
+                        DBContract.COLUMN_NAME_FO_ID,
                         DBContract.COLUMN_NAME_TITLE,
                         COLUMN_NAME_START,
                         COLUMN_NAME_DURATION,
@@ -132,24 +133,26 @@ public class DaoTimeslots implements IDao<Timeslot> {
         if (!tsCursor.isAfterLast()){
             do {
                 Timeslot el = new Timeslot(0, "");
-                el.setUid(tsCursor.getLong(0));
-                el.setName(tsCursor.getString(1));
-                el.setStart(tsCursor.getLong(2));
-                el.setDuration(tsCursor.getLong(3));
-                el.setChanged(tsCursor.getLong(4));
-                el.setAuthor(tsCursor.getString(5));
-                el.setTaskId(tsCursor.getLong(6));
-                el.setDesc(tsCursor.getString(7));
-                el.setMembersIDs(tsCursor.getString(8));
+                el.setId(tsCursor.getLong(0));
+                el.setUid(tsCursor.getLong(1));
+                el.setName(tsCursor.getString(2));
+                el.setStart(tsCursor.getLong(3));
+                el.setDuration(tsCursor.getLong(4));
+                el.setChanged(tsCursor.getLong(5));
+                el.setAuthor(tsCursor.getString(6));
+                el.setTaskId(tsCursor.getLong(7));
+                el.setDesc(tsCursor.getString(8));
+                el.setMembersIDs(tsCursor.getString(9));
 
                 timeslots.add(el);
             } while (tsCursor.moveToNext());
         }
+        database.endTransaction();
         return timeslots;
     }
 
-    private ContentValues convertForDB(Timeslot ts) {
-        ContentValues res = new ContentValues();
+    private Map<String, Object> convertForDB(Timeslot ts) {
+        Map<String, Object> res = new HashMap<>();
         res.put(DBContract.COLUMN_NAME_FO_ID, ts.getUid());
         res.put(DBContract.COLUMN_NAME_TITLE,ts.getName());
         res.put(DBContract.COLUMN_NAME_DESC,ts.getDesc());
@@ -167,10 +170,10 @@ public class DaoTimeslots implements IDao<Timeslot> {
     }
 
     private void saveLinkWithMember(long taskId, String memberUid) {
-        ContentValues data = new ContentValues();
+        Map<String, Object> data = new HashMap<>(3);
         data.put(DBContract.MemberObjectsTable.COLUMN_OBJECT_ID, taskId);
         data.put(DBContract.MemberObjectsTable.COLUMN_OBJECT_ID, memberUid);
         data.put(DBContract.MemberObjectsTable.COLUMN_OBJECT_TYPE, 2);
-        database.insertOrUpdate(TABLE_NAME, data);
+        database.insertOrUpdate(DBContract.MemberObjectsTable.TABLE_NAME, data);
     }
 }

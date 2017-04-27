@@ -96,7 +96,7 @@ public class TimeslotsAdapter extends RecyclerView.Adapter<TimeslotsAdapter.View
 
     public void load() {
 
-        this.timeslots = DaoTimeslots.load(app,"");
+        //this.timeslots = DaoTimeslots.load(app,"");
 
     }
 
@@ -109,7 +109,7 @@ public class TimeslotsAdapter extends RecyclerView.Adapter<TimeslotsAdapter.View
         ts.setTaskId(app.getCurTask());
         ts.setMembersIDs("" + app.getCurMember());
         ts.setChanged(System.currentTimeMillis());
-        DaoTimeslots.save(app,ts);
+        //DaoTimeslots.save(app,ts);
         return (ts.getUid() != 0);
     }
 

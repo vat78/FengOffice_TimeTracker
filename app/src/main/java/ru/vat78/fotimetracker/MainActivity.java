@@ -296,11 +296,11 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             if (tclose && status != t.getStatus()) {
                 t.setStatus(status);
                 t.setChanged(System.currentTimeMillis());
-                DaoTasks.save(MainApp,t);
+                //DaoTasks.save(MainApp,t);
             } else if (tmove && duedate != t.getDueDate().getTime()) {
                 t.setDuedate(duedate);
                 t.setChanged(System.currentTimeMillis());
-                DaoTasks.save(MainApp, t);
+                //DaoTasks.save(MainApp, t);
             }
         }
     }

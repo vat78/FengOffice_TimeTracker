@@ -1,7 +1,5 @@
 package ru.vat78.fotimetracker.model;
 
-import android.graphics.Color;
-
 /**
  * Created by vat on 27.11.2015.
  */
@@ -14,14 +12,9 @@ public class Member extends Object {
     private String path;
     private int tasksCnt;
 
-    private int memColors[] = {Color.GRAY,Color.argb(255,90,105,134),Color.argb(255,32,108,225),
-            Color.BLUE,Color.argb(255,82,41,163),Color.argb(255,133,79,97),Color.RED,
-            Color.argb(255,236,112,0),Color.argb(255,179,109,0),Color.argb(255,171,139,0),
-            Color.argb(255,99,99,48),Color.argb(255,100,153,44),Color.GREEN,Color.argb(255,177,184,200),
-            Color.argb(255,202,220,249),Color.argb(255,197,198,245),Color.argb(255,237,231,251),
-            Color.argb(255,253,242,248),Color.argb(255,245,198,198),Color.argb(255,255,246,237),
-            Color.argb(255,239,215,179),Color.argb(255,235,224,179),Color.argb(255,227,227,200),
-            Color.argb(255,224,236,210),Color.argb(255,203,223,210)};
+    private int memColors[] = {0xFF888888, 0xFF5A6986, 0xFF206CE1, 0xFF0000FF, 0xFF5229a3, 0xFF854f61, 0xFFFF0000,
+            0xFFec7000, 0xFFb36d00, 0xFFab8b00, 0xFF636330, 0xFF64992c, 0xFF00FF00, 0xFFb1b8c8, 0xFFcadcf9, 0xFFc5c6f5,
+            0xFFede7fb, 0xfffdf2f8, 0xfff5c6c6, 0xfffff6ed, 0xffefd7b3, 0xffebe0b3, 0xffe3e3c8, 0xffe0ecd2, 0xffcbdfd2};
 
     public Member(long memberUid, String memberName){
         super();
@@ -64,8 +57,8 @@ public class Member extends Object {
     }
 
     public void setPath(String path) {
-        this.path = path;
-        String[] s = path.split(MEMBER_SPLITTER);
+        this.path = path == null ? "" : path;
+        String[] s = this.path.split(MEMBER_SPLITTER);
         level = s.length;
     }
 

@@ -135,5 +135,12 @@ class DBContract {
                         COLUMN_MEMBER_ID + "));";
         static final String SQL_DELETE_ENTRIES =
                 DROP_TABLE + TABLE_NAME + ";";
+
+        static final String SQL_QUERY_COUNT_OBJECTS =
+                "SELECT COUNT(" +
+                        "o." + COLUMN_OBJECT_ID +
+                        ") FROM " + TABLE_NAME +
+                        " o WHERE o." + COLUMN_OBJECT_TYPE + " = 1 AND " +
+                        COLUMN_MEMBER_ID + " = ";
     }
 }

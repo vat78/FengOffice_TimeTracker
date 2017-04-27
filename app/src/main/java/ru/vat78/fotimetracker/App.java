@@ -194,7 +194,7 @@ public class App extends Application {
     }
 
     public boolean dataSynchronization() {
-
+    /*
         long stamp = System.currentTimeMillis();
         error.reset_error();
         try {
@@ -274,10 +274,13 @@ public class App extends Application {
         setLastSync(stamp);
         setSyncing(false);
         setNeedFullSync(false);
+
+        */
         return true;
     }
     
     public void redrawMainActivity() {
+        /*
         int shift = 0;
         if (curMember != 0)
             if (!DaoMembers.isExistInDB(this, curMember)) {
@@ -296,6 +299,7 @@ public class App extends Application {
             else
                 mainActivity.setCurrentFragment(shift - 1);
         }
+        */
     }
 
     private Member generateAnyMember() {

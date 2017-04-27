@@ -1,12 +1,9 @@
 package ru.vat78.fotimetracker.database;
 
-import android.content.ContentValues;
 import android.database.Cursor;
 import android.provider.BaseColumns;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import android.support.annotation.NonNull;
 import ru.vat78.fotimetracker.App;
@@ -34,7 +31,7 @@ public class DaoTasks implements IDao<Task> {
     @Override
     public long save(@NonNull Task task) {
         database.beginTransaction();
-        ContentValues data = convertForDb(task);
+        Map data = convertForDb(task);
 
         if (task.getUid() != 0 ) {
             Cursor cursor = database.query(TABLE_NAME, new String[]{BaseColumns._ID},
@@ -69,24 +66,24 @@ public class DaoTasks implements IDao<Task> {
         Task res = new Task(0,"");
         if (uid > 0){
             database.beginTransaction();
-            String filter = " " + DBContract.COLUMN_NAME_FO_ID + " = " + uid;
+            String filter = DBContract.COLUMN_NAME_FO_ID + " = " + uid;
             Cursor taskCursor = database.query(TABLE_NAME,
-                    new String[]{DBContract.COLUMN_NAME_FO_ID,
+                    new String[]{BaseColumns._ID,
+                            DBContract.COLUMN_NAME_FO_ID,
                             DBContract.COLUMN_NAME_TITLE,
                             COLUMN_NAME_DUEDATE,
                             DBContract.COLUMN_NAME_DESC,
-                            COLUMN_NAME_STATUS,
-                            BaseColumns._ID},
+                            COLUMN_NAME_STATUS},
                     filter,
                     COLUMN_NAME_DUEDATE);
-            taskCursor.moveToFirst();
-            if (!taskCursor.isAfterLast()){
-                res.setUid(taskCursor.getLong(0));
-                res.setName(taskCursor.getString(1));
-                res.setDuedate(taskCursor.getLong(2));
-                res.setDesc(taskCursor.getString(3));
-                res.setStatus(taskCursor.getInt(4));
-                res.setId(taskCursor.getLong(5));
+
+            if (taskCursor.moveToFirst()) {
+                res.setId(taskCursor.getLong(0));
+                res.setUid(taskCursor.getLong(1));
+                res.setName(taskCursor.getString(2));
+                res.setDuedate(taskCursor.getLong(3));
+                res.setDesc(taskCursor.getString(4));
+                res.setStatus(taskCursor.getInt(5));
             }
             database.endTransaction();
         }
@@ -120,16 +117,15 @@ public class DaoTasks implements IDao<Task> {
         database.beginTransaction();
         Cursor taskCursor = database.query(TABLE_NAME,
                 new String[]{
+                        BaseColumns._ID,
                         DBContract.COLUMN_NAME_FO_ID,
                         DBContract.COLUMN_NAME_TITLE,
                         COLUMN_NAME_DUEDATE,
-                        COLUMN_NAME_STATUS,
-                        BaseColumns._ID},
+                        COLUMN_NAME_STATUS},
                 conditions,
                 COLUMN_NAME_DUEDATE + " ASC");
 
-        taskCursor.moveToFirst();
-        if (!taskCursor.isAfterLast()) {
+        if (taskCursor.moveToFirst()) {
             do {
                 long uid = taskCursor.getLong(0);
                 String name = taskCursor.getString(1);
@@ -169,8 +165,8 @@ public class DaoTasks implements IDao<Task> {
     }
     */
 
-    private ContentValues convertForDb(Task task) {
-        ContentValues res = new ContentValues();
+    private Map<String, Object> convertForDb(Task task) {
+        Map<String, Object> res = new HashMap<>();
         res.put(BaseColumns._ID, task.getId());
         res.put(DBContract.COLUMN_NAME_FO_ID, task.getUid());
         res.put(DBContract.COLUMN_NAME_TITLE, task.getName());
@@ -184,10 +180,10 @@ public class DaoTasks implements IDao<Task> {
     }
 
     private void saveLinkWithMember(long taskId, String memberUid) {
-        ContentValues data = new ContentValues();
+        Map<String, Object> data = new HashMap<>(3);
         data.put(DBContract.MemberObjectsTable.COLUMN_OBJECT_ID, taskId);
         data.put(DBContract.MemberObjectsTable.COLUMN_OBJECT_ID, memberUid);
         data.put(DBContract.MemberObjectsTable.COLUMN_OBJECT_TYPE, 1);
-        database.insertOrUpdate(TABLE_NAME, data);
+        database.insertOrUpdate(DBContract.MemberObjectsTable.TABLE_NAME, data);
     }
 }

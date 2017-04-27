@@ -4,11 +4,13 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import android.os.Parcel;
 import ru.vat78.fotimetracker.App;
 import ru.vat78.fotimetracker.R;
 import ru.vat78.fotimetracker.views.ErrorsHandler;
 
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * Created by vat on 21.12.2015.
@@ -49,14 +51,14 @@ public class DB implements IDbConnect {
         database.endTransaction();
     }
 
-    public long insert(String table, ContentValues values){
-        long res = database.insert(table, null, values);
+    public long insert(String table, Map<String,Object> values){
+        long res = database.insert(table, null, convertValues(values));
         if (res == -1) app.getError().error_handler(ErrorsHandler.ERROR_LOG_MESSAGE, CLASS_NAME, app.getString(R.string.db_insert_empty_row));
         return res;
     }
 
-    public long insertOrUpdate(String table, ContentValues values){
-        long res = database.insertWithOnConflict(table, null, values, database.CONFLICT_REPLACE);
+    public long insertOrUpdate(String table, Map<String,Object> values){
+        long res = database.insertWithOnConflict(table, null, convertValues(values), database.CONFLICT_REPLACE);
         if (res == -1) app.getError().error_handler(ErrorsHandler.ERROR_LOG_MESSAGE, CLASS_NAME, app.getString(R.string.db_insert_empty_row));
         return res;
     }
@@ -65,8 +67,8 @@ public class DB implements IDbConnect {
         return database.query(table,columns,filter,null,null,null,order);
     }
 
-    public int update(String table, ContentValues values, String whereClause){
-        return database.update(table, values, whereClause, null);
+    public int update(String table, Map<String,Object> values, String whereClause){
+        return database.update(table, convertValues(values), whereClause, null);
     }
 
 
@@ -77,5 +79,14 @@ public class DB implements IDbConnect {
 
     public void close() throws IOException {
         database.close();
+    }
+
+    private ContentValues convertValues(Map<String, Object> values) {
+        if (values == null) return null;
+        Parcel tmp = Parcel.obtain();
+        tmp.writeMap(values);
+        tmp.setDataPosition(0);
+        ContentValues res = ContentValues.CREATOR.createFromParcel(tmp);
+        return res;
     }
 }
