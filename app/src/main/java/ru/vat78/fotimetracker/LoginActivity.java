@@ -26,7 +26,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import ru.vat78.fotimetracker.fengoffice.IFengOfficeService;
-import ru.vat78.fotimetracker.views.ErrorsHandler;
+import ru.vat78.fotimetracker.model.ErrorsType;
 
 //import static android.Manifest.permission.READ_CONTACTS;
 
@@ -181,7 +181,7 @@ public class LoginActivity extends AppCompatActivity {
         if (!cancel) {
             cancel = !isNetworkAvailable();
             if (cancel) {
-                app.getError().error_handler(ErrorsHandler.ERROR_SHOW_MESSAGE,CLASS_NAME,getString(R.string.nonetwork_message));
+                app.getError().error(CLASS_NAME, ErrorsType.NO_INTERNET_CONNECTION);
                 focusView = mURLView;
             }
         }

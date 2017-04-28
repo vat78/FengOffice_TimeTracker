@@ -74,12 +74,13 @@ public class ApiConnector {
         requestParams.setProperty(ApiDictionary.FO_API_PASSWORD,this.password);
 
         // Download JSON data from URL
-        JSONObject jo;
-        try {
-            jo = jsonClient.getJsonObject(request, requestParams, this.useUntrustCA);
-            this.securityToken = jo.getString(ApiDictionary.FO_API_FIELD_TOKEN);
-        } catch (JSONException e) {
-            errorsHandler.error(CLASS_NAME, ErrorsType.TEST_CONNECTION_ERROR, e);
+        JSONObject jo = jsonClient.getJsonObject(request, requestParams, this.useUntrustCA);
+        if (!errorsHandler.hasStopError()) {
+            try {
+                this.securityToken = jo.getString(ApiDictionary.FO_API_FIELD_TOKEN);
+            } catch (JSONException e) {
+                errorsHandler.error(CLASS_NAME, ErrorsType.TEST_CREDENTIAL_ERROR, e);
+            }
         }
         return (!this.securityToken.isEmpty());
     }

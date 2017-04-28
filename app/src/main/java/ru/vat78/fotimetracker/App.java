@@ -14,7 +14,6 @@ import ru.vat78.fotimetracker.database.*;
 import ru.vat78.fotimetracker.fengoffice.IFengOfficeService;
 import ru.vat78.fotimetracker.fengoffice.vatApi.*;
 import ru.vat78.fotimetracker.model.Member;
-import ru.vat78.fotimetracker.views.ErrorsHandler;
 
 
 /**
@@ -45,7 +44,6 @@ public class App extends Application {
 
     private Preferences preferences;
 
-    private ErrorsHandler error;
     private IErrorsHandler errorsHandler;
 
     private AtomicBoolean syncing;
@@ -55,7 +53,7 @@ public class App extends Application {
         super.onCreate();
 
         //Create error handler
-        error = new ErrorsHandler(this);
+        errorsHandler = new ErrorsHandlerImpl(this);
 
         //Create web-service connection
         webService = new VatApi(errorsHandler);
@@ -122,8 +120,8 @@ public class App extends Application {
 
     public boolean isSyncing() {return syncing.get();}
 
-    public ErrorsHandler getError() {
-        return error;
+    public IErrorsHandler getError() {
+        return errorsHandler;
     }
 
     public SimpleDateFormat getDateFormat() {

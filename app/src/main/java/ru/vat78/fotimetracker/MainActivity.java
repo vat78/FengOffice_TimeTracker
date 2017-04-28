@@ -30,10 +30,8 @@ import java.util.TimerTask;
 import ru.vat78.fotimetracker.adapters.MembersAdapter;
 import ru.vat78.fotimetracker.adapters.TasksAdapter;
 import ru.vat78.fotimetracker.adapters.TimeslotsAdapter;
-import ru.vat78.fotimetracker.database.DaoTasks;
 import ru.vat78.fotimetracker.model.Member;
 import ru.vat78.fotimetracker.model.Task;
-import ru.vat78.fotimetracker.views.ErrorsHandler;
 import ru.vat78.fotimetracker.views.MembersFragment;
 import ru.vat78.fotimetracker.views.TasksFragment;
 import ru.vat78.fotimetracker.views.TimeslotsFragment;
@@ -277,7 +275,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 if (timeslots.saveTimeslot(id,d,l,s)){
                     setSyncTimer();
                 } else {
-                    MainApp.getError().error_handler(ErrorsHandler.ERROR_SHOW_MESSAGE,"",getString(R.string.error_save_record));
+                    //MainApp.getError().error("","",getString(R.string.error_save_record));
                 }
 
             }
