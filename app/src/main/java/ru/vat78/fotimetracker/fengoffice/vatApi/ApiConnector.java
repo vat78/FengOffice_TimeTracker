@@ -2,14 +2,13 @@ package ru.vat78.fotimetracker.fengoffice.vatApi;
 
 
 import android.text.TextUtils;
-import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import ru.vat78.fotimetracker.App;
+import ru.vat78.fotimetracker.IErrorsHandler;
 import ru.vat78.fotimetracker.fengoffice.HttpJsonClient;
-import ru.vat78.fotimetracker.fengoffice.HttpJsonError;
+import ru.vat78.fotimetracker.model.ErrorsType;
 
 import java.util.Properties;
 
@@ -17,121 +16,100 @@ import java.util.Properties;
  * Created by vat on 17.11.2015.
  *
  * Use for interact with FengOffice web-application
- * TODO error handler
  */
 
 public class ApiConnector {
+    private static final String CLASS_NAME = "ApiConnector";
 
-    private App app;
-    private int ErrorCode=0;
-    private String ErrorMsg="";
+    private IErrorsHandler errorsHandler;
     private HttpJsonClient jsonClient;
 
-    private String FO_User;
-    private static String FO_Pwd;
-    private static String FO_URL;
-    private String FO_Token;
+    private String login;
+    private String password;
+    private String url;
+    private String securityToken;
 
-    public ApiConnector(App application){
-        app = application;
-        FO_Token = "";
-        FO_Pwd = "";
-        jsonClient = new HttpJsonClient();
+    private boolean useUntrustCA = false;
+
+    public ApiConnector(IErrorsHandler errorsHandler){
+        this.errorsHandler = errorsHandler;
+        securityToken = "";
+        password = "";
+        jsonClient = new HttpJsonClient(errorsHandler);
     }
 
-    private boolean UseUntrustCA = false;
+    public boolean setUrl(String url) {
+        url = url.trim();
+        if (url.length() <3){ return false;}
 
-    public boolean setFO_Url(String foUrl) {
-        foUrl = foUrl.trim();
-        if (foUrl.length() <3){ return false;}
-
-        if (!foUrl.startsWith("http://") && !foUrl.startsWith("https://")) {
-            foUrl = "https://" + foUrl;
+        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+            url = "https://" + url;
         }
 
-        if (!foUrl.endsWith("/")) {foUrl += "/";}
-        this.FO_URL = foUrl;
+        if (!url.endsWith("/")) {url += "/";}
+        this.url = url;
         return true;
     }
 
-    public String getFO_Url() {
-        return FO_URL;
+    public void setLogin(String login) {
+        this.login = login;
     }
 
-    public boolean setFO_User(String FO_User) {
-        this.FO_User = FO_User;
-        return true;
+    public void setPassword(String Password) {
+        this.password = Password;
     }
 
-    public String getFO_User() {
-        return this.FO_User;
-    }
-
-    public boolean setFO_Pwd(String FO_Pwd) {
-        this.FO_Pwd = FO_Pwd;
-        return true;
-    }
-
-    public String getFO_Pwd() {
-        return this.FO_Pwd;
+    public String getPassword() {
+        return this.password;
     }
 
     public void canUseUntrustCert(boolean flag) {
-        this.UseUntrustCA = flag;
-    }
-
-    public String getError() {
-        return this.ErrorMsg;
-    }
-
-    public void setError(String error) {
-        this.ErrorMsg = error;
+        this.useUntrustCA = flag;
     }
 
     //This function try to login FengOffice web-application
     public boolean testConnection() {
-        if (TextUtils.isEmpty(this.FO_URL) || TextUtils.isEmpty(this.FO_User)) {
+
+        if (TextUtils.isEmpty(this.url) || TextUtils.isEmpty(this.login)) {
+            errorsHandler.error(CLASS_NAME, ErrorsType.WRONG_URL);
             return false;
         }
-
-        this.FO_Token = "";
-        resetError();
+        this.securityToken = "";
 
         //Try to login
-        String request = this.FO_URL + ApiDictionary.FO_API_CONNECT;
+        String request = this.url + ApiDictionary.FO_API_CONNECT;
         Properties requestParams = new Properties();
-        requestParams.setProperty(ApiDictionary.FO_API_LOGIN,this.FO_User);
-        requestParams.setProperty(ApiDictionary.FO_API_PASSWORD,this.FO_Pwd);
+        requestParams.setProperty(ApiDictionary.FO_API_LOGIN,this.login);
+        requestParams.setProperty(ApiDictionary.FO_API_PASSWORD,this.password);
 
         // Download JSON data from URL
-        JSONObject jo = null;
+        JSONObject jo;
         try {
-            jo = jsonClient.getJsonObject(request, requestParams, this.UseUntrustCA);
-            this.FO_Token = jo.getString(ApiDictionary.FO_API_FIELD_TOKEN);
-        } catch (HttpJsonError | JSONException e) {
-            this.ErrorMsg = e.getMessage();
+            jo = jsonClient.getJsonObject(request, requestParams, this.useUntrustCA);
+            this.securityToken = jo.getString(ApiDictionary.FO_API_FIELD_TOKEN);
+        } catch (JSONException e) {
+            errorsHandler.error(CLASS_NAME, ErrorsType.TEST_CONNECTION_ERROR, e);
         }
-        return (!this.FO_Token.isEmpty());
+        return (!this.securityToken.isEmpty());
     }
 
     //Checks plugin status
     public boolean checkPlugin(String plugin_name){
 
-        if (this.FO_Token.isEmpty() || plugin_name.isEmpty()) {return false;}
+        if (this.securityToken.isEmpty() || plugin_name.isEmpty()) {return false;}
         Integer res = 0;
-        resetError();
 
-        String request = this.FO_URL + ApiDictionary.FO_API_CHECK_PLUGIN;
+        String request = this.url + ApiDictionary.FO_API_CHECK_PLUGIN;
         Properties requestParams = new Properties();
         requestParams.setProperty(ApiDictionary.FO_API_PLUGIN,plugin_name);
-        requestParams.setProperty(ApiDictionary.FO_API_TOKEN,FO_Token);
+        requestParams.setProperty(ApiDictionary.FO_API_TOKEN, securityToken);
 
-        JSONObject jo = null;
+        JSONObject jo;
         try {
-            jo = jsonClient.getJsonObject(request, requestParams, this.UseUntrustCA);
+            jo = jsonClient.getJsonObject(request, requestParams, this.useUntrustCA);
             res = jo.getInt(ApiDictionary.FO_API_FIELD_PLUGIN_STATE);
-        } catch (HttpJsonError | JSONException e) {
-            this.ErrorMsg = e.getMessage();
+        } catch (JSONException e) {
+            errorsHandler.error(CLASS_NAME, ErrorsType.JSON_PARSING_ERROR, e);
         }
         return (res > 0);
     }
@@ -140,40 +118,28 @@ public class ApiConnector {
     //Execute API operation without arguments
     public JSONObject executeAPI(String method, String service){
         if (method.isEmpty()) {return null;}
-        if (this.FO_Token.isEmpty())
+        if (this.securityToken.isEmpty())
             if (!testConnection()) {return null;}
 
-        resetError();
         if (!checkPlugin(ApiDictionary.FO_PLUGIN_NAME)) {return null;}
-        resetError();
-        String request = this.FO_URL + ApiDictionary.FO_VAPI_REQUEST;
+
+        String request = this.url + ApiDictionary.FO_VAPI_REQUEST;
         Properties requestParams = new Properties();
-        requestParams.setProperty(ApiDictionary.FO_API_TOKEN,FO_Token);
+        requestParams.setProperty(ApiDictionary.FO_API_TOKEN, securityToken);
         requestParams.setProperty(ApiDictionary.FO_API_METHOD,method);
         requestParams.setProperty(ApiDictionary.FO_API_SERVICE,service);
 
-        JSONObject jo = null;
-        try {
-            jo = jsonClient.getJsonObject(request, requestParams, this.UseUntrustCA);
-        } catch (HttpJsonError e) {
-            this.ErrorMsg = e.getMessage();
-        }
-
-        return jo;
+        return jsonClient.getJsonObject(request, requestParams, this.useUntrustCA);
     }
 
     //Execute API operation with arguments
     public JSONObject executeAPI(String method, String service, String args[]){
         if (method.isEmpty()) {return null;}
-        if (this.FO_Token.isEmpty())
+        if (this.securityToken.isEmpty())
             if (!testConnection()) {return null;}
 
-        resetError();
-
-        JSONObject jo = null;
-
         if (!checkPlugin(ApiDictionary.FO_PLUGIN_NAME)) {return null;}
-        resetError();
+
         String argStr = "{}";
         if (args.length > 0){
             JSONObject jsargs = new JSONObject();
@@ -185,86 +151,54 @@ public class ApiConnector {
                 argStr = argStr.replaceAll("\"%5b","%5b");
                 argStr = argStr.replaceAll("%5d\"","%5d");
             }
-            catch (Exception e) {
-                Log.e("log_tag", "Error parsing data " + e.toString());
+            catch (JSONException e) {
+                errorsHandler.error(CLASS_NAME, ErrorsType.JSON_PARSING_ERROR, e);
             }
         }
-        String request = this.FO_URL + ApiDictionary.FO_VAPI_REQUEST;
+        String request = this.url + ApiDictionary.FO_VAPI_REQUEST;
         Properties requestParams = new Properties();
-        requestParams.setProperty(ApiDictionary.FO_API_TOKEN,FO_Token);
+        requestParams.setProperty(ApiDictionary.FO_API_TOKEN, securityToken);
         requestParams.setProperty(ApiDictionary.FO_API_METHOD,method);
         requestParams.setProperty(ApiDictionary.FO_API_SERVICE,service);
         requestParams.setProperty(ApiDictionary.FO_API_ARGS,argStr);
 
-        try{
-            jo = jsonClient.getJsonObject(request, requestParams, this.UseUntrustCA);
-        } catch (HttpJsonError e) {
-            this.ErrorMsg = e.getMessage();
-        }
+        return jsonClient.getJsonObject(request, requestParams, this.useUntrustCA);
 
-        return jo;
     }
 
     //Execute API operation for delete object and so on
     public JSONObject executeAPI(String method, long id) {
         if (method.isEmpty()) {return null;}
-        if (this.FO_Token.isEmpty())
+        if (this.securityToken.isEmpty())
             if (!testConnection()) {return null;}
 
-        resetError();
-
-        JSONObject jo = null;
-
         if (!checkPlugin(ApiDictionary.FO_PLUGIN_NAME)) {return null;}
-        resetError();
 
-        String request = this.FO_URL + ApiDictionary.FO_VAPI_REQUEST_BY_ID;
+        String request = this.url + ApiDictionary.FO_VAPI_REQUEST_BY_ID;
         Properties requestParams = new Properties();
-        requestParams.setProperty(ApiDictionary.FO_API_TOKEN,FO_Token);
+        requestParams.setProperty(ApiDictionary.FO_API_TOKEN, securityToken);
         requestParams.setProperty(ApiDictionary.FO_API_METHOD,method);
         requestParams.setProperty(ApiDictionary.FO_API_OBJECT_ID,"" + id);
         requestParams.setProperty(ApiDictionary.FO_API_ACTION,"" + 0);
 
-        try {
-            jo = jsonClient.getJsonObject(request, requestParams, this.UseUntrustCA);
-        } catch (HttpJsonError e) {
-            this.ErrorMsg = e.getMessage();
-        }
-
-        return jo;
+        return jsonClient.getJsonObject(request, requestParams, this.useUntrustCA);
     }
     
     //Execute API operation for complet task and so on
     public JSONObject executeAPI(String method, long id, String action) {
         if (method.isEmpty()) {return null;}
-        if (this.FO_Token.isEmpty())
+        if (this.securityToken.isEmpty())
             if (!testConnection()) {return null;}
 
-        resetError();
-
-        JSONObject jo =null;
-
         if (!checkPlugin(ApiDictionary.FO_PLUGIN_NAME)) {return null;}
-        resetError();
 
-        String request = this.FO_URL + ApiDictionary.FO_VAPI_REQUEST_BY_ID;
+        String request = this.url + ApiDictionary.FO_VAPI_REQUEST_BY_ID;
         Properties requestParams = new Properties();
-        requestParams.setProperty(ApiDictionary.FO_API_TOKEN,FO_Token);
+        requestParams.setProperty(ApiDictionary.FO_API_TOKEN, securityToken);
         requestParams.setProperty(ApiDictionary.FO_API_METHOD,method);
         requestParams.setProperty(ApiDictionary.FO_API_OBJECT_ID,"" + id);
         requestParams.setProperty(ApiDictionary.FO_API_ACTION,action);
 
-        try {
-            jo = jsonClient.getJsonObject(request, requestParams, this.UseUntrustCA);
-        } catch (HttpJsonError e) {
-            this.ErrorMsg = e.getMessage();
-        }
-
-        return jo;
-    }
-
-    private void resetError(){
-        this.ErrorCode = 0;
-        this.ErrorMsg = "";
+        return jsonClient.getJsonObject(request, requestParams, this.useUntrustCA);
     }
 }

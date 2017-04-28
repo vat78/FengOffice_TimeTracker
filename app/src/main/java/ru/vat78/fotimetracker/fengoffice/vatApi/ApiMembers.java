@@ -1,13 +1,14 @@
 package ru.vat78.fotimetracker.fengoffice.vatApi;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 
-import ru.vat78.fotimetracker.App;
+import ru.vat78.fotimetracker.IErrorsHandler;
+import ru.vat78.fotimetracker.model.ErrorsType;
 import ru.vat78.fotimetracker.model.Member;
-import ru.vat78.fotimetracker.views.ErrorsHandler;
 
 /**
  * Created by vat on 27.11.2015.
@@ -15,15 +16,20 @@ import ru.vat78.fotimetracker.views.ErrorsHandler;
 public class ApiMembers {
     private static final String CLASS_NAME = "ApiMembers";
 
-    public ArrayList<Member> load(App app){
+    private ApiConnector connector;
+    private IErrorsHandler errorsHandler;
 
-        JSONObject jo = app.getWebService().executeAPI(ApiDictionary.FO_METHOD_MEMBERS, ApiDictionary.FO_MEMBERS_WORKSPACE);
-        if (!app.getWebService().getError().isEmpty())
-            app.getError().error_handler(ErrorsHandler.ERROR_SAVE_ERROR, CLASS_NAME, app.getWebService().getError());
-        return convertResults(app,jo);
+    public ApiMembers(ApiConnector connector, IErrorsHandler errorsHandler) {
+        this.connector = connector;
+        this.errorsHandler = errorsHandler;
     }
 
-    private ArrayList<Member> convertResults(App app, JSONObject data){
+    public ArrayList<Member> load(){
+        JSONObject jo = connector.executeAPI(ApiDictionary.FO_METHOD_MEMBERS, ApiDictionary.FO_MEMBERS_WORKSPACE);
+        return convertResults(jo);
+    }
+
+    private ArrayList<Member> convertResults(JSONObject data){
 
         if (data == null) {return null;}
         JSONArray list = null;
@@ -31,8 +37,8 @@ public class ApiMembers {
         ArrayList<Member> res = new ArrayList<>();
         try {
             list = data.getJSONArray(ApiDictionary.FO_API_MAIN_OBJ);
-        } catch (Exception e) {
-            app.getError().error_handler(ErrorsHandler.ERROR_SAVE_ERROR, CLASS_NAME, e.getMessage());
+        } catch (JSONException e) {
+            errorsHandler.error(CLASS_NAME, ErrorsType.JSON_PARSING_ERROR, e);
         }
 
         if (list == null) {return null;}
@@ -65,8 +71,8 @@ public class ApiMembers {
                     el.setColorIndex(jo.getInt(ApiDictionary.FO_API_FIELD_COLOR));
                 }
             }
-            catch (Exception e) {
-                app.getError().error_handler(ErrorsHandler.ERROR_LOG_MESSAGE,CLASS_NAME, e.getMessage());
+            catch (JSONException e) {
+                errorsHandler.error(CLASS_NAME, ErrorsType.JSON_PARSING_ERROR, e);
             }
             finally {
                 if (el != null)

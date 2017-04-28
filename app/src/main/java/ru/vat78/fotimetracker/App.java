@@ -7,7 +7,6 @@ import android.preference.PreferenceManager;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -15,8 +14,6 @@ import ru.vat78.fotimetracker.database.*;
 import ru.vat78.fotimetracker.fengoffice.FengOfficeApi;
 import ru.vat78.fotimetracker.fengoffice.vatApi.*;
 import ru.vat78.fotimetracker.model.Member;
-import ru.vat78.fotimetracker.model.Task;
-import ru.vat78.fotimetracker.model.Timeslot;
 import ru.vat78.fotimetracker.views.ErrorsHandler;
 
 
@@ -58,9 +55,12 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
 
+        //Create error handler
+        error = new ErrorsHandler(this);
+
         //Create web-service connection
-        webService = new ApiConnector(this);
-        foApi = new VatApi(this);
+        webService = new ApiConnector(errorsHandler);
+        foApi = new VatApi(webService, errorsHandler);
 
         //Application preferences
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
@@ -71,9 +71,6 @@ public class App extends Application {
         database = new DBService(this, errorsHandler);
         if (db_version != database.databaseVersion()) needFullSync = true;
         preferences.set(getString(R.string.pref_db_version), database.databaseVersion());
-
-        //Create error handler
-        error = new ErrorsHandler(this);
 
         load_preferences();
     }
@@ -87,11 +84,11 @@ public class App extends Application {
         setDateTimeFormat();
 
         String s = preferences.getString(getString(R.string.pref_sync_url), "");
-        if (!s.isEmpty()) webService.setFO_Url(s);
+        if (!s.isEmpty()) webService.setUrl(s);
         s = preferences.getString(getString(R.string.pref_sync_login), "");
-        if (!s.isEmpty()) webService.setFO_User(s);
+        if (!s.isEmpty()) webService.setLogin(s);
         s = preferences.getString(getString(R.string.pref_sync_password), "");
-        if (!s.isEmpty()) webService.setFO_Pwd(s);
+        if (!s.isEmpty()) webService.setPassword(s);
         webService.canUseUntrustCert(preferences.getBoolean(getString(R.string.pref_sync_certs),false));
     }
     

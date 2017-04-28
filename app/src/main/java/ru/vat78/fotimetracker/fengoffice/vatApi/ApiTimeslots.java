@@ -1,14 +1,15 @@
 package ru.vat78.fotimetracker.fengoffice.vatApi;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Date;
 
-import ru.vat78.fotimetracker.App;
+import ru.vat78.fotimetracker.IErrorsHandler;
+import ru.vat78.fotimetracker.model.ErrorsType;
 import ru.vat78.fotimetracker.model.Timeslot;
-import ru.vat78.fotimetracker.views.ErrorsHandler;
 
 /**
  * Created by vat on 04.12.2015.
@@ -16,32 +17,39 @@ import ru.vat78.fotimetracker.views.ErrorsHandler;
 public class ApiTimeslots {
     private static final String CLASS_NAME = "ApiTimeslots";
 
-    public ArrayList<Timeslot> load(App app){
-        JSONObject jo = app.getWebService().executeAPI(ApiDictionary.FO_METHOD_LISTING, ApiDictionary.FO_SERVICE_TIMESLOTS);
-        return convertResults(app, jo);
+    private ApiConnector connector;
+    private IErrorsHandler errorsHandler;
+
+    public ApiTimeslots(ApiConnector connector, IErrorsHandler errorsHandler) {
+        this.connector = connector;
+        this.errorsHandler = errorsHandler;
     }
 
-    public ArrayList<Timeslot> load(App app, Date timestamp){
+    public ArrayList<Timeslot> load(){
+        JSONObject jo = connector.executeAPI(ApiDictionary.FO_METHOD_LISTING, ApiDictionary.FO_SERVICE_TIMESLOTS);
+        return convertResults(jo);
+    }
+
+    public ArrayList<Timeslot> load(Date timestamp){
         String[] args = new String[2];
         args[0] = ApiDictionary.FO_API_ARG_LASTUPDATE;
         long l = (long) timestamp.getTime() / ApiDictionary.FO_API_DATE_CONVERTOR;
         args[1] = "" + l;
-        JSONObject jo = app.getWebService().executeAPI(ApiDictionary.FO_METHOD_LISTING, ApiDictionary.FO_SERVICE_TIMESLOTS, args);
-        if (!app.getWebService().getError().isEmpty())
-            app.getError().error_handler(ErrorsHandler.ERROR_SAVE_ERROR, CLASS_NAME, app.getWebService().getError());
-        return convertResults(app,jo);
+        JSONObject jo = connector.executeAPI(ApiDictionary.FO_METHOD_LISTING, ApiDictionary.FO_SERVICE_TIMESLOTS, args);
+        return convertResults(jo);
     }
 
-    public long save(App app, Timeslot timeslot) {
+    public long save(Timeslot timeslot) {
         long res = 0;
         if (timeslot == null) return res;
 
         String[] args = convertTSForAPI(timeslot);
-        JSONObject jo = app.getWebService().executeAPI(ApiDictionary.FO_METHOD_SAVE_OBJ, ApiDictionary.FO_SERVICE_TIMESLOTS, args);
+        JSONObject jo = connector.executeAPI(ApiDictionary.FO_METHOD_SAVE_OBJ, ApiDictionary.FO_SERVICE_TIMESLOTS, args);
         if (jo != null) {
                 try {
                     res = jo.getLong(ApiDictionary.FO_API_FIELD_ID);
-                } catch (Exception e){
+                } catch (JSONException e){
+                    errorsHandler.error(CLASS_NAME, ErrorsType.JSON_PARSING_ERROR, e);
                 }
         }
         return res;
@@ -73,7 +81,7 @@ public class ApiTimeslots {
         return args;
     }
 
-    private ArrayList<Timeslot> convertResults(App app, JSONObject data){
+    private ArrayList<Timeslot> convertResults(JSONObject data){
 
         if (data == null) {return null;}
         JSONArray list = null;
@@ -82,8 +90,8 @@ public class ApiTimeslots {
         ArrayList<Timeslot> res = new ArrayList<>();
         try {
             list = data.getJSONArray(ApiDictionary.FO_API_MAIN_OBJ);
-        } catch (Exception e) {
-            app.getError().error_handler(ErrorsHandler.ERROR_SAVE_ERROR,CLASS_NAME,e.getMessage());
+        } catch (JSONException e) {
+            errorsHandler.error(CLASS_NAME, ErrorsType.JSON_PARSING_ERROR, e);
         }
         if (list == null) {return null;}
 
@@ -147,8 +155,8 @@ public class ApiTimeslots {
                 }
 
             }
-            catch (Exception e) {
-                app.getError().error_handler(ErrorsHandler.ERROR_LOG_MESSAGE,CLASS_NAME, e.getMessage());
+            catch (JSONException e) {
+                errorsHandler.error(CLASS_NAME, ErrorsType.JSON_PARSING_ERROR, e);
             }
             finally {
                 if (el != null)
@@ -159,17 +167,17 @@ public class ApiTimeslots {
         return res;
     }
 
-    public boolean delete(App app, Timeslot timeslot) {
+    public boolean delete(Timeslot timeslot) {
         boolean res = false;
 
         if (timeslot.getUid() > 0) {
-            JSONObject jo = app.getWebService().executeAPI(ApiDictionary.FO_METHOD_DELETE_OBJ, timeslot.getUid());
+            JSONObject jo = connector.executeAPI(ApiDictionary.FO_METHOD_DELETE_OBJ, timeslot.getUid());
             try {
                 res = (!jo.getString(ApiDictionary.FO_API_FIELD_RESULT).equalsIgnoreCase(ApiDictionary.FO_API_TRUE));
-            } catch (Exception e) {
+            } catch (JSONException e) {
+                errorsHandler.error(CLASS_NAME, ErrorsType.JSON_PARSING_ERROR, e);
             }
         }
-
         return res;
     }
 }

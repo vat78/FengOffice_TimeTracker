@@ -1,6 +1,7 @@
 package ru.vat78.fotimetracker.fengoffice.vatApi;
 
 import ru.vat78.fotimetracker.App;
+import ru.vat78.fotimetracker.IErrorsHandler;
 import ru.vat78.fotimetracker.fengoffice.FengOfficeApi;
 import ru.vat78.fotimetracker.model.Member;
 import ru.vat78.fotimetracker.model.Task;
@@ -18,14 +19,16 @@ public class VatApi implements FengOfficeApi {
     private final ApiTasks tasks;
     private final ApiTimeslots timeslots;
 
-    private final App application;
+    private ApiConnector connector;
+    private IErrorsHandler errorsHandler;
 
-    public VatApi(App app) {
-        this.application = app;
+    public VatApi(ApiConnector connector, IErrorsHandler errorsHandler) {
+        this.connector = connector;
+        this.errorsHandler = errorsHandler;
 
-        members = new ApiMembers();
-        tasks = new ApiTasks();
-        timeslots = new ApiTimeslots();
+        members = new ApiMembers(connector, errorsHandler);
+        tasks = new ApiTasks(connector, errorsHandler);
+        timeslots = new ApiTimeslots(connector, errorsHandler);
     }
 
     @Override
@@ -35,51 +38,61 @@ public class VatApi implements FengOfficeApi {
 
     @Override
     public boolean checkPlugin(String plugin_name) {
-        return application.getWebService().checkPlugin(plugin_name);
+        errorsHandler.resetError();
+        return connector.checkPlugin(plugin_name);
     }
 
     @Override
     public List<Member> loadMembers() {
-        return members.load(application);
+        errorsHandler.resetError();
+        return members.load();
     }
 
     @Override
     public List<Task> loadTasks() {
-        return tasks.load(application);
+        errorsHandler.resetError();
+        return tasks.load();
     }
 
     @Override
     public List<Task> loadTasks(Date timestamp) {
-        return tasks.load(application, timestamp);
+        errorsHandler.resetError();
+        return tasks.load(timestamp);
     }
 
     @Override
     public long saveTask(Task task) {
-        return tasks.save(application, task);
+        errorsHandler.resetError();
+        return tasks.save(task);
     }
 
     @Override
     public boolean deleteTask(Task task) {
-        return tasks.delete(application, task);
+        errorsHandler.resetError();
+        return tasks.delete(task);
     }
 
     @Override
     public List<Timeslot> loadTimeslots() {
-        return timeslots.load(application);
+        errorsHandler.resetError();
+        return timeslots.load();
     }
 
     @Override
     public List<Timeslot> loadTimeslots(Date timestamp) {
-        return timeslots.load(application, timestamp);
+        errorsHandler.resetError();
+        return timeslots.load(timestamp);
     }
 
     @Override
     public long saveTimeslot(Timeslot ts) {
-        return timeslots.save(application, ts);
+        errorsHandler.resetError();
+        return timeslots.save(ts);
     }
 
     @Override
     public boolean deleteTimeslot(Timeslot ts) {
-        return timeslots.delete(application, ts);
+        errorsHandler.resetError();
+        return timeslots.delete(ts);
     }
 }

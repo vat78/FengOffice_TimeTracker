@@ -1,47 +1,53 @@
 package ru.vat78.fotimetracker.fengoffice;
 
-import android.util.Log;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import ru.vat78.fotimetracker.IErrorsHandler;
 import ru.vat78.fotimetracker.fengoffice.vatApi.ApiDictionary;
+import ru.vat78.fotimetracker.model.ErrorsType;
 
 import javax.net.ssl.*;
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
-import java.security.KeyStore;
-import java.security.cert.Certificate;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.util.Properties;
 
 /**
  * Created by vat on 16.04.17.
+ *
+ * TODO: find, how load certificate from Stream
  */
 public class HttpJsonClient {
-    private String error="";
+    private static final String CLASS_NAME = "HttpJsonClient";
 
-    public JSONObject getJsonObject(String url, Properties params, boolean untrustCA) throws HttpJsonError {
+    private IErrorsHandler errorsHandler;
 
-        resetError();
+    public HttpJsonClient(IErrorsHandler errorsHandler) {
+        this.errorsHandler = errorsHandler;
+    }
+
+    public JSONObject getJsonObject(String url, Properties params, boolean untrustCA) {
+
         JSONObject jObj = null;
         String data = getStringFromURL(prepareUrl(url,params), untrustCA);
         FindErrorInData(data);
-        if (!error.isEmpty())
-            throw new HttpJsonError(error);
 
-        try {
-            jObj = new JSONObject(data);
-        } catch (JSONException e) {
-            Log.e("log_tag", "Error parsing data " + e.toString());
-            throw new HttpJsonError("Error parsing data", e);
+        if (!errorsHandler.hasStopError()) {
+            try {
+                jObj = new JSONObject(data);
+            } catch (JSONException e) {
+                errorsHandler.info(CLASS_NAME, ErrorsType.JSON_PARSING_ERROR, e);
+            }
         }
         return jObj;
     }
 
-    public JSONArray getJsonArray(String url, Properties params, boolean untrustCA, String ErrorMsg) throws HttpJsonError {
+    public JSONArray getJsonArray(String url, Properties params, boolean untrustCA, String ErrorMsg) {
 
         JSONArray jArr = null;
         JSONObject jObj = getJsonObject(url, params, untrustCA);
@@ -49,8 +55,7 @@ public class HttpJsonClient {
         try {
             jArr = jObj.getJSONArray("fo_obj");
         } catch (JSONException e) {
-            Log.e("log_tag", "Error parsing data " + e.toString());
-            throw new HttpJsonError("Error parsing data", e);
+            errorsHandler.info(CLASS_NAME, ErrorsType.JSON_PARSING_ERROR, e);
         }
         return jArr;
     }
@@ -62,15 +67,10 @@ public class HttpJsonClient {
         return url;
     }
 
-    private void resetError(){
-        error = "";
-    }
-
     private String getStringFromURL(String url, boolean untrustCA) {
 
-        InputStream is = null;
+        InputStream is;
         String result = "";
-
 
         // Download JSON data from URL
         if (url.startsWith("https://")) {
@@ -78,62 +78,63 @@ public class HttpJsonClient {
         } else {
             is = getFromHTTP(url);
         }
-        if (!error.isEmpty()) {
-            return null;
-        }
-        if (is == null) {
-            error = "Server didn't responde";
-            return null;
-        }
 
-        // Convert response to string
-        try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
-            StringBuilder sb = new StringBuilder();
-            String line = null;
-            while ((line = reader.readLine()) != null) {
-                sb.append(line + "\n");
+        if (!errorsHandler.hasStopError()) {
+            if (is == null) {
+                errorsHandler.error(CLASS_NAME, ErrorsType.CANT_CONNECT_TO_SERVER);
+            } else {
+
+                // Convert response to string
+                try {
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+                    StringBuilder sb = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        sb.append(line).append("\n");
+                    }
+                    result = sb.toString();
+                } catch (IOException e) {
+                    errorsHandler.error(CLASS_NAME, ErrorsType.WRONG_WEB_ANSWER, e);
+                } finally {
+                    try {
+                        is.close();
+                    } catch (IOException ignored) {}
+                }
+
+                if (result.startsWith("[")) {
+                    //Add global JSON object for array
+                    result = "{\"" + ApiDictionary.FO_API_MAIN_OBJ + "\":" + result + "}";
+                } else if (result.startsWith("false") || result.startsWith("true")) {
+                    result = "{\"" + ApiDictionary.FO_API_FIELD_RESULT + "\":\"" + result + "\"}";
+                }
             }
-            is.close();
-
-            result = sb.toString();
-
-        } catch (Exception e) {
-            error = "Error converting result";
-            Log.e("log_tag", "Error converting result " + e.toString());
         }
-        if (result.startsWith("[")) {
-            //Add global JSON object for array
-            result = "{\""+ ApiDictionary.FO_API_MAIN_OBJ+"\":" + result + "}";
-        }
-        if (result.startsWith("false") || result.startsWith("true"))
-            result = "{\"" + ApiDictionary.FO_API_FIELD_RESULT+ "\":\"" + result + "\"}";
         return result;
     }
 
     private void FindErrorInData(String data) {
         if (data == null){
-            error = "EmptyData";
+            errorsHandler.error(CLASS_NAME, ErrorsType.WRONG_WEB_ANSWER);
             return;
         }
 
         if (data.isEmpty()){
-            error = "EmptyData";
+            errorsHandler.error(CLASS_NAME, ErrorsType.WRONG_WEB_ANSWER);
             return;
         }
 
         if (data.startsWith("Fatal error")) {
-            error = data;
+            errorsHandler.error(CLASS_NAME, ErrorsType.WRONG_WEB_ANSWER, data);
             return;
         }
 
         if (data.startsWith("API Response")) {
-            error = data;
+            errorsHandler.error(CLASS_NAME, ErrorsType.WRONG_WEB_ANSWER, data);
             return;
         }
 
         if (!data.startsWith("{")) {
-            error = "Wrong data format";
+            errorsHandler.error(CLASS_NAME, ErrorsType.WRONG_WEB_ANSWER, data);
         }
     }
 
@@ -169,10 +170,9 @@ public class HttpJsonClient {
             URLConnection httpclient = url_obj.openConnection();
             content = httpclient.getInputStream();
         }
-        catch (Exception e)
+        catch (IOException e)
         {
-            error = "Couldn't connect this URL";
-            Log.e("log_tag", "Error in http connection " + e.toString());
+            errorsHandler.error(CLASS_NAME, ErrorsType.CANT_CONNECT_TO_SERVER, e);
         }
         return content;
     }
@@ -185,9 +185,6 @@ public class HttpJsonClient {
             HttpsURLConnection httpsclient = (HttpsURLConnection) url_obj.openConnection();
 
             if (untrustCA) {
-                //Add Self-sign certificate
-                //SSLContext context = getSelfSignedSSL(url);
-
                 //Disable SSL checks
                 httpsclient.setHostnameVerifier(new NullHostNameVerifier());
                 SSLContext context = SSLContext.getInstance("TLS");
@@ -198,53 +195,16 @@ public class HttpJsonClient {
             }
             content = httpsclient.getInputStream();
         }
-        catch (Exception e)
+        catch (NoSuchAlgorithmException | KeyManagementException e) {
+            errorsHandler.error(CLASS_NAME, ErrorsType.SYSTEM_ERROR, e);
+        }
+        catch (IOException e)
         {
-            if (untrustCA) {
-                error = "Couldn't connect this URL";
-            }
-            else
-            {
-                error = "Error in https connection. Check URL or enable using untrusted certificates";
-            }
-            Log.e("log_tag", "Error in https connection " + e.toString());
+            errorsHandler.error(CLASS_NAME, ErrorsType.CANT_CONNECT_TO_SERVER, e);
         }
         return content;
     }
 
-    /* ----
-    This function dosn't work properly
-    TODO: find, how load certificate from Stream
-    ----- */
-    private SSLContext getSelfSignedSSL(String url) throws Exception{
-        // Load CAs from an InputStream
-        CertificateFactory cf = CertificateFactory.getInstance("X.509");
-
-        InputStream caInput =new BufferedInputStream(new FileInputStream("local.cer"));
-        Certificate ca;
-        try{
-            ca = cf.generateCertificate(caInput);
-            System.out.println("ca="+((X509Certificate) ca).getSubjectDN());
-        }finally{
-            caInput.close();
-        }
-
-        // Create a KeyStore containing our trusted CAs
-        String keyStoreType = KeyStore.getDefaultType();
-        KeyStore keyStore =KeyStore.getInstance(keyStoreType);
-        keyStore.load(null,null);
-        keyStore.setCertificateEntry("ca", ca);
-
-        // Create a TrustManager that trusts the CAs in our KeyStore
-        String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
-        TrustManagerFactory tmf =TrustManagerFactory.getInstance(tmfAlgorithm);
-        tmf.init(keyStore);
-
-        // Create an SSLContext that uses our TrustManager
-        SSLContext context =SSLContext.getInstance("TLS");
-        context.init(null, tmf.getTrustManagers(),null);
-        return context;
-    }
 
     private class MyTrustManager implements X509TrustManager
     {

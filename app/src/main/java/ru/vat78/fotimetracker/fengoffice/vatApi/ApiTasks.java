@@ -1,14 +1,15 @@
 package ru.vat78.fotimetracker.fengoffice.vatApi;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Date;
 
-import ru.vat78.fotimetracker.App;
+import ru.vat78.fotimetracker.IErrorsHandler;
+import ru.vat78.fotimetracker.model.ErrorsType;
 import ru.vat78.fotimetracker.model.Task;
-import ru.vat78.fotimetracker.views.ErrorsHandler;
 
 /**
  * Created by vat on 30.11.2015.
@@ -16,13 +17,21 @@ import ru.vat78.fotimetracker.views.ErrorsHandler;
 public class ApiTasks {
     private static final String CLASS_NAME = "ApiTasks";
 
-    public ArrayList<Task> load(App app){
-        JSONObject jo = app.getWebService().executeAPI(ApiDictionary.FO_METHOD_LISTING, ApiDictionary.FO_SERVICE_TASKS,
-                new String[] {ApiDictionary.FO_API_ARG_STATUS, "0"});
-        return convertResults(app,jo,true);
+    private ApiConnector connector;
+    private IErrorsHandler errorsHandler;
+
+    public ApiTasks(ApiConnector connector, IErrorsHandler errorsHandler) {
+        this.connector = connector;
+        this.errorsHandler = errorsHandler;
     }
 
-    public ArrayList<Task> load(App app, Date timestamp){
+    public ArrayList<Task> load(){
+        JSONObject jo = connector.executeAPI(ApiDictionary.FO_METHOD_LISTING, ApiDictionary.FO_SERVICE_TASKS,
+                new String[] {ApiDictionary.FO_API_ARG_STATUS, "0"});
+        return convertResults(jo,true);
+    }
+
+    public ArrayList<Task> load(Date timestamp){
         String[] args = new String[2];
         long l = (long) timestamp.getTime() / ApiDictionary.FO_API_DATE_CONVERTOR;
         if (l != 0) {
@@ -33,27 +42,24 @@ public class ApiTasks {
             args[0]= ApiDictionary.FO_API_ARG_STATUS;
             args[1] = "10";
         }
-        JSONObject jo = app.getWebService().executeAPI(ApiDictionary.FO_METHOD_LISTING,ApiDictionary.FO_SERVICE_TASKS, args);
-        if (!app.getWebService().getError().isEmpty())
-            app.getError().error_handler(ErrorsHandler.ERROR_SAVE_ERROR, CLASS_NAME, app.getWebService().getError());
-
-        return convertResults(app,jo,(l==0));
+        JSONObject jo = connector.executeAPI(ApiDictionary.FO_METHOD_LISTING,ApiDictionary.FO_SERVICE_TASKS, args);
+        return convertResults(jo,(l==0));
     }
 
-    private ArrayList<Task> convertResults(App app, JSONObject data, boolean checkCurrentTask){
+    private ArrayList<Task> convertResults(JSONObject data, boolean checkCurrentTask){
 
         JSONArray list = null;
         JSONObject jo;
         ArrayList<Task> res = new ArrayList<>();
         if (data == null) {return res;}
 
-        long current_task = app.getCurTask();
-        boolean isIncludeCurrentTask = !checkCurrentTask;
+        //long current_task = app.getCurTask();
+        //boolean isIncludeCurrentTask = !checkCurrentTask;
 
         try {
             list = data.getJSONArray(ApiDictionary.FO_API_MAIN_OBJ);
-        } catch (Exception e) {
-            app.getError().error_handler(ErrorsHandler.ERROR_SAVE_ERROR, CLASS_NAME, e.getMessage());
+        } catch (JSONException e) {
+            errorsHandler.error(CLASS_NAME, ErrorsType.JSON_PARSING_ERROR, e);
         }
         if (list == null) {return null;}
 
@@ -62,21 +68,22 @@ public class ApiTasks {
             try {
                 jo = list.getJSONObject(i);
 
-                el = convertToTask(app, jo);
+                el = convertToTask(jo);
             }
-            catch (Exception e) {
-                app.getError().error_handler(ErrorsHandler.ERROR_LOG_MESSAGE, CLASS_NAME, e.getMessage());
+            catch (JSONException e) {
+                errorsHandler.error(CLASS_NAME, ErrorsType.JSON_PARSING_ERROR, e);
             }
             finally {
                 if (el != null) {
                     if (!res.add(el)) {
                         break;
                     }
-                    isIncludeCurrentTask = isIncludeCurrentTask || (current_task == el.getUid());
+                    //isIncludeCurrentTask = isIncludeCurrentTask || (current_task == el.getUid());
                 }
             }
         }
 
+        /*
         if (current_task > 0 && !isIncludeCurrentTask){
             Task el = getTaskByID(app, current_task);
             if (el == null){
@@ -85,17 +92,18 @@ public class ApiTasks {
                 res.add(el);
             }
         }
+        */
         return res;
     }
 
-    private Task getTaskByID(App app, long id) {
+    private Task getTaskByID(long id) {
         String[] args = new String[2];
         args[0] = ApiDictionary.FO_API_FIELD_ID;
         args[1] = "" + id;
-        return convertToTask(app, app.getWebService().executeAPI(ApiDictionary.FO_METHOD_LISTING, ApiDictionary.FO_SERVICE_TASKS,args));
+        return convertToTask(connector.executeAPI(ApiDictionary.FO_METHOD_LISTING, ApiDictionary.FO_SERVICE_TASKS,args));
     }
 
-    private Task convertToTask(App app, JSONObject jsonObject) {
+    private Task convertToTask(JSONObject jsonObject) {
         Task el = null;
         try {
             long id = jsonObject.getLong(ApiDictionary.FO_API_FIELD_ID);
@@ -167,18 +175,18 @@ public class ApiTasks {
                     el.put(DBContract.DaoTasks.COLUMN_NAME_USETIMESLOTS,(jo.getString(ApiDictionary.FO_API_FIELD_USETIMESLOTS) == ApiDictionary.FO_API_TRUE));
                 */
         }
-        catch (Exception e) {
-            app.getError().error_handler(ErrorsHandler.ERROR_LOG_MESSAGE, CLASS_NAME, e.getMessage());
+        catch (JSONException e) {
+            errorsHandler.error(CLASS_NAME, ErrorsType.JSON_PARSING_ERROR, e);
         }
         return el;
     }
 
-    public long save(App app, Task task) {
+    public long save(Task task) {
         long res = 0;
         JSONObject jo;
         if (task == null) return res;
             String[] args = convertTaskForAPI(task);
-            jo = app.getWebService().executeAPI(ApiDictionary.FO_METHOD_SAVE_OBJ, ApiDictionary.FO_SERVICE_TASKS, args);
+            jo = connector.executeAPI(ApiDictionary.FO_METHOD_SAVE_OBJ, ApiDictionary.FO_SERVICE_TASKS, args);
         try {
             res = jo.getLong(ApiDictionary.FO_API_FIELD_ID);
         } catch (Exception e) {}
@@ -186,9 +194,9 @@ public class ApiTasks {
         if (res !=0 ) {
             try {
                 if (task.getStatus() == 0) {
-                    jo = app.getWebService().executeAPI(ApiDictionary.FO_METHOD_COMPLETE_TASK, res, ApiDictionary.FO_ACTION_OPEN_TASK);
+                    jo = connector.executeAPI(ApiDictionary.FO_METHOD_COMPLETE_TASK, res, ApiDictionary.FO_ACTION_OPEN_TASK);
                 } else {
-                    jo = app.getWebService().executeAPI(ApiDictionary.FO_METHOD_COMPLETE_TASK, res, ApiDictionary.FO_ACTION_COMPLETE_TASK);
+                    jo = connector.executeAPI(ApiDictionary.FO_METHOD_COMPLETE_TASK, res, ApiDictionary.FO_ACTION_COMPLETE_TASK);
                 }
             } catch (Exception e) {}
         }
@@ -223,11 +231,11 @@ public class ApiTasks {
         return res;
     }
 
-    public boolean delete(App app, Task task) {
+    public boolean delete(Task task) {
         boolean res = false;
 
             if (task.getUid() > 0) {
-                JSONObject jo = app.getWebService().executeAPI(ApiDictionary.FO_METHOD_DELETE_OBJ, task.getUid());
+                JSONObject jo = connector.executeAPI(ApiDictionary.FO_METHOD_DELETE_OBJ, task.getUid());
                 if (jo == null) {
                     res = false;
                 } else {

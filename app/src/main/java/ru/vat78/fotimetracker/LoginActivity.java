@@ -82,7 +82,7 @@ public class LoginActivity extends AppCompatActivity {
 
         mPasswordView = (EditText) findViewById(R.id.password);
         mPasswordView.setText(preferences.getString(getString(R.string.pref_sync_password), ""));
-        mPasswordView.setText(preferences.getString(getString(R.string.pref_sync_password), FOApp.getFO_Pwd()));
+        mPasswordView.setText(preferences.getString(getString(R.string.pref_sync_password), FOApp.getPassword()));
         mSaveCred.setChecked(preferences.getBoolean(getString(R.string.pref_sync_save_creds), false));
 
                 mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -141,7 +141,7 @@ public class LoginActivity extends AppCompatActivity {
             focusView = mURLView;
             cancel = true;
         } else {
-            cancel = !FOApp.setFO_Url(url);
+            cancel = !FOApp.setUrl(url);
             if (cancel) {
                 mURLView.setError(getString(R.string.error_incorrect_value));
                 focusView = mURLView;
@@ -157,7 +157,7 @@ public class LoginActivity extends AppCompatActivity {
                 focusView = mPasswordView;
                 cancel = true;
             } else {
-                cancel = !FOApp.setFO_Pwd(password);
+                FOApp.setPassword(password);
                 if (cancel) {
                     mPasswordView.setError(getString(R.string.error_incorrect_value));
                     focusView = mPasswordView;
@@ -172,7 +172,7 @@ public class LoginActivity extends AppCompatActivity {
                 focusView = mLoginView;
                 cancel = true;
             } else {
-                cancel = !FOApp.setFO_User(login);
+                FOApp.setLogin(login);
                 if (cancel) {
                     mLoginView.setError(getString(R.string.error_incorrect_value));
                     focusView = mLoginView;
@@ -282,7 +282,7 @@ public class LoginActivity extends AppCompatActivity {
                 setResult(RESULT_OK, intent);
                 finish();
             } else {
-                app.getError().error_handler(ErrorsHandler.ERROR_SHOW_MESSAGE,CLASS_NAME,FOApp.getError());
+                //app.getError().error_handler(ErrorsHandler.ERROR_SHOW_MESSAGE,CLASS_NAME,FOApp.getError());
                 mURLView.requestFocus();
             }
         }
