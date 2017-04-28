@@ -20,7 +20,7 @@ public class DBService {
     private final Map<Class<? extends Object>, IDao> daoMap;
 
     public DBService(Context context, IErrorsHandler errorsHandler) {
-        database = new DB(context, errorsHandler);
+        database = new DbSQLite(context, errorsHandler);
 
         daoMap = new HashMap<>();
         daoMap.put(Member.class, new DaoMembers(database));

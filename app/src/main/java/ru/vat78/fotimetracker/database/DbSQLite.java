@@ -5,26 +5,28 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
+import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Parcel;
 import ru.vat78.fotimetracker.IErrorsHandler;
-import ru.vat78.fotimetracker.R;
 import ru.vat78.fotimetracker.model.ErrorsType;
-import ru.vat78.fotimetracker.views.ErrorsHandler;
 
 import java.io.IOException;
 import java.util.Map;
 
+import static ru.vat78.fotimetracker.database.DBContract.DATABASE_NAME;
+import static ru.vat78.fotimetracker.database.DBContract.DATABASE_VERSION;
+
 /**
  * Created by vat on 21.12.2015.
  */
-public class DB implements IDbConnect {
-    private static final String CLASS_NAME = "DB";
+public class DbSQLite implements IDbConnect {
+    private static final String CLASS_NAME = "DbSQLite";
 
     private final long currentDbVersion;
     private final IErrorsHandler errorsHandler;
     private SQLiteDatabase database;
 
-    public DB(Context context, IErrorsHandler errorsHandler) {
+    public DbSQLite(Context context, IErrorsHandler errorsHandler) {
         this.errorsHandler = errorsHandler;
 
         DBHelper helper = new DBHelper(context);
@@ -99,4 +101,36 @@ public class DB implements IDbConnect {
     }
 
 
+    private class DBHelper extends SQLiteOpenHelper {
+
+        public int getCurrentDbVersion() {
+            return DATABASE_VERSION;
+        }
+
+        public DBHelper(Context context) {
+            super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        }
+
+        @Override
+        public void onCreate(SQLiteDatabase db) {
+            db.execSQL(DBContract.MembersTable.SQL_CREATE_TABLE);
+            db.execSQL(DBContract.TasksTable.SQL_CREATE_TABLE);
+            db.execSQL(DBContract.TimeslotsTable.SQL_CREATE_ENTRIES);
+            db.execSQL(DBContract.MemberObjectsTable.SQL_CREATE_TABLE);
+        }
+
+        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+            // This database is only a cache for online data, so its upgrade policy is
+            // to simply to discard the data and start over
+            db.execSQL(DBContract.MembersTable.SQL_DELETE_ENTRIES);
+            db.execSQL(DBContract.TasksTable.SQL_DELETE_ENTRIES);
+            db.execSQL(DBContract.TimeslotsTable.SQL_DELETE_ENTRIES);
+            db.execSQL(DBContract.MemberObjectsTable.SQL_DELETE_ENTRIES);
+            onCreate(db);
+        }
+        public void onDowngrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+            onUpgrade(db, oldVersion, newVersion);
+        }
+
+    }
 }
