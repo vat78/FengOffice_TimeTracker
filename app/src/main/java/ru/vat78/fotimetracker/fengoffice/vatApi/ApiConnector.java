@@ -31,44 +31,35 @@ public class ApiConnector {
 
     private boolean useUntrustCA = false;
 
-    public ApiConnector(IErrorsHandler errorsHandler){
+    ApiConnector(IErrorsHandler errorsHandler){
         this.errorsHandler = errorsHandler;
         securityToken = "";
         password = "";
         jsonClient = new HttpJsonClient(errorsHandler);
     }
 
-    public boolean setUrl(String url) {
-        url = url.trim();
-        if (url.length() <3){ return false;}
-
-        if (!url.startsWith("http://") && !url.startsWith("https://")) {
-            url = "https://" + url;
-        }
-
-        if (!url.endsWith("/")) {url += "/";}
+    void setUrl(String url) {
         this.url = url;
-        return true;
     }
 
-    public void setLogin(String login) {
+    void setLogin(String login) {
         this.login = login;
     }
 
-    public void setPassword(String Password) {
+    void setPassword(String Password) {
         this.password = Password;
     }
 
-    public String getPassword() {
+    String getPassword() {
         return this.password;
     }
 
-    public void canUseUntrustCert(boolean flag) {
+    void canUseUntrustCert(boolean flag) {
         this.useUntrustCA = flag;
     }
 
     //This function try to login FengOffice web-application
-    public boolean testConnection() {
+    boolean testConnection() {
 
         if (TextUtils.isEmpty(this.url) || TextUtils.isEmpty(this.login)) {
             errorsHandler.error(CLASS_NAME, ErrorsType.WRONG_URL);
@@ -94,7 +85,7 @@ public class ApiConnector {
     }
 
     //Checks plugin status
-    public boolean checkPlugin(String plugin_name){
+    boolean checkPlugin(String plugin_name){
 
         if (this.securityToken.isEmpty() || plugin_name.isEmpty()) {return false;}
         Integer res = 0;
@@ -116,7 +107,7 @@ public class ApiConnector {
 
 
     //Execute API operation without arguments
-    public JSONObject executeAPI(String method, String service){
+    JSONObject executeAPI(String method, String service){
         if (method.isEmpty()) {return null;}
         if (this.securityToken.isEmpty())
             if (!testConnection()) {return null;}
@@ -133,7 +124,7 @@ public class ApiConnector {
     }
 
     //Execute API operation with arguments
-    public JSONObject executeAPI(String method, String service, String args[]){
+    JSONObject executeAPI(String method, String service, String args[]){
         if (method.isEmpty()) {return null;}
         if (this.securityToken.isEmpty())
             if (!testConnection()) {return null;}
@@ -167,7 +158,7 @@ public class ApiConnector {
     }
 
     //Execute API operation for delete object and so on
-    public JSONObject executeAPI(String method, long id) {
+    JSONObject executeAPI(String method, long id) {
         if (method.isEmpty()) {return null;}
         if (this.securityToken.isEmpty())
             if (!testConnection()) {return null;}
@@ -185,7 +176,7 @@ public class ApiConnector {
     }
     
     //Execute API operation for complet task and so on
-    public JSONObject executeAPI(String method, long id, String action) {
+    JSONObject executeAPI(String method, long id, String action) {
         if (method.isEmpty()) {return null;}
         if (this.securityToken.isEmpty())
             if (!testConnection()) {return null;}

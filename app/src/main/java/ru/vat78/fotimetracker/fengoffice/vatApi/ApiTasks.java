@@ -14,7 +14,7 @@ import ru.vat78.fotimetracker.model.Task;
 /**
  * Created by vat on 30.11.2015.
  */
-public class ApiTasks {
+class ApiTasks {
     private static final String CLASS_NAME = "ApiTasks";
 
     private ApiConnector connector;

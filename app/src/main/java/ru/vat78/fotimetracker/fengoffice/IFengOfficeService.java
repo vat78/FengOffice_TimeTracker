@@ -10,9 +10,13 @@ import java.util.List;
 /**
  * Created by vat on 16.04.17.
  */
-public interface FengOfficeApi {
+public interface IFengOfficeService {
 
+    boolean checkAndSetUrl(String url, boolean useUntrustCert);
+    boolean checkAndSetLogin(String login);
+    boolean checkAndSetPassword(String password);
 
+    boolean testConnection();
 
     String getFengOfficeVersion();
     boolean checkPlugin(String plugin_name);

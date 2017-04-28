@@ -1,8 +1,7 @@
 package ru.vat78.fotimetracker.fengoffice.vatApi;
 
-import ru.vat78.fotimetracker.App;
 import ru.vat78.fotimetracker.IErrorsHandler;
-import ru.vat78.fotimetracker.fengoffice.FengOfficeApi;
+import ru.vat78.fotimetracker.fengoffice.IFengOfficeService;
 import ru.vat78.fotimetracker.model.Member;
 import ru.vat78.fotimetracker.model.Task;
 import ru.vat78.fotimetracker.model.Timeslot;
@@ -13,22 +12,79 @@ import java.util.List;
 /**
  * Created by vat on 16.04.17.
  */
-public class VatApi implements FengOfficeApi {
+public class VatApi implements IFengOfficeService {
+
+    private IErrorsHandler errorsHandler;
 
     private final ApiMembers members;
     private final ApiTasks tasks;
     private final ApiTimeslots timeslots;
 
     private ApiConnector connector;
-    private IErrorsHandler errorsHandler;
 
-    public VatApi(ApiConnector connector, IErrorsHandler errorsHandler) {
-        this.connector = connector;
+    public VatApi(IErrorsHandler errorsHandler) {
+        this.connector = new ApiConnector(errorsHandler);
         this.errorsHandler = errorsHandler;
 
         members = new ApiMembers(connector, errorsHandler);
         tasks = new ApiTasks(connector, errorsHandler);
         timeslots = new ApiTimeslots(connector, errorsHandler);
+    }
+
+    @Override
+    public boolean checkAndSetUrl(String url, boolean useUntrustCert) {
+        boolean res = false;
+        if (url != null) {
+            url = url.trim();
+        }
+        else {
+            url = "";
+        }
+
+        if (url.length() > 3) {
+            if (!url.startsWith("http://") && !url.startsWith("https://")) {
+                url = "https://" + url;
+            }
+            if (!url.endsWith("/")) {
+                url += "/";
+            }
+
+            connector.setUrl(url);
+            connector.canUseUntrustCert(useUntrustCert);
+            res = true;
+        }
+
+        return res;
+    }
+
+    @Override
+    public boolean checkAndSetLogin(String login) {
+        boolean res = false;
+
+        if (login != null) {
+            login = login.trim();
+            if (login.length() > 2) {
+                connector.setLogin(login);
+                res = true;
+            }
+        }
+        return res;
+    }
+
+    @Override
+    public boolean checkAndSetPassword(String password) {
+        boolean res = false;
+
+        if (password != null) {
+            connector.setPassword(password);
+            res = true;
+        }
+        return res;
+    }
+
+    @Override
+    public boolean testConnection() {
+        return connector.testConnection();
     }
 
     @Override

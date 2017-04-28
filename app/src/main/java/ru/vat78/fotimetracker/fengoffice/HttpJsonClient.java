@@ -4,7 +4,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import ru.vat78.fotimetracker.IErrorsHandler;
-import ru.vat78.fotimetracker.fengoffice.vatApi.ApiDictionary;
 import ru.vat78.fotimetracker.model.ErrorsType;
 
 import javax.net.ssl.*;
@@ -101,12 +100,14 @@ public class HttpJsonClient {
                     } catch (IOException ignored) {}
                 }
 
+                /*
                 if (result.startsWith("[")) {
                     //Add global JSON object for array
                     result = "{\"" + ApiDictionary.FO_API_MAIN_OBJ + "\":" + result + "}";
                 } else if (result.startsWith("false") || result.startsWith("true")) {
                     result = "{\"" + ApiDictionary.FO_API_FIELD_RESULT + "\":\"" + result + "\"}";
                 }
+                */
             }
         }
         return result;

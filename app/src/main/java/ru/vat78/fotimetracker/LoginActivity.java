@@ -25,7 +25,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import ru.vat78.fotimetracker.fengoffice.vatApi.ApiConnector;
+import ru.vat78.fotimetracker.fengoffice.IFengOfficeService;
 import ru.vat78.fotimetracker.views.ErrorsHandler;
 
 //import static android.Manifest.permission.READ_CONTACTS;
@@ -41,7 +41,7 @@ public class LoginActivity extends AppCompatActivity {
     private static final String CLASS_NAME = "FOTT_LoginActivity";
     
     private App app;
-    private ApiConnector FOApp;
+    private IFengOfficeService webService;
     private UserLoginCheck ULC;
 
     // UI references.
@@ -65,7 +65,7 @@ public class LoginActivity extends AppCompatActivity {
 
         //get web-connector
         app = (App) getApplication();
-        FOApp = app.getWebService();
+        webService = app.getWebService();
         
         // Set up the login form.
         setContentView(R.layout.activity_login);
@@ -82,7 +82,7 @@ public class LoginActivity extends AppCompatActivity {
 
         mPasswordView = (EditText) findViewById(R.id.password);
         mPasswordView.setText(preferences.getString(getString(R.string.pref_sync_password), ""));
-        mPasswordView.setText(preferences.getString(getString(R.string.pref_sync_password), FOApp.getPassword()));
+        mPasswordView.setText(preferences.getString(getString(R.string.pref_sync_password), ""));
         mSaveCred.setChecked(preferences.getBoolean(getString(R.string.pref_sync_save_creds), false));
 
                 mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
@@ -141,7 +141,7 @@ public class LoginActivity extends AppCompatActivity {
             focusView = mURLView;
             cancel = true;
         } else {
-            cancel = !FOApp.setUrl(url);
+            cancel = !webService.checkAndSetUrl(url, mUntrustCA.isChecked());
             if (cancel) {
                 mURLView.setError(getString(R.string.error_incorrect_value));
                 focusView = mURLView;
@@ -149,15 +149,13 @@ public class LoginActivity extends AppCompatActivity {
         }
         
         if (!cancel) {
-            FOApp.canUseUntrustCert(mUntrustCA.isChecked());
-
             // Check for a valid password, if the user entered one.
             if (TextUtils.isEmpty(password)) {
                 mPasswordView.setError(getString(R.string.error_invalid_password));
                 focusView = mPasswordView;
                 cancel = true;
             } else {
-                FOApp.setPassword(password);
+                cancel = !webService.checkAndSetPassword(password);
                 if (cancel) {
                     mPasswordView.setError(getString(R.string.error_incorrect_value));
                     focusView = mPasswordView;
@@ -172,7 +170,7 @@ public class LoginActivity extends AppCompatActivity {
                 focusView = mLoginView;
                 cancel = true;
             } else {
-                FOApp.setLogin(login);
+                cancel = !webService.checkAndSetLogin(login);
                 if (cancel) {
                     mLoginView.setError(getString(R.string.error_incorrect_value));
                     focusView = mLoginView;
@@ -257,7 +255,7 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         protected Boolean doInBackground(Void... params) {
 
-            if (!FOApp.testConnection()) { return false;}
+            if (!webService.testConnection()) { return false;}
             app.setNeedFullSync(true);
             return app.dataSynchronization();
         }
@@ -282,7 +280,7 @@ public class LoginActivity extends AppCompatActivity {
                 setResult(RESULT_OK, intent);
                 finish();
             } else {
-                //app.getError().error_handler(ErrorsHandler.ERROR_SHOW_MESSAGE,CLASS_NAME,FOApp.getError());
+                //app.getError().error_handler(ErrorsHandler.ERROR_SHOW_MESSAGE,CLASS_NAME,webService.getError());
                 mURLView.requestFocus();
             }
         }

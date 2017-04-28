@@ -13,18 +13,18 @@ import ru.vat78.fotimetracker.model.Member;
 /**
  * Created by vat on 27.11.2015.
  */
-public class ApiMembers {
+class ApiMembers {
     private static final String CLASS_NAME = "ApiMembers";
 
     private ApiConnector connector;
     private IErrorsHandler errorsHandler;
 
-    public ApiMembers(ApiConnector connector, IErrorsHandler errorsHandler) {
+    ApiMembers(ApiConnector connector, IErrorsHandler errorsHandler) {
         this.connector = connector;
         this.errorsHandler = errorsHandler;
     }
 
-    public ArrayList<Member> load(){
+    ArrayList<Member> load(){
         JSONObject jo = connector.executeAPI(ApiDictionary.FO_METHOD_MEMBERS, ApiDictionary.FO_MEMBERS_WORKSPACE);
         return convertResults(jo);
     }

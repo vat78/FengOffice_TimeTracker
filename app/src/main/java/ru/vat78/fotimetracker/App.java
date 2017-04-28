@@ -11,7 +11,7 @@ import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.vat78.fotimetracker.database.*;
-import ru.vat78.fotimetracker.fengoffice.FengOfficeApi;
+import ru.vat78.fotimetracker.fengoffice.IFengOfficeService;
 import ru.vat78.fotimetracker.fengoffice.vatApi.*;
 import ru.vat78.fotimetracker.model.Member;
 import ru.vat78.fotimetracker.views.ErrorsHandler;
@@ -28,8 +28,7 @@ public class App extends Application {
     private final String FOTT_TIME_FORMAT_24H = "HH:mm";
     private final String FOTT_TIME_FORMAT_AMPMH = "K:mm a";
 
-    private ApiConnector webService;
-    private FengOfficeApi foApi;
+    private IFengOfficeService webService;
     private DBService database;
     private boolean needFullSync;
     
@@ -59,8 +58,7 @@ public class App extends Application {
         error = new ErrorsHandler(this);
 
         //Create web-service connection
-        webService = new ApiConnector(errorsHandler);
-        foApi = new VatApi(webService, errorsHandler);
+        webService = new VatApi(errorsHandler);
 
         //Application preferences
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(this);
@@ -83,13 +81,9 @@ public class App extends Application {
 
         setDateTimeFormat();
 
-        String s = preferences.getString(getString(R.string.pref_sync_url), "");
-        if (!s.isEmpty()) webService.setUrl(s);
-        s = preferences.getString(getString(R.string.pref_sync_login), "");
-        if (!s.isEmpty()) webService.setLogin(s);
-        s = preferences.getString(getString(R.string.pref_sync_password), "");
-        if (!s.isEmpty()) webService.setPassword(s);
-        webService.canUseUntrustCert(preferences.getBoolean(getString(R.string.pref_sync_certs),false));
+        webService.checkAndSetUrl(preferences.getString(getString(R.string.pref_sync_url), ""), preferences.getBoolean(getString(R.string.pref_sync_certs),false));
+        webService.checkAndSetLogin(preferences.getString(getString(R.string.pref_sync_login), ""));
+        webService.checkAndSetPassword(preferences.getString(getString(R.string.pref_sync_password), ""));
     }
     
     public void setDateTimeFormat() {
@@ -110,7 +104,7 @@ public class App extends Application {
         return needFullSync;
     }
 
-    public ApiConnector getWebService() {
+    public IFengOfficeService getWebService() {
         return webService;
     }
 

@@ -14,23 +14,23 @@ import ru.vat78.fotimetracker.model.Timeslot;
 /**
  * Created by vat on 04.12.2015.
  */
-public class ApiTimeslots {
+class ApiTimeslots {
     private static final String CLASS_NAME = "ApiTimeslots";
 
     private ApiConnector connector;
     private IErrorsHandler errorsHandler;
 
-    public ApiTimeslots(ApiConnector connector, IErrorsHandler errorsHandler) {
+    ApiTimeslots(ApiConnector connector, IErrorsHandler errorsHandler) {
         this.connector = connector;
         this.errorsHandler = errorsHandler;
     }
 
-    public ArrayList<Timeslot> load(){
+    ArrayList<Timeslot> load(){
         JSONObject jo = connector.executeAPI(ApiDictionary.FO_METHOD_LISTING, ApiDictionary.FO_SERVICE_TIMESLOTS);
         return convertResults(jo);
     }
 
-    public ArrayList<Timeslot> load(Date timestamp){
+    ArrayList<Timeslot> load(Date timestamp){
         String[] args = new String[2];
         args[0] = ApiDictionary.FO_API_ARG_LASTUPDATE;
         long l = (long) timestamp.getTime() / ApiDictionary.FO_API_DATE_CONVERTOR;
@@ -39,7 +39,7 @@ public class ApiTimeslots {
         return convertResults(jo);
     }
 
-    public long save(Timeslot timeslot) {
+    long save(Timeslot timeslot) {
         long res = 0;
         if (timeslot == null) return res;
 
@@ -167,7 +167,7 @@ public class ApiTimeslots {
         return res;
     }
 
-    public boolean delete(Timeslot timeslot) {
+    boolean delete(Timeslot timeslot) {
         boolean res = false;
 
         if (timeslot.getUid() > 0) {
