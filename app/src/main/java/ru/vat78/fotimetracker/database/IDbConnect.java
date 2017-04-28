@@ -17,4 +17,6 @@ public interface IDbConnect extends Closeable {
 
     public void beginTransaction();
     public void endTransaction();
+
+    public long getCurrentDbVersion();
 }

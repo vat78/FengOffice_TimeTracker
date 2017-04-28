@@ -15,15 +15,12 @@ import static ru.vat78.fotimetracker.database.DBContract.*;
  */
 public class DBHelper extends SQLiteOpenHelper {
 
-    private App MainApp;
-
-    public int getDB_version() {
+    public int getCurrentDbVersion() {
         return DATABASE_VERSION;
     }
 
-    public DBHelper(Context context, App app) {
+    public DBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
-        MainApp = app;
     }
 
     @Override
@@ -32,7 +29,6 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL(TasksTable.SQL_CREATE_TABLE);
         db.execSQL(TimeslotsTable.SQL_CREATE_ENTRIES);
         db.execSQL(MemberObjectsTable.SQL_CREATE_TABLE);
-        MainApp.setNeedFullSync(true);
     }
 
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {

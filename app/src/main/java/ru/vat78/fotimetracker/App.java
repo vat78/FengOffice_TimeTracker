@@ -9,11 +9,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import ru.vat78.fotimetracker.database.DB;
-import ru.vat78.fotimetracker.database.DaoTasks;
-import ru.vat78.fotimetracker.database.DaoTimeslots;
-import ru.vat78.fotimetracker.database.DaoMembers;
+import ru.vat78.fotimetracker.database.*;
 import ru.vat78.fotimetracker.fengoffice.FengOfficeApi;
 import ru.vat78.fotimetracker.fengoffice.vatApi.*;
 import ru.vat78.fotimetracker.model.Member;
@@ -35,7 +33,7 @@ public class App extends Application {
 
     private ApiConnector webService;
     private FengOfficeApi foApi;
-    private DB database;
+    private DBService database;
     private boolean needFullSync;
     
     private MainActivity mainActivity;
@@ -52,8 +50,9 @@ public class App extends Application {
     private Preferences preferences;
 
     private ErrorsHandler error;
+    private IErrorsHandler errorsHandler;
 
-    private boolean syncing;
+    private AtomicBoolean syncing;
 
     @Override
     public void onCreate() {
@@ -69,8 +68,9 @@ public class App extends Application {
 
         //Create database connection
         long db_version = preferences.getLong(getString(R.string.pref_db_version),0);
-        database = new DB(this,db_version);
-        preferences.set(getString(R.string.pref_db_version), database.getDb_version());
+        database = new DBService(this, errorsHandler);
+        if (db_version != database.databaseVersion()) needFullSync = true;
+        preferences.set(getString(R.string.pref_db_version), database.databaseVersion());
 
         //Create error handler
         error = new ErrorsHandler(this);
@@ -105,10 +105,6 @@ public class App extends Application {
         timeFormat.setTimeZone(TimeZone.getDefault());
     }
 
-    public DB getDatabase() {
-        return database;
-    }
-
     public Preferences getPreferences() {
         return preferences;
     }
@@ -133,7 +129,7 @@ public class App extends Application {
 
     public Date getLastSync() {return lastSync;}
 
-    public boolean isSyncing() {return syncing;}
+    public boolean isSyncing() {return syncing.get();}
 
     public ErrorsHandler getError() {
         return error;
@@ -177,7 +173,7 @@ public class App extends Application {
     }
 
     public void setSyncing(boolean syncing) {
-        this.syncing = syncing;
+        this.syncing.set(syncing);
     }
 
     public void setLastSync(Date lastSync) {

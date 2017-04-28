@@ -48,7 +48,7 @@
                 android:value="ru.vat78.fotimetracker.MainActivity" />
         </activity>
         
-        <receiver android:name=".FOTT_BroadcastReceiver"
+        <receiver android:name=".MyBroadcastReceiver"
             android:enabled="true"
             android:exported="true">
             <intent-filter>

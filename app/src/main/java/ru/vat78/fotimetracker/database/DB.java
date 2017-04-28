@@ -1,12 +1,14 @@
 package ru.vat78.fotimetracker.database;
 
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import android.os.Parcel;
-import ru.vat78.fotimetracker.App;
+import ru.vat78.fotimetracker.IErrorsHandler;
 import ru.vat78.fotimetracker.R;
+import ru.vat78.fotimetracker.model.ErrorsType;
 import ru.vat78.fotimetracker.views.ErrorsHandler;
 
 import java.io.IOException;
@@ -18,25 +20,24 @@ import java.util.Map;
 public class DB implements IDbConnect {
     private static final String CLASS_NAME = "DB";
 
+    private final long currentDbVersion;
+    private final IErrorsHandler errorsHandler;
     private SQLiteDatabase database;
-    private App app;
 
-    public DB(App application, long db_version) {
+    public DB(Context context, IErrorsHandler errorsHandler) {
+        this.errorsHandler = errorsHandler;
 
-        app = application;
-        DBHelper helper = new DBHelper(application, app);
+        DBHelper helper = new DBHelper(context);
         database = helper.getWritableDatabase();
-        if (db_version != helper.getDB_version()) {
-            //DB structure was changed and all records were deleted
-            //Need to reload from web-service
-            application.setNeedFullSync(true);
-        }
+        currentDbVersion = helper.getCurrentDbVersion();
     }
 
-    public long getDb_version() {
-        return DBContract.DATABASE_VERSION;
+    @Override
+    public long getCurrentDbVersion() {
+        return currentDbVersion;
     }
 
+    @Override
     public void execSql(String sql){
         database.execSQL(sql);
     }
@@ -51,21 +52,26 @@ public class DB implements IDbConnect {
         database.endTransaction();
     }
 
-    public long insert(String table, Map<String,Object> values){
+    @Override
+    public long insert(String table, Map<String,Object> values) {
         long res = database.insert(table, null, convertValues(values));
-        if (res == -1) app.getError().error_handler(ErrorsHandler.ERROR_LOG_MESSAGE, CLASS_NAME, app.getString(R.string.db_insert_empty_row));
+        if (res == -1) errorsHandler.info(CLASS_NAME, ErrorsType.CANT_SAVE_TO_DB);
         return res;
     }
 
+    @Override
     public long insertOrUpdate(String table, Map<String,Object> values){
         long res = database.insertWithOnConflict(table, null, convertValues(values), database.CONFLICT_REPLACE);
-        if (res == -1) app.getError().error_handler(ErrorsHandler.ERROR_LOG_MESSAGE, CLASS_NAME, app.getString(R.string.db_insert_empty_row));
+        if (res == -1) errorsHandler.info(CLASS_NAME, ErrorsType.CANT_UPDATE_IN_DB);
         return res;
     }
 
+    @Override
     public Cursor query(String table, String[] columns, String filter, String order){
         return database.query(table,columns,filter,null,null,null,order);
     }
+
+    /*
 
     public int update(String table, Map<String,Object> values, String whereClause){
         return database.update(table, convertValues(values), whereClause, null);
@@ -76,7 +82,9 @@ public class DB implements IDbConnect {
         if (database.delete(table,whereClause,null) == -1)
             app.getError().error_handler(ErrorsHandler.ERROR_LOG_MESSAGE,CLASS_NAME,"Errors while deleting tasks from database");
     }
+    */
 
+    @Override
     public void close() throws IOException {
         database.close();
     }
@@ -89,4 +97,6 @@ public class DB implements IDbConnect {
         ContentValues res = ContentValues.CREATOR.createFromParcel(tmp);
         return res;
     }
+
+
 }
