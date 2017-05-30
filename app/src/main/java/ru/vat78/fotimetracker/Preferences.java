@@ -3,7 +3,8 @@ package ru.vat78.fotimetracker;
 import android.content.SharedPreferences;
 
 /**
- * Created by vat on 18.12.2015.
+ * Proxy for SharedPreferences
+ * for simplified putting values
  */
 public class Preferences {
     SharedPreferences preferences;

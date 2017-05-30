@@ -195,7 +195,7 @@ public class LoginActivity extends AppCompatActivity {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            ULC.execute((Void) null);
+            ULC.execute(app);
         }
     }
 
@@ -248,16 +248,25 @@ public class LoginActivity extends AppCompatActivity {
     /**
      * Represents an asynchronous login/registration task used to authenticate
      * the user.
+     *
      */
-    public class UserLoginCheck extends AsyncTask<Void, Void, Boolean> {
-
+    public class UserLoginCheck extends SyncTask {
 
         @Override
-        protected Boolean doInBackground(Void... params) {
-
-            if (!webService.testConnection()) { return false;}
-            app.setNeedFullSync(true);
-            return app.dataSynchronization();
+        protected Boolean doInBackground(App... params) {
+            boolean result = false;
+            if (webService.testConnection()) {
+                app = params[0];
+                app.setNeedFullSync(true);
+                while (syncInProgress.getAndSet(true)) {
+                    try {
+                        wait(100);
+                    } catch (InterruptedException e) {}
+                }
+                result = dataSynchronization();
+                syncInProgress.set(false);
+            }
+            return result;
         }
 
         @Override
@@ -266,6 +275,7 @@ public class LoginActivity extends AppCompatActivity {
             showProgress(false);
 
             if (success) {
+                app.setNeedFullSync(false);
                 Preferences preferences = app.getPreferences();
                 preferences.set(getString(R.string.pref_sync_url), mURLView.getText().toString());
                 preferences.set(getString(R.string.pref_sync_login), mLoginView.getText().toString());
@@ -289,6 +299,7 @@ public class LoginActivity extends AppCompatActivity {
         protected void onCancelled() {
             ULC = null;
             showProgress(false);
+            syncInProgress.set(false);
         }
     }
 }
