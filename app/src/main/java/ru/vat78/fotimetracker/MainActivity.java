@@ -51,8 +51,6 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
 
     static final String SYNC_TIMER_NAME = "ru.vat78.fotimetracker.SYNCTIMER";
 
-    private SyncTask syncTask;
-
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
      * fragments for each of the sections. We use a
@@ -593,12 +591,8 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    if (syncTask != null)
-                        if (syncTask.getStatus() != AsyncTask.Status.RUNNING && !MainApp.isSyncing()) syncTask = null;
-                    if (syncTask == null) {
-                        syncTask = new SyncTask(MainApp);
-                        syncTask.execute();
-                    }
+                    SyncTask syncTask = new SyncTask();
+                    syncTask.execute(MainApp);
                 }
             });
         }

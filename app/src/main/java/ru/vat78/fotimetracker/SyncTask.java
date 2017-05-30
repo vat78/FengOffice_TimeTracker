@@ -5,33 +5,32 @@ import android.os.AsyncTask;
 /**
  * Created by vat on 21.12.2015.
  */
-public class SyncTask extends AsyncTask<Void, Void, Boolean> {
+public class SyncTask extends AsyncTask<App, Integer, Boolean> {
     private static final String CLASS_NAME = "SyncTask";
 
-    private App MainApp;
+    private App app;
     private boolean appIsFree;
 
-    public SyncTask(App app){
-        MainApp = app;
-        appIsFree = !MainApp.isSyncing();
-        MainApp.setSyncing(true);
-    }
-
     @Override
-    protected Boolean doInBackground(Void... params) {
-        appIsFree = !MainApp.isSyncing();
-        MainApp.setSyncing(true);
-        if (!appIsFree) return false;
-        if (MainApp.getMainActivity() == null) MainApp.setNeedFullSync(true);
-        return MainApp.dataSynchronization();
+    protected Boolean doInBackground(App... params) {
+        boolean result = false;
+        if (params.length > 0) {
+            app = params[0];
+            appIsFree = !app.isSyncing();
+            app.setSyncing(true);
+            if (!appIsFree) return false;
+            if (app.getMainActivity() == null) app.setNeedFullSync(true);
+            result = app.dataSynchronization();
+        }
+        return  result;
     }
 
     @Override
     protected void onPostExecute(final Boolean success) {
         if (success) {
-            MainApp.setNeedFullSync(false);
-            MainApp.redrawMainActivity();
+            app.setNeedFullSync(false);
+            app.redrawMainActivity();
         }
-        if (appIsFree) MainApp.setSyncing(false);
+        if (appIsFree) app.setSyncing(false);
     }
 }
