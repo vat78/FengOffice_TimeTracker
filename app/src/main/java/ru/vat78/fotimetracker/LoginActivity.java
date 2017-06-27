@@ -257,7 +257,7 @@ public class LoginActivity extends AppCompatActivity {
             boolean result = false;
             if (webService.testConnection()) {
                 app = params[0];
-                app.setNeedFullSync(true);
+                app.setNeedFullSync();
                 while (syncInProgress.getAndSet(true)) {
                     try {
                         wait(100);
@@ -275,7 +275,6 @@ public class LoginActivity extends AppCompatActivity {
             showProgress(false);
 
             if (success) {
-                app.setNeedFullSync(false);
                 Preferences preferences = app.getPreferences();
                 preferences.set(getString(R.string.pref_sync_url), mURLView.getText().toString());
                 preferences.set(getString(R.string.pref_sync_login), mLoginView.getText().toString());

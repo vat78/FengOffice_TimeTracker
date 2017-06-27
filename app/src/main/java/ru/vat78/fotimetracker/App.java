@@ -7,6 +7,8 @@ import android.preference.PreferenceManager;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.TimeZone;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -29,7 +31,6 @@ public class App extends Application {
 
     private IFengOfficeService webService;
     private DBService database;
-    private boolean needFullSync;
     
     private MainActivity mainActivity;
 
@@ -65,7 +66,7 @@ public class App extends Application {
         //Create database connection
         long db_version = preferences.getLong(getString(R.string.pref_db_version),0);
         database = new DBService(this, errorsHandler);
-        if (db_version != database.databaseVersion()) needFullSync = true;
+        if (db_version != database.databaseVersion()) setNeedFullSync();
         preferences.set(getString(R.string.pref_db_version), database.databaseVersion());
 
         load_preferences();
@@ -96,10 +97,6 @@ public class App extends Application {
 
     public Preferences getPreferences() {
         return preferences;
-    }
-
-    public boolean isNeedFullSync() {
-        return needFullSync;
     }
 
     public IFengOfficeService getWebService() {
@@ -170,12 +167,16 @@ public class App extends Application {
         preferences.set(getString(R.string.pref_stored_last_sync), lastSync.getTime());
     }
 
-    public void setNeedFullSync(boolean value) {
-        this.needFullSync = value;
+    public void setNeedFullSync() {
+        this.lastSync = new Date(0);
     }
     
     public void setMainActivity(    MainActivity mainActivity) {
         this.mainActivity = mainActivity;
+    }
+
+    public DBService getDatabaseService() {
+        return database;
     }
 
     public void redrawMainActivity() {
@@ -201,10 +202,4 @@ public class App extends Application {
         */
     }
 
-    private Member generateAnyMember() {
-        Member any = new Member(-1,getString(R.string.any_category));
-        any.setPath("");
-        any.setColorIndex(Color.TRANSPARENT);
-        return any;
-    }
 }

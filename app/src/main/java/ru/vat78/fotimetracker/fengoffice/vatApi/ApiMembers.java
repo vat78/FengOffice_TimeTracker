@@ -1,5 +1,6 @@
 package ru.vat78.fotimetracker.fengoffice.vatApi;
 
+import android.graphics.Color;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -7,6 +8,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 
 import ru.vat78.fotimetracker.IErrorsHandler;
+import ru.vat78.fotimetracker.R;
 import ru.vat78.fotimetracker.model.ErrorsType;
 import ru.vat78.fotimetracker.model.Member;
 
@@ -35,6 +37,7 @@ class ApiMembers {
         JSONArray list = null;
         JSONObject jo;
         ArrayList<Member> res = new ArrayList<>();
+        res.add(generateAnyMember());
         try {
             list = data.getJSONArray(ApiDictionary.FO_API_MAIN_OBJ);
         } catch (JSONException e) {
@@ -80,5 +83,12 @@ class ApiMembers {
             }
         }
         return res;
+    }
+
+    private Member generateAnyMember() {
+        Member any = new Member(-1, "Any"); //ToDo: get name from resources getString(R.string.any_category));
+        any.setPath("");
+        any.setColorIndex(Color.TRANSPARENT);
+        return any;
     }
 }

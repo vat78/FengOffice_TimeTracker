@@ -150,7 +150,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             startActivity(i);
         }
         if (id == R.id.action_fullsync) {
-            if (MainApp != null) MainApp.setNeedFullSync(true);
+            if (MainApp != null) MainApp.setNeedFullSync();
             setSyncTimer();
         }
 
@@ -166,7 +166,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
                 key.equals(getString(R.string.pref_sync_login)) ||
                 key.equals(getString(R.string.pref_sync_password)) ||
                 key.equals(getString(R.string.pref_sync_certs))){
-            MainApp.setNeedFullSync(true);
+            MainApp.setNeedFullSync();
             //checkLogin();
         }
         if (key.equals(getString(R.string.pref_sync_save_creds))){
@@ -195,7 +195,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         } else {
             redraw();
         }
-        if (MainApp.isNeedFullSync()) checkLogin();
+        if (MainApp.getLastSync().getTime() == 0) checkLogin();
     }
 
     @Override
@@ -292,11 +292,11 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
             if (tclose && status != t.getStatus()) {
                 t.setStatus(status);
                 t.setChanged(System.currentTimeMillis());
-                //DaoTasks.save(MainApp,t);
+                //DaoTasks.saveAll(MainApp,t);
             } else if (tmove && duedate != t.getDueDate().getTime()) {
                 t.setDuedate(duedate);
                 t.setChanged(System.currentTimeMillis());
-                //DaoTasks.save(MainApp, t);
+                //DaoTasks.saveAll(MainApp, t);
             }
         }
     }
@@ -304,7 +304,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
     private void checkLogin(){
 
         if (MainApp.getPreferences().getString(getString(R.string.pref_sync_password),"").isEmpty()
-                || MainApp.isNeedFullSync()){
+                || MainApp.getLastSync().getTime() == 0){
             Intent pickLogin = new Intent(this,LoginActivity.class);
             startActivityForResult(pickLogin, PICK_LOGIN_REQUEST);
         }

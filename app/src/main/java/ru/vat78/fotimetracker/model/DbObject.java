@@ -5,7 +5,7 @@ import java.util.Date;
 /**
  * Created by vat on 27.11.2015.
  */
-public class Object {
+public class DbObject {
 
     protected static final String MEMBER_SPLITTER = "/";
 
@@ -18,7 +18,7 @@ public class Object {
     private String membersIds;
     private boolean deleted;
 
-    public Object(){
+    public DbObject(){
         uid = 0;
         name = "";
         desc = "";

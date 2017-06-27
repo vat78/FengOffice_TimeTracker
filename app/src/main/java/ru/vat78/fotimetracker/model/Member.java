@@ -3,7 +3,7 @@ package ru.vat78.fotimetracker.model;
 /**
  * Created by vat on 27.11.2015.
  */
-public class Member extends Object {
+public class Member extends DbObject {
 
     private int color;
     private int level;

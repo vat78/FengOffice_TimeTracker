@@ -11,7 +11,7 @@ import ru.vat78.fotimetracker.App;
 public class ErrorsHandler {
 
     public final static String ERROR_LOG_MESSAGE = "log";
-    public final static String ERROR_SAVE_ERROR = "save";
+    public final static String ERROR_SAVE_ERROR = "saveAll";
     public final static String ERROR_SHOW_MESSAGE = "message";
     
     private App app;

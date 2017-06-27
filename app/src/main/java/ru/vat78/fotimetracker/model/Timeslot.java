@@ -6,7 +6,7 @@ import java.util.Date;
 /**
  * Created by vat on 27.11.2015.
  */
-public class Timeslot extends Object {
+public class Timeslot extends DbObject {
 
     private Date start;
     private long duration;

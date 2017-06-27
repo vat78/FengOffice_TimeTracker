@@ -75,7 +75,7 @@ public class DbSQLite implements IDbConnect {
 
     /*
 
-    public int update(String table, Map<String,Object> values, String whereClause){
+    public int update(String table, Map<String,DbObject> values, String whereClause){
         return database.update(table, convertValues(values), whereClause, null);
     }
 

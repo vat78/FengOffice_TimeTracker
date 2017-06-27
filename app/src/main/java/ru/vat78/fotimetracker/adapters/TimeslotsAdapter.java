@@ -109,7 +109,7 @@ public class TimeslotsAdapter extends RecyclerView.Adapter<TimeslotsAdapter.View
         ts.setTaskId(app.getCurTask());
         ts.setMembersIDs("" + app.getCurMember());
         ts.setChanged(System.currentTimeMillis());
-        //DaoTimeslots.save(app,ts);
+        //DaoTimeslots.saveAll(app,ts);
         return (ts.getUid() != 0);
     }
 

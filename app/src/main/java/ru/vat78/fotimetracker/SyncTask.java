@@ -1,7 +1,11 @@
 package ru.vat78.fotimetracker;
 
 import android.os.AsyncTask;
+import ru.vat78.fotimetracker.model.Member;
+import ru.vat78.fotimetracker.model.Task;
+import ru.vat78.fotimetracker.model.Timeslot;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -19,7 +23,7 @@ public class SyncTask extends AsyncTask<App, Integer, Boolean> {
         if (params.length > 0) {
             app = params[0];
             if (!syncInProgress.getAndSet(true)) {
-                if (app.getMainActivity() == null) app.setNeedFullSync(true);
+                if (app.getMainActivity() == null) app.setNeedFullSync();
                 result = dataSynchronization();
                 syncInProgress.set(false);
             }
@@ -30,7 +34,6 @@ public class SyncTask extends AsyncTask<App, Integer, Boolean> {
     @Override
     protected void onPostExecute(final Boolean success) {
         if (success) {
-            app.setNeedFullSync(false);
             app.redrawMainActivity();
         }
     }
@@ -41,88 +44,105 @@ public class SyncTask extends AsyncTask<App, Integer, Boolean> {
     }
 
     protected boolean dataSynchronization() {
-        /*
-        long stamp = System.currentTimeMillis();
-        error.reset_error();
-        try {
 
-            if (!getWebService().testConnection()) {
-                setSyncing(false);
-                return false;
-            }
+        long timestamp = System.currentTimeMillis();
 
-            boolean fullSync = isNeedFullSync() || mainActivity == null;
-            Date d = (fullSync ? new Date(0) : getLastSync());
+        boolean allOk = false;
+        if (app.getWebService().testConnection()) {
 
             //Sync members
-            List<Member> members = foApi.loadMembers();
-            if (getError().is_error()) {
-                setSyncing(false);
-                return false;
-            }
-            members.add(generateAnyMember());
-            DaoMembers.save(this, members);
-            if (getError().is_error()) {
-                setSyncing(false);
-                return false;
-            }
-            members = null;
+            allOk = syncMembers();
 
-            //Sync task
-            List<Task> tasks = DaoTasks.getDeletedTasks(this);
-            for (Task t: tasks){
-                if (foApi.deleteTask(t) && !fullSync) DaoTasks.deleteTask(this, t);
-            }
-            tasks = DaoTasks.getChangedTasks(this, getLastSync());
-            for (Task t: tasks){
-                long id = foApi.saveTask(t);
-                if (id !=0 && !fullSync) DaoTasks.deleteTask(this, t);
-            }
-            tasks = foApi.loadTasks(d);
-            if (getError().is_error()) {
-                setSyncing(false);
-                return false;
-            }
-            DaoTasks.save(this, tasks, fullSync);
-            if (getError().is_error()) {
-                setSyncing(false);
-                return false;
-            }
-            tasks = null;
-
-            //Sync timeslots
-            List<Timeslot> timeslots = DaoTimeslots.getDeletedTS(this);
-            for (Timeslot ts: timeslots){
-                if (foApi.deleteTimeslot(ts) && !fullSync) DaoTimeslots.deleteTS(this, ts);
+            if (allOk) {
+                //Sync tasks
+                if (!pushTaskChangesToWeb()) {
+                    //Something wrong. Let's try agayn in next sync operation
+                    timestamp = app.getLastSync().getTime();
+                }
+                allOk = syncTasks();
             }
 
-            timeslots = DaoTimeslots.getChangedTS(this, getLastSync());
-            for (Timeslot ts: timeslots){
-                long id = foApi.saveTimeslot(ts);
-                if (id != 0 && !fullSync) DaoTimeslots.deleteTS(this, ts);
+            if (allOk) {
+                //Sync timeslots
+                if (!pushTimeslotsChangesToWeb()) {
+                    //Something wrong. Let's try agayn in next sync operation
+                    timestamp = app.getLastSync().getTime();
+                }
+                allOk = syncTimeslots();
             }
-
-            timeslots = foApi.loadTimeslots(d);
-            if (getError().is_error()) {
-                setSyncing(false);
-                return false;
-            }
-            DaoTimeslots.save(this, timeslots, fullSync);
-            if (getError().is_error()) {
-                setSyncing(false);
-                return false;
-            }
-        } catch (Exception e) {
-            getError().error_handler(ErrorsHandler.ERROR_SAVE_ERROR, "", e.getMessage());
-            setSyncing(false);
-            return false;
         }
 
-        setLastSync(stamp);
-        setSyncing(false);
-        setNeedFullSync(false);
+        if (allOk) {
+            app.setLastSync(timestamp);
+        }
+        return allOk;
+    }
 
-        */
-        return true;
+    private boolean syncTimeslots() {
+        List<Timeslot> timeslots = app.getWebService().loadTimeslots(app.getLastSync());
+        boolean result = app.getError().hasStopError();
+        if (result && timeslots != null) {
+            result = result && app.getDatabaseService().saveAll(timeslots, Timeslot.class);
+            result = result && app.getError().hasStopError();
+        }
+        return result;
+    }
+
+    private boolean pushTimeslotsChangesToWeb() {
+        boolean result;
+        List<Timeslot> timeslots = (List<Timeslot>) app.getDatabaseService().getAllDeleted(Timeslot.class);
+        result = app.getError().hasStopError();
+        for (Timeslot ts : timeslots) {
+            app.getWebService().deleteTimeslot(ts);
+            result = result && app.getError().hasStopError();
+        }
+
+        timeslots = (List<Timeslot>) app.getDatabaseService().getAllChanged(Timeslot.class);
+        result = result && app.getError().hasStopError();
+        for (Timeslot ts : timeslots) {
+            app.getWebService().saveTimeslot(ts);
+            result = result && app.getError().hasStopError();
+        }
+        return result;
+    }
+
+    private boolean syncTasks() {
+        boolean allOk;
+        List<Task> tasks = app.getWebService().loadTasks(app.getLastSync());
+        allOk = app.getError().hasStopError();
+        if (allOk && tasks != null) {
+            allOk = allOk && app.getDatabaseService().saveAll(tasks, Task.class);
+            allOk = allOk && app.getError().hasStopError();
+        }
+        return allOk;
+    }
+
+    private boolean pushTaskChangesToWeb() {
+        boolean result;
+        List<Task> tasks = (List<Task>) app.getDatabaseService().getAllDeleted(Task.class);
+        result = app.getError().hasStopError();
+        for (Task t : tasks) {
+            app.getWebService().deleteTask(t);
+            result = result && app.getError().hasStopError();
+        }
+
+        tasks = (List<Task>) app.getDatabaseService().getAllChanged(Task.class);
+        result = result && app.getError().hasStopError();
+        for (Task t : tasks) {
+            app.getWebService().saveTask(t);
+            result = result && app.getError().hasStopError();
+        }
+        return result;
+    }
+
+    private boolean syncMembers() {
+        boolean result;
+        List<Member> members = app.getWebService().loadMembers();
+        result = app.getError().hasStopError();
+        if (result && members != null) {
+            result = result && app.getDatabaseService().saveAll(members, Member.class);
+            result = result && app.getError().hasStopError();
+        }
+        return result;
     }
 }

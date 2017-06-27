@@ -5,7 +5,7 @@ import java.util.Date;
 /**
  * Created by vat on 27.11.2015.
  */
-public class Task extends Object {
+public class Task extends DbObject {
 
     private Date startdate;
     private Date duedate;
