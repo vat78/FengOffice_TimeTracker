@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Parcel;
+import android.provider.BaseColumns;
 import ru.vat78.fotimetracker.IErrorsHandler;
 import ru.vat78.fotimetracker.model.ErrorsType;
 
@@ -71,6 +72,15 @@ public class DbSQLite implements IDbConnect {
     @Override
     public Cursor query(String table, String[] columns, String filter, String order){
         return database.query(table,columns,filter,null,null,null,order);
+    }
+
+    @Override
+    public boolean delete(String table, long id) {
+        if (database.delete(table, BaseColumns._ID + " = " + id,null) == 1) {
+            return true;
+        }
+        errorsHandler.info(CLASS_NAME, ErrorsType.CANT_DELETE_FROM_DB);
+        return true;
     }
 
     /*

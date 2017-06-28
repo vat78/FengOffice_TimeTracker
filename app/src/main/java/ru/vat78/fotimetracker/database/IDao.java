@@ -9,10 +9,15 @@ import java.util.List;
  */
 public interface IDao<T extends DbObject> {
 
-    long save(T entity);
-    long save(List<T> entities);
-    T getByUid(long uid);
-    boolean isExistInDB(long memberID);
-    List<T> load();
+    long save(T entry);
+    long save(List<T> entries);
 
+    T getByUid(long uid);
+    boolean isExistInDB(long id);
+
+    List<T> load();
+    List<T> loadDeleted();
+    List<T> loadChanged(long timestamp);
+
+    boolean delete(T entry);
 }

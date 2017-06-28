@@ -18,7 +18,7 @@ import static ru.vat78.fotimetracker.database.DBContract.MembersTable.*;
 /**
  * Created by vat on 21.12.2015.
  */
-public class DaoMembers implements IDao<Member> {
+public class DaoMembers extends DaoObjects<Member> {
     private IDbConnect database;
 
     public DaoMembers(IDbConnect database) {
@@ -31,24 +31,13 @@ public class DaoMembers implements IDao<Member> {
     }
 
     @Override
-    public long save(@NonNull Member member) {
-        database.beginTransaction();
-        Map ts = convertForDB(member);
-        long res = database.insertOrUpdate(TABLE_NAME, ts);
-        if (res != 0 ) member.setId(res);
-        database.endTransaction();
-        return res;
+    protected IDbConnect getDatabase() {
+        return database;
     }
 
     @Override
-    public long save(@NonNull List<Member> members) {
-        long cntr = 0;
-        for (Member m : members) {
-            if (m.getUid() != 0) {
-                if (save(m) != 0) cntr++;
-            }
-        }
-        return cntr;
+    protected String getTableName() {
+        return TABLE_NAME;
     }
 
     @Override
@@ -73,12 +62,6 @@ public class DaoMembers implements IDao<Member> {
         }
         database.endTransaction();
         return res;
-    }
-
-    @Override
-    public boolean isExistInDB(long uid) {
-        Member res = getByUid(uid);
-        return (res.getUid() == uid);
     }
 
     @Override
@@ -119,7 +102,12 @@ public class DaoMembers implements IDao<Member> {
         return members;
     }
 
-    private Map<String, Object> convertForDB(Member member) {
+    @Override
+    protected List<Member> loadWithFilter(String filterConditions) {
+        return load();
+    }
+
+    protected Map<String, Object> convertForDB(Member member) {
         Map<String, Object> res = new HashMap<>();
         res.put(BaseColumns._ID, member.getId());
         res.put(COLUMN_NAME_FO_ID, member.getUid());

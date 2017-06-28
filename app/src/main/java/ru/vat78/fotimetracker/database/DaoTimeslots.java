@@ -14,7 +14,7 @@ import static ru.vat78.fotimetracker.database.DBContract.TimeslotsTable.*;
 /**
  * Created by vat on 21.12.2015.
  */
-public class DaoTimeslots implements IDao<Timeslot> {
+public class DaoTimeslots extends DaoObjects<Timeslot> {
     private static final String CLASS_NAME = "DaoTimeslots";
 
     private final IDbConnect database;
@@ -26,6 +26,16 @@ public class DaoTimeslots implements IDao<Timeslot> {
     public void rebuild(App app){
         database.execSql(SQL_DELETE_ENTRIES);
         database.execSql(SQL_CREATE_ENTRIES);
+    }
+
+    @Override
+    protected IDbConnect getDatabase() {
+        return database;
+    }
+
+    @Override
+    protected String getTableName() {
+        return TABLE_NAME;
     }
 
     @Override
@@ -48,15 +58,6 @@ public class DaoTimeslots implements IDao<Timeslot> {
         }
         database.endTransaction();
         return id;
-    }
-
-    @Override
-    public long save(List<Timeslot> entities) {
-        long cntr = 0;
-        for (Timeslot t : entities) {
-            if (save(t) != 0) cntr++;
-        }
-        return cntr;
     }
 
     @Override
@@ -96,17 +97,6 @@ public class DaoTimeslots implements IDao<Timeslot> {
             database.endTransaction();
         }
         return res;
-    }
-
-    @Override
-    public boolean isExistInDB(long tsUid) {
-        return getByUid(tsUid).getUid() == tsUid;
-    }
-
-    @Override
-    @NonNull
-    public List<Timeslot> load() {
-        return loadWithFilter("");
     }
 
     @NonNull
@@ -151,7 +141,7 @@ public class DaoTimeslots implements IDao<Timeslot> {
         return timeslots;
     }
 
-    private Map<String, Object> convertForDB(Timeslot ts) {
+    protected Map<String, Object> convertForDB(Timeslot ts) {
         Map<String, Object> res = new HashMap<>();
         res.put(DBContract.COLUMN_NAME_FO_ID, ts.getUid());
         res.put(DBContract.COLUMN_NAME_TITLE,ts.getName());

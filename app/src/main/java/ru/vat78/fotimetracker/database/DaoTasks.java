@@ -14,7 +14,7 @@ import static ru.vat78.fotimetracker.database.DBContract.TasksTable.*;
 /**
  * Created by vat on 21.12.2015.
  */
-public class DaoTasks implements IDao<Task> {
+public class DaoTasks extends DaoObjects<Task> {
     private static final String CLASS_NAME ="DaoTasks";
 
     private final IDbConnect database;
@@ -29,9 +29,18 @@ public class DaoTasks implements IDao<Task> {
     }
 
     @Override
+    protected IDbConnect getDatabase() {
+        return database;
+    }
+
+    @Override
+    protected String getTableName() {
+        return TABLE_NAME;
+    }
+
     public long save(@NonNull Task task) {
         database.beginTransaction();
-        Map data = convertForDb(task);
+        Map data = convertForDB(task);
 
         if (task.getUid() != 0 ) {
             Cursor cursor = database.query(TABLE_NAME, new String[]{BaseColumns._ID},
@@ -49,15 +58,6 @@ public class DaoTasks implements IDao<Task> {
         }
         database.endTransaction();
         return id;
-    }
-
-    @Override
-    public long save(List<Task> tasks) {
-        long cntr = 0;
-        for (Task t : tasks) {
-            if (save(t) != 0) cntr++;
-        }
-        return cntr;
     }
 
     @Override
@@ -90,28 +90,13 @@ public class DaoTasks implements IDao<Task> {
         return res;
     }
 
-    @Override
-    public boolean isExistInDB(long uid) {
-        return (getByUid(uid).getUid() == uid);
-    }
-
-    /**
-     * Now it returns only base info about tasks
-     * @return list of all tasks in database
-     */
-    @Override
-    @NonNull
-    public List<Task> load() {
-        return loadBaseInfo("");
-    }
-
     /**
      * Select only base info about tasks (uid, title, due date and status)
      * @param conditions - conditions for 'WHERE' statement
      * @return list of tasks
      */
     @NonNull
-    public List<Task> loadBaseInfo (String conditions) {
+    public List<Task> loadWithFilter(String conditions) {
         List<Task> tasks = new ArrayList<>();
 
         database.beginTransaction();
@@ -165,7 +150,7 @@ public class DaoTasks implements IDao<Task> {
     }
     */
 
-    private Map<String, Object> convertForDb(Task task) {
+    protected Map<String, Object> convertForDB(Task task) {
         Map<String, Object> res = new HashMap<>();
         res.put(BaseColumns._ID, task.getId());
         res.put(DBContract.COLUMN_NAME_FO_ID, task.getUid());
