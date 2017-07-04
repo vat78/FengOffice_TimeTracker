@@ -27,29 +27,23 @@ class ApiMembers {
     }
 
     ArrayList<Member> load(){
-        JSONObject jo = connector.executeAPI(ApiDictionary.FO_METHOD_MEMBERS, ApiDictionary.FO_MEMBERS_WORKSPACE);
+        JSONArray jo = connector.executeAPI(ApiDictionary.FO_METHOD_MEMBERS, ApiDictionary.FO_MEMBERS_WORKSPACE);
         return convertResults(jo);
     }
 
-    private ArrayList<Member> convertResults(JSONObject data){
+    private ArrayList<Member> convertResults(JSONArray data){
 
         if (data == null) {return null;}
-        JSONArray list = null;
         JSONObject jo;
         ArrayList<Member> res = new ArrayList<>();
         res.add(generateAnyMember());
-        try {
-            list = data.getJSONArray(ApiDictionary.FO_API_MAIN_OBJ);
-        } catch (JSONException e) {
-            errorsHandler.error(CLASS_NAME, ErrorsType.JSON_PARSING_ERROR, e);
-        }
 
-        if (list == null) {return null;}
-        for (int i = 0; i < list.length(); i++) {
+        if (data == null) {return null;}
+        for (int i = 0; i < data.length(); i++) {
 
             Member el = null;
             try {
-                jo = list.getJSONObject(i);
+                jo = data.getJSONObject(i);
 
                 long id = jo.getLong(ApiDictionary.FO_API_FIELD_ID);
                 String s = jo.getString(ApiDictionary.FO_API_FIELD_NAME);

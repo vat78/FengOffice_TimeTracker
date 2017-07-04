@@ -47,7 +47,7 @@ public abstract class DaoObjects<T extends DbObject> implements IDao<T> {
         long cntr = 0;
         for (T o : entries) {
             if (o.getUid() != 0) {
-                if (save(o) != 0) cntr++;
+                if (save(o) != -1) cntr++;
             }
         }
         return cntr;

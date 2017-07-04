@@ -26,8 +26,8 @@ class ApiTimeslots {
     }
 
     ArrayList<Timeslot> load(){
-        JSONObject jo = connector.executeAPI(ApiDictionary.FO_METHOD_LISTING, ApiDictionary.FO_SERVICE_TIMESLOTS);
-        return convertResults(jo);
+        JSONArray ja = connector.executeAPI(ApiDictionary.FO_METHOD_LISTING, ApiDictionary.FO_SERVICE_TIMESLOTS);
+        return convertResults(ja);
     }
 
     ArrayList<Timeslot> load(Date timestamp){
@@ -35,8 +35,8 @@ class ApiTimeslots {
         args[0] = ApiDictionary.FO_API_ARG_LASTUPDATE;
         long l = (long) timestamp.getTime() / ApiDictionary.FO_API_DATE_CONVERTOR;
         args[1] = "" + l;
-        JSONObject jo = connector.executeAPI(ApiDictionary.FO_METHOD_LISTING, ApiDictionary.FO_SERVICE_TIMESLOTS, args);
-        return convertResults(jo);
+        JSONArray ja = connector.executeAPI(ApiDictionary.FO_METHOD_LISTING, ApiDictionary.FO_SERVICE_TIMESLOTS, args);
+        return convertResults(ja);
     }
 
     long save(Timeslot timeslot) {
@@ -44,10 +44,10 @@ class ApiTimeslots {
         if (timeslot == null) return res;
 
         String[] args = convertTSForAPI(timeslot);
-        JSONObject jo = connector.executeAPI(ApiDictionary.FO_METHOD_SAVE_OBJ, ApiDictionary.FO_SERVICE_TIMESLOTS, args);
-        if (jo != null) {
+        JSONArray ja = connector.executeAPI(ApiDictionary.FO_METHOD_SAVE_OBJ, ApiDictionary.FO_SERVICE_TIMESLOTS, args);
+        if (ja != null) {
                 try {
-                    res = jo.getLong(ApiDictionary.FO_API_FIELD_ID);
+                    res = ja.getJSONObject(0).getLong(ApiDictionary.FO_API_FIELD_ID);
                 } catch (JSONException e){
                     errorsHandler.error(CLASS_NAME, ErrorsType.JSON_PARSING_ERROR, e);
                 }
@@ -81,24 +81,17 @@ class ApiTimeslots {
         return args;
     }
 
-    private ArrayList<Timeslot> convertResults(JSONObject data){
+    private ArrayList<Timeslot> convertResults(JSONArray data){
 
         if (data == null) {return null;}
-        JSONArray list = null;
         JSONObject jo;
         String tmp;
         ArrayList<Timeslot> res = new ArrayList<>();
-        try {
-            list = data.getJSONArray(ApiDictionary.FO_API_MAIN_OBJ);
-        } catch (JSONException e) {
-            errorsHandler.error(CLASS_NAME, ErrorsType.JSON_PARSING_ERROR, e);
-        }
-        if (list == null) {return null;}
 
-        for (int i = 0; i < list.length(); i++) {
+        for (int i = 0; i < data.length(); i++) {
             Timeslot el = null;
             try {
-                jo = list.getJSONObject(i);
+                jo = data.getJSONObject(i);
                 long id = jo.getLong(ApiDictionary.FO_API_FIELD_ID);
                 String s;
                 if (jo.isNull(ApiDictionary.FO_API_FIELD_TS_DESC)) {
@@ -171,9 +164,9 @@ class ApiTimeslots {
         boolean res = false;
 
         if (timeslot.getUid() > 0) {
-            JSONObject jo = connector.executeAPI(ApiDictionary.FO_METHOD_DELETE_OBJ, timeslot.getUid());
+            JSONArray ja = connector.executeAPI(ApiDictionary.FO_METHOD_DELETE_OBJ, timeslot.getUid());
             try {
-                res = (!jo.getString(ApiDictionary.FO_API_FIELD_RESULT).equalsIgnoreCase(ApiDictionary.FO_API_TRUE));
+                res = (!ja.getJSONObject(0).getString(ApiDictionary.FO_API_FIELD_RESULT).equalsIgnoreCase(ApiDictionary.FO_API_TRUE));
             } catch (JSONException e) {
                 errorsHandler.error(CLASS_NAME, ErrorsType.JSON_PARSING_ERROR, e);
             }

@@ -30,33 +30,23 @@ public class HttpJsonClient {
         this.errorsHandler = errorsHandler;
     }
 
-    public JSONObject getJsonObject(String url, Properties params, boolean untrustCA) {
+    public JSONArray getJsonObject(String url, Properties params, boolean untrustCA) {
 
-        JSONObject jObj = null;
+        JSONArray jObj = null;
         String data = getStringFromURL(prepareUrl(url,params), untrustCA);
-        FindErrorInData(data);
+        if (data != null && data.startsWith("{")) {
+            data = "[" + data + "]";
+        }
+        findErrorInData(data);
 
         if (!errorsHandler.hasStopError()) {
             try {
-                jObj = new JSONObject(data);
+                jObj = new JSONArray(data);
             } catch (JSONException e) {
                 errorsHandler.info(CLASS_NAME, ErrorsType.JSON_PARSING_ERROR, e);
             }
         }
         return jObj;
-    }
-
-    public JSONArray getJsonArray(String url, Properties params, boolean untrustCA, String ErrorMsg) {
-
-        JSONArray jArr = null;
-        JSONObject jObj = getJsonObject(url, params, untrustCA);
-
-        try {
-            jArr = jObj.getJSONArray("fo_obj");
-        } catch (JSONException e) {
-            errorsHandler.info(CLASS_NAME, ErrorsType.JSON_PARSING_ERROR, e);
-        }
-        return jArr;
     }
 
     private String prepareUrl(String url, Properties params) {
@@ -113,7 +103,7 @@ public class HttpJsonClient {
         return result;
     }
 
-    private void FindErrorInData(String data) {
+    private void findErrorInData(String data) {
         if (data == null){
             errorsHandler.error(CLASS_NAME, ErrorsType.WRONG_WEB_ANSWER);
             return;
@@ -134,7 +124,7 @@ public class HttpJsonClient {
             return;
         }
 
-        if (!data.startsWith("{")) {
+        if (!data.startsWith("[")) {
             errorsHandler.error(CLASS_NAME, ErrorsType.WRONG_WEB_ANSWER, data);
         }
     }

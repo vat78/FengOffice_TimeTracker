@@ -80,69 +80,69 @@ public class SyncTask extends AsyncTask<App, Integer, Boolean> {
 
     private boolean syncTimeslots() {
         List<Timeslot> timeslots = app.getWebService().loadTimeslots(app.getLastSync());
-        boolean result = app.getError().hasStopError();
-        if (result && timeslots != null) {
-            result = result && app.getDatabaseService().saveAll(timeslots, Timeslot.class);
-            result = result && app.getError().hasStopError();
+        boolean hasError = app.getError().hasStopError();
+        if (!hasError && timeslots != null) {
+            hasError = !app.getDatabaseService().saveAll(timeslots, Timeslot.class);
+            hasError = hasError || app.getError().hasStopError();
         }
-        return result;
+        return !hasError;
     }
 
     private boolean pushTimeslotsChangesToWeb() {
-        boolean result;
+        boolean hasError;
         List<Timeslot> timeslots = (List<Timeslot>) app.getDatabaseService().getAllDeleted(Timeslot.class);
-        result = app.getError().hasStopError();
+        hasError = app.getError().hasStopError();
         for (Timeslot ts : timeslots) {
             app.getWebService().deleteTimeslot(ts);
-            result = result && app.getError().hasStopError();
+            hasError = hasError || app.getError().hasStopError();
         }
 
         timeslots = (List<Timeslot>) app.getDatabaseService().getAllChanged(Timeslot.class);
-        result = result && app.getError().hasStopError();
+        hasError = hasError || app.getError().hasStopError();
         for (Timeslot ts : timeslots) {
             app.getWebService().saveTimeslot(ts);
-            result = result && app.getError().hasStopError();
+            hasError = hasError || app.getError().hasStopError();
         }
-        return result;
+        return !hasError;
     }
 
     private boolean syncTasks() {
-        boolean allOk;
+        boolean hasError;
         List<Task> tasks = app.getWebService().loadTasks(app.getLastSync());
-        allOk = app.getError().hasStopError();
-        if (allOk && tasks != null) {
-            allOk = allOk && app.getDatabaseService().saveAll(tasks, Task.class);
-            allOk = allOk && app.getError().hasStopError();
+        hasError = app.getError().hasStopError();
+        if (!hasError && tasks != null) {
+            hasError = !app.getDatabaseService().saveAll(tasks, Task.class);
+            hasError = hasError || app.getError().hasStopError();
         }
-        return allOk;
+        return !hasError;
     }
 
     private boolean pushTaskChangesToWeb() {
-        boolean result;
+        boolean hasError;
         List<Task> tasks = (List<Task>) app.getDatabaseService().getAllDeleted(Task.class);
-        result = app.getError().hasStopError();
+        hasError = app.getError().hasStopError();
         for (Task t : tasks) {
             app.getWebService().deleteTask(t);
-            result = result && app.getError().hasStopError();
+            hasError = hasError || app.getError().hasStopError();
         }
 
         tasks = (List<Task>) app.getDatabaseService().getAllChanged(Task.class);
-        result = result && app.getError().hasStopError();
+        hasError = hasError || app.getError().hasStopError();
         for (Task t : tasks) {
             app.getWebService().saveTask(t);
-            result = result && app.getError().hasStopError();
+            hasError = hasError || app.getError().hasStopError();
         }
-        return result;
+        return !hasError;
     }
 
     private boolean syncMembers() {
-        boolean result;
+        boolean hasError;
         List<Member> members = app.getWebService().loadMembers();
-        result = app.getError().hasStopError();
-        if (result && members != null) {
-            result = result && app.getDatabaseService().saveAll(members, Member.class);
-            result = result && app.getError().hasStopError();
+        hasError = app.getError().hasStopError();
+        if (!hasError && members != null) {
+            hasError = !app.getDatabaseService().saveAll(members, Member.class);
+            hasError = hasError || app.getError().hasStopError();
         }
-        return result;
+        return !hasError;
     }
 }

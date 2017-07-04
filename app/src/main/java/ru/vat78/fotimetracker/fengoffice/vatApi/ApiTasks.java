@@ -26,7 +26,7 @@ class ApiTasks {
     }
 
     public ArrayList<Task> load(){
-        JSONObject jo = connector.executeAPI(ApiDictionary.FO_METHOD_LISTING, ApiDictionary.FO_SERVICE_TASKS,
+        JSONArray jo = connector.executeAPI(ApiDictionary.FO_METHOD_LISTING, ApiDictionary.FO_SERVICE_TASKS,
                 new String[] {ApiDictionary.FO_API_ARG_STATUS, "0"});
         return convertResults(jo,true);
     }
@@ -42,13 +42,12 @@ class ApiTasks {
             args[0]= ApiDictionary.FO_API_ARG_STATUS;
             args[1] = "10";
         }
-        JSONObject jo = connector.executeAPI(ApiDictionary.FO_METHOD_LISTING,ApiDictionary.FO_SERVICE_TASKS, args);
+        JSONArray jo = connector.executeAPI(ApiDictionary.FO_METHOD_LISTING,ApiDictionary.FO_SERVICE_TASKS, args);
         return convertResults(jo,(l==0));
     }
 
-    private ArrayList<Task> convertResults(JSONObject data, boolean checkCurrentTask){
+    private ArrayList<Task> convertResults(JSONArray data, boolean checkCurrentTask){
 
-        JSONArray list = null;
         JSONObject jo;
         ArrayList<Task> res = new ArrayList<>();
         if (data == null) {return res;}
@@ -56,18 +55,10 @@ class ApiTasks {
         //long current_task = app.getCurTask();
         //boolean isIncludeCurrentTask = !checkCurrentTask;
 
-        try {
-            list = data.getJSONArray(ApiDictionary.FO_API_MAIN_OBJ);
-        } catch (JSONException e) {
-            errorsHandler.error(CLASS_NAME, ErrorsType.JSON_PARSING_ERROR, e);
-        }
-        if (list == null) {return null;}
-
-        for (int i = 0; i < list.length(); i++) {
+        for (int i = 0; i < data.length(); i++) {
             Task el = null;
             try {
-                jo = list.getJSONObject(i);
-
+                jo = data.getJSONObject(i);
                 el = convertToTask(jo);
             }
             catch (JSONException e) {
@@ -100,26 +91,33 @@ class ApiTasks {
         String[] args = new String[2];
         args[0] = ApiDictionary.FO_API_FIELD_ID;
         args[1] = "" + id;
-        return convertToTask(connector.executeAPI(ApiDictionary.FO_METHOD_LISTING, ApiDictionary.FO_SERVICE_TASKS,args));
+        JSONArray ja = connector.executeAPI(ApiDictionary.FO_METHOD_LISTING, ApiDictionary.FO_SERVICE_TASKS,args);
+        Task res = null;
+        try {
+            res = convertToTask(ja.getJSONObject(0));
+        } catch (Exception e) {
+            errorsHandler.error(CLASS_NAME, ErrorsType.JSON_PARSING_ERROR, e);
+        }
+        return res;
     }
 
-    private Task convertToTask(JSONObject jsonObject) {
+    private Task convertToTask(JSONObject jo) {
         Task el = null;
         try {
-            long id = jsonObject.getLong(ApiDictionary.FO_API_FIELD_ID);
-            String s = jsonObject.getString(ApiDictionary.FO_API_FIELD_NAME);
+            long id = jo.getLong(ApiDictionary.FO_API_FIELD_ID);
+            String s = jo.getString(ApiDictionary.FO_API_FIELD_NAME);
 
             el = new Task(id, s);
 
-            if (jsonObject.isNull(ApiDictionary.FO_API_FIELD_DESC)) {
+            if (jo.isNull(ApiDictionary.FO_API_FIELD_DESC)) {
                 el.setDesc("");
             } else {
-                el.setDesc(jsonObject.getString(ApiDictionary.FO_API_FIELD_DESC));
+                el.setDesc(jo.getString(ApiDictionary.FO_API_FIELD_DESC));
             }
 
             s = "";
-            if (!jsonObject.isNull(ApiDictionary.FO_API_FIELD_MEMPATH)) {
-                JSONArray ja = jsonObject.getJSONArray(ApiDictionary.FO_API_FIELD_MEMPATH);
+            if (!jo.isNull(ApiDictionary.FO_API_FIELD_MEMPATH)) {
+                JSONArray ja = jo.getJSONArray(ApiDictionary.FO_API_FIELD_MEMPATH);
                 for (int j = 0; j < ja.length(); j++) {
                     String mem = ja.getString(j);
                     if (mem != null && mem.length() > 0) {
@@ -134,31 +132,31 @@ class ApiTasks {
             el.setMembersIDs(s);
 
             String tmp = ApiDictionary.FO_API_FALSE;
-            if (!jsonObject.isNull(ApiDictionary.FO_API_FIELD_STARTDATE))
-                tmp = jsonObject.getString(ApiDictionary.FO_API_FIELD_STARTDATE);
+            if (!jo.isNull(ApiDictionary.FO_API_FIELD_STARTDATE))
+                tmp = jo.getString(ApiDictionary.FO_API_FIELD_STARTDATE);
             if (tmp.equalsIgnoreCase(ApiDictionary.FO_API_FALSE)) {
                 el.setStartDate(0);
             } else {
-                el.setStartDate(jsonObject.getLong(ApiDictionary.FO_API_FIELD_STARTDATE) * ApiDictionary.FO_API_DATE_CONVERTOR);
+                el.setStartDate(jo.getLong(ApiDictionary.FO_API_FIELD_STARTDATE) * ApiDictionary.FO_API_DATE_CONVERTOR);
             }
 
             tmp = ApiDictionary.FO_API_FALSE;
-            if (!jsonObject.isNull(ApiDictionary.FO_API_FIELD_DUEDATE))
-                tmp = jsonObject.getString(ApiDictionary.FO_API_FIELD_DUEDATE);
+            if (!jo.isNull(ApiDictionary.FO_API_FIELD_DUEDATE))
+                tmp = jo.getString(ApiDictionary.FO_API_FIELD_DUEDATE);
             if (tmp.equalsIgnoreCase(ApiDictionary.FO_API_FALSE)) {
                 el.setDueDate(0);
             } else {
-                el.setDueDate(jsonObject.getLong(ApiDictionary.FO_API_FIELD_DUEDATE) * ApiDictionary.FO_API_DATE_CONVERTOR);
+                el.setDueDate(jo.getLong(ApiDictionary.FO_API_FIELD_DUEDATE) * ApiDictionary.FO_API_DATE_CONVERTOR);
             }
 
-            if (!jsonObject.isNull(ApiDictionary.FO_API_FIELD_PRIORITY))
-                el.setPriority(jsonObject.getInt(ApiDictionary.FO_API_FIELD_PRIORITY));
+            if (!jo.isNull(ApiDictionary.FO_API_FIELD_PRIORITY))
+                el.setPriority(jo.getInt(ApiDictionary.FO_API_FIELD_PRIORITY));
 
-            if (!jsonObject.isNull(ApiDictionary.FO_API_FIELD_STATUS))
-                el.setStatus(jsonObject.getInt(ApiDictionary.FO_API_FIELD_STATUS));
+            if (!jo.isNull(ApiDictionary.FO_API_FIELD_STATUS))
+                el.setStatus(jo.getInt(ApiDictionary.FO_API_FIELD_STATUS));
 
-            if (!jsonObject.isNull(ApiDictionary.FO_API_FIELD_USETIMESLOTS))
-                el.setCanAddTimeslots(jsonObject.getString(ApiDictionary.FO_API_FIELD_USETIMESLOTS).equalsIgnoreCase(ApiDictionary.FO_API_TRUE));
+            if (!jo.isNull(ApiDictionary.FO_API_FIELD_USETIMESLOTS))
+                el.setCanAddTimeslots(jo.getString(ApiDictionary.FO_API_FIELD_USETIMESLOTS).equalsIgnoreCase(ApiDictionary.FO_API_TRUE));
 
                 /*
                 if (!jo.isNull(ApiDictionary.FO_API_FIELD_ASSIGNEDBY))
@@ -185,18 +183,19 @@ class ApiTasks {
         long res = 0;
         JSONObject jo;
         if (task == null) return res;
-            String[] args = convertTaskForAPI(task);
-            jo = connector.executeAPI(ApiDictionary.FO_METHOD_SAVE_OBJ, ApiDictionary.FO_SERVICE_TASKS, args);
+        String[] args = convertTaskForAPI(task);
+
         try {
+            jo = connector.executeAPI(ApiDictionary.FO_METHOD_SAVE_OBJ, ApiDictionary.FO_SERVICE_TASKS, args).getJSONObject(0);
             res = jo.getLong(ApiDictionary.FO_API_FIELD_ID);
         } catch (Exception e) {}
 
         if (res !=0 ) {
             try {
                 if (task.getStatus() == 0) {
-                    jo = connector.executeAPI(ApiDictionary.FO_METHOD_COMPLETE_TASK, res, ApiDictionary.FO_ACTION_OPEN_TASK);
+                    jo = connector.executeAPI(ApiDictionary.FO_METHOD_COMPLETE_TASK, res, ApiDictionary.FO_ACTION_OPEN_TASK).getJSONObject(0);
                 } else {
-                    jo = connector.executeAPI(ApiDictionary.FO_METHOD_COMPLETE_TASK, res, ApiDictionary.FO_ACTION_COMPLETE_TASK);
+                    jo = connector.executeAPI(ApiDictionary.FO_METHOD_COMPLETE_TASK, res, ApiDictionary.FO_ACTION_COMPLETE_TASK).getJSONObject(0);
                 }
             } catch (Exception e) {}
         }
@@ -235,14 +234,13 @@ class ApiTasks {
         boolean res = false;
 
             if (task.getUid() > 0) {
-                JSONObject jo = connector.executeAPI(ApiDictionary.FO_METHOD_DELETE_OBJ, task.getUid());
+                JSONArray jo = connector.executeAPI(ApiDictionary.FO_METHOD_DELETE_OBJ, task.getUid());
                 if (jo == null) {
                     res = false;
                 } else {
                     try {
-                        res = (jo.getString(ApiDictionary.FO_API_FIELD_RESULT).equalsIgnoreCase(ApiDictionary.FO_API_TRUE));
-                    } catch (Exception e){
-                    }
+                        res = (jo.getJSONObject(0).getString(ApiDictionary.FO_API_FIELD_RESULT).equalsIgnoreCase(ApiDictionary.FO_API_TRUE));
+                    } catch (Exception e){ }
                 }
             }
 

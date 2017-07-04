@@ -3,6 +3,7 @@ package ru.vat78.fotimetracker.fengoffice.vatApi;
 
 import android.text.TextUtils;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -74,13 +75,14 @@ public class ApiConnector {
         requestParams.setProperty(ApiDictionary.FO_API_PASSWORD,this.password);
 
         // Download JSON data from URL
-        JSONObject jo = jsonClient.getJsonObject(request, requestParams, this.useUntrustCA);
-        if (!errorsHandler.hasStopError()) {
-            try {
+        try {
+            JSONArray ja = jsonClient.getJsonObject(request, requestParams, this.useUntrustCA);
+            JSONObject jo = ja.getJSONObject(0);
+            if (!errorsHandler.hasStopError()) {
                 this.securityToken = jo.getString(ApiDictionary.FO_API_FIELD_TOKEN);
-            } catch (JSONException e) {
-                errorsHandler.error(CLASS_NAME, ErrorsType.TEST_CREDENTIAL_ERROR, e);
             }
+        } catch (JSONException e) {
+            errorsHandler.error(CLASS_NAME, ErrorsType.TEST_CREDENTIAL_ERROR, e);
         }
         return (!this.securityToken.isEmpty());
     }
@@ -98,7 +100,7 @@ public class ApiConnector {
 
         JSONObject jo;
         try {
-            jo = jsonClient.getJsonObject(request, requestParams, this.useUntrustCA);
+            jo = jsonClient.getJsonObject(request, requestParams, this.useUntrustCA).getJSONObject(0);
             res = jo.getInt(ApiDictionary.FO_API_FIELD_PLUGIN_STATE);
         } catch (JSONException e) {
             errorsHandler.error(CLASS_NAME, ErrorsType.JSON_PARSING_ERROR, e);
@@ -108,7 +110,7 @@ public class ApiConnector {
 
 
     //Execute API operation without arguments
-    JSONObject executeAPI(String method, String service){
+    JSONArray executeAPI(String method, String service){
         if (method.isEmpty()) {return null;}
         if (this.securityToken.isEmpty())
             if (!testConnection()) {return null;}
@@ -121,11 +123,11 @@ public class ApiConnector {
         requestParams.setProperty(ApiDictionary.FO_API_METHOD,method);
         requestParams.setProperty(ApiDictionary.FO_API_SERVICE,service);
 
-        return jsonClient.getJsonObject(request, requestParams, this.useUntrustCA);
+        return extractArray(jsonClient.getJsonObject(request, requestParams, this.useUntrustCA));
     }
 
     //Execute API operation with arguments
-    JSONObject executeAPI(String method, String service, String args[]){
+    JSONArray executeAPI(String method, String service, String args[]){
         if (method.isEmpty()) {return null;}
         if (this.securityToken.isEmpty())
             if (!testConnection()) {return null;}
@@ -154,12 +156,12 @@ public class ApiConnector {
         requestParams.setProperty(ApiDictionary.FO_API_SERVICE,service);
         requestParams.setProperty(ApiDictionary.FO_API_ARGS,argStr);
 
-        return jsonClient.getJsonObject(request, requestParams, this.useUntrustCA);
+        return extractArray(jsonClient.getJsonObject(request, requestParams, this.useUntrustCA));
 
     }
 
     //Execute API operation for delete object and so on
-    JSONObject executeAPI(String method, long id) {
+    JSONArray executeAPI(String method, long id) {
         if (method.isEmpty()) {return null;}
         if (this.securityToken.isEmpty())
             if (!testConnection()) {return null;}
@@ -173,11 +175,11 @@ public class ApiConnector {
         requestParams.setProperty(ApiDictionary.FO_API_OBJECT_ID,"" + id);
         requestParams.setProperty(ApiDictionary.FO_API_ACTION,"" + 0);
 
-        return jsonClient.getJsonObject(request, requestParams, this.useUntrustCA);
+        return extractArray(jsonClient.getJsonObject(request, requestParams, this.useUntrustCA));
     }
     
     //Execute API operation for complet task and so on
-    JSONObject executeAPI(String method, long id, String action) {
+    JSONArray executeAPI(String method, long id, String action) {
         if (method.isEmpty()) {return null;}
         if (this.securityToken.isEmpty())
             if (!testConnection()) {return null;}
@@ -191,6 +193,17 @@ public class ApiConnector {
         requestParams.setProperty(ApiDictionary.FO_API_OBJECT_ID,"" + id);
         requestParams.setProperty(ApiDictionary.FO_API_ACTION,action);
 
-        return jsonClient.getJsonObject(request, requestParams, this.useUntrustCA);
+        return extractArray(jsonClient.getJsonObject(request, requestParams, this.useUntrustCA));
+    }
+
+    //For compliance with old versions of FengOffice
+    JSONArray extractArray(JSONArray data) {
+        JSONArray res = null;
+        if (data.length() == 1) {
+            try {
+                res = data.getJSONObject(0).getJSONArray("fo_obj");
+            } catch (JSONException ignored) {}
+        }
+        return res == null ? data : res;
     }
 }

@@ -23,7 +23,8 @@ public class ErrorsHandlerImpl implements IErrorsHandler {
     @Override
     public void info(String className, ErrorsType type, Exception error) {
         String message = error == null ? "" : ": " + error.getMessage();
-        Log.i(className, context.getString(type.getDescription()) + message);
+        //ToDo: fix logging
+        //Log.i(className, context.getString(type.getDescription()) + message);
     }
 
     @Override
@@ -34,7 +35,7 @@ public class ErrorsHandlerImpl implements IErrorsHandler {
     @Override
     public void error(String className, ErrorsType type, String message) {
         stopError = true;
-        Log.e(className, context.getString(type.getDescription()) + ". " + message);
+        //Log.i(className, context.getString(type.getDescription()) + ". " + message);
     }
 
     @Override
