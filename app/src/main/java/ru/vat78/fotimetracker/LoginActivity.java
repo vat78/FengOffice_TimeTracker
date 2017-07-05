@@ -10,8 +10,6 @@ import android.net.NetworkInfo;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 
-import android.os.AsyncTask;
-
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -42,7 +40,7 @@ public class LoginActivity extends AppCompatActivity {
     
     private App app;
     private IFengOfficeService webService;
-    private UserLoginCheck ULC;
+    private UserLoginCheck loginCheck;
 
     // UI references.
     private AutoCompleteTextView mURLView;
@@ -116,7 +114,7 @@ public class LoginActivity extends AppCompatActivity {
      * errors are presented and no actual login attempt is made.
      */
     private void attemptLogin() {
-        if (ULC != null) {
+        if (loginCheck != null) {
             return;
         }
 
@@ -133,7 +131,7 @@ public class LoginActivity extends AppCompatActivity {
         boolean cancel;
         View focusView = null;
 
-        ULC = new UserLoginCheck();
+        loginCheck = new UserLoginCheck();
 
         // Check for a empty url.
         if (TextUtils.isEmpty(url)) {
@@ -189,13 +187,13 @@ public class LoginActivity extends AppCompatActivity {
         if (cancel) {
             // There was an error; don't attempt login and focus the first
             // form field with an error.
-            ULC = null;
+            loginCheck = null;
             focusView.requestFocus();
         } else {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
             showProgress(true);
-            ULC.execute(app);
+            loginCheck.execute(app);
         }
     }
 
@@ -271,7 +269,6 @@ public class LoginActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(final Boolean success) {
-            ULC = null;
             showProgress(false);
 
             if (success) {
@@ -292,13 +289,14 @@ public class LoginActivity extends AppCompatActivity {
                 //app.getError().error_handler(ErrorsHandler.ERROR_SHOW_MESSAGE,CLASS_NAME,webService.getError());
                 mURLView.requestFocus();
             }
+            loginCheck = null;
         }
 
         @Override
         protected void onCancelled() {
-            ULC = null;
             showProgress(false);
             syncInProgress.set(false);
+            loginCheck = null;
         }
     }
 }

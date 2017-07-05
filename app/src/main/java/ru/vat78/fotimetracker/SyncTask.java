@@ -15,7 +15,7 @@ public class SyncTask extends AsyncTask<App, Integer, Boolean> {
     private static final String CLASS_NAME = "SyncTask";
     protected static AtomicBoolean syncInProgress = new AtomicBoolean(false);
 
-    private App app;
+    protected App app;
 
     @Override
     protected Boolean doInBackground(App... params) {

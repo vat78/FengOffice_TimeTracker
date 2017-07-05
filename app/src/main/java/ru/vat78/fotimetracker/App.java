@@ -76,7 +76,7 @@ public class App extends Application {
         curMember = preferences.getLong(getString(R.string.pref_stored_member), 0);
         curTask = preferences.getLong(getString(R.string.pref_stored_task), 0);
         curTimeslot = preferences.getLong(getString(R.string.pref_stored_ts), 0);
-        lastSync = new Date(preferences.getLong(getString(R.string.pref_stored_last_sync),0));
+        lastSync = new Date(0);//preferences.getLong(getString(R.string.pref_stored_last_sync),0));
 
         setDateTimeFormat();
 

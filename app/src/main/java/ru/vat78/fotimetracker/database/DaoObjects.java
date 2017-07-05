@@ -70,7 +70,7 @@ public abstract class DaoObjects<T extends DbObject> implements IDao<T> {
     @Override
     @NonNull
     public List<T> loadDeleted() {
-        return loadWithFilter(COLUMN_NAME_DELETED + " = true");
+        return loadWithFilter(COLUMN_NAME_DELETED + " = 'true'");
     }
 
     /**

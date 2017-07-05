@@ -112,9 +112,7 @@ public class MainActivity extends AppCompatActivity implements SharedPreferences
         long freq = Long.valueOf(MainApp.getPreferences().getString(getString(R.string.pref_sync_frequency),"180")) ;
         if (freq > 0) {
             freq = freq * 60 * 1000;
-            syncTimer.schedule(new SyncTimerTask(), 1000, freq);
-        } else {
-            syncTimer.schedule(new SyncTimerTask(), 1000);
+            syncTimer.schedule(new SyncTimerTask(), freq, freq);
         }
     }
 
